@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Agumon_BasicAttack_01
+  m_EditorClassIdentifier: 
+  ActionFrame: 120
+  AnimationKey: Basic01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.36666667
+      outSlope: 0.36666667
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 120
+      value: 44
+      inSlope: 0.36666667
+      outSlope: 0.36666667
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList:
+  - StartFrame: 0
+    EndFrame: 15
+    StartValue: {x: 0, y: 0}
+    EndValue: {x: 0, y: 30}
+  HitboxList:
+  - StartFrame: 0
+    EndFrame: 0
+    Offset: {x: 0, y: 0}
+    Radius: 0
+    HitId: 0
+    HitGroup: 0
+  HitIdList:
+  - HitId: 0
+    HitDamage: 0
+    HitstopTime: 0

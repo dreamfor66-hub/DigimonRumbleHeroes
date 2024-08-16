@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
+  m_Name: Data_Character_Agumon
+  m_EditorClassIdentifier: 
+  maxHealth: 10
+  moveSpeed: 5
+  attackPower: 1.5
+  colliderRadius: 0.35
+  mass: 10
+  drag: 10
+  attackRange: 1.5
+  Hurtboxes:
+  - Offset: {x: 0, y: 0}
+    Radius: 0.5
+  ActionTable:
+  - ActionKey: 10
+    ActionData: {fileID: 11400000, guid: 23961db667fc6da46a9491aec41ac15e, type: 2}
+  - ActionKey: 11
+    ActionData: {fileID: 11400000, guid: 4a4f15d3d4719a14d9f5fa2c523f9b53, type: 2}
+  - ActionKey: 20
+    ActionData: {fileID: 11400000, guid: 6995d946a2b8a13428230d2ae5a5f0c3, type: 2}
+  - ActionKey: 100
+    ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
