@@ -17,12 +17,14 @@ public class EnemyController : CharacterBehaviour
         base.Start();
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentState = CharacterState.Init;
+        FindClosestPlayer();
         UpdateCurrentAIState();
     }
 
     protected override void Update()
     {
         base.Update();
+
         if (currentState != CharacterState.Action)
         {
             stateTimer += Time.deltaTime;
@@ -127,26 +129,41 @@ public class EnemyController : CharacterBehaviour
 
     protected override void HandleMovement()
     {
-        MoveTowardsPlayer();
-        animator.Play("Move");
-    }
+        if (target == null) return;
 
-    private void MoveTowardsPlayer()
-    {
-        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        Vector3 directionToPlayer = (target.transform.position - transform.position).normalized;
 
-        // directionToPlayer가 Vector3.zero인지 확인하고, 아니라면 이동 및 회전 처리
         if (directionToPlayer != Vector3.zero)
         {
             Vector3 targetPosition = transform.position + directionToPlayer * characterData.moveSpeed * Time.deltaTime;
 
-            // 단순 이동 처리
             transform.position = targetPosition;
 
-            // 플레이어를 바라보도록 회전
             Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
+        animator.Play("Move");
+    }
+
+    private void FindClosestPlayer()
+    {
+        float closestDistance = float.MaxValue;
+        PlayerController closestPlayer = null;
+
+        foreach (var character in EntityContainer.Instance.CharacterList)
+        {
+            if (character is PlayerController player)
+            {
+                float distance = Vector3.Distance(transform.position, player.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestPlayer = player;
+                }
+            }
+        }
+
+        target = closestPlayer; // 가장 가까운 플레이어를 타겟으로 설정
     }
 
     private void LookAtPlayer()

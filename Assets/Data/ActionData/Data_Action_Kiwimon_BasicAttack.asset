@@ -60,5 +60,8 @@ MonoBehaviour:
     HitGroup: 2
   HitIdList:
   - HitId: 0
-    HitDamage: 0.1
+    HitDamage: 0
     HitstopTime: 0
+    HitstunTime: 0
+    KnockbackPower: 0
+    hitType: 0

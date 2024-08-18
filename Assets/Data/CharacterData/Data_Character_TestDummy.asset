@@ -10,14 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
-  m_Name: Data_Character_Kiwimon
+  m_Name: Data_Character_TestDummy
   m_EditorClassIdentifier: 
   maxHealth: 10
   moveSpeed: 2
   attackPower: 1.5
-  colliderRadius: 0.45
-  mass: 10
-  drag: 10
   attackRange: 5
   Hurtboxes:
   - Offset: {x: 0, y: 0}

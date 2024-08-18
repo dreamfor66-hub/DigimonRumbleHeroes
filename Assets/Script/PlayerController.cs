@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class PlayerController : CharacterBehaviour
@@ -9,16 +10,33 @@ public class PlayerController : CharacterBehaviour
     private float touchStartTime;
     private bool isTapConfirmed = false;
 
+    public bool isLeader;
+    public AIType aiType;
+
     protected override void Start()
     {
         base.Start();
         lastPosition = transform.position;
+
+        if (isLeader)
+        {
+            EntityContainer.Instance.LeaderPlayer = this;
+        }
     }
 
     protected override void Update()
     {
-        if (currentState is CharacterState.Idle or CharacterState.Move)
+        HandleTargeting();
+
+        if (currentState is CharacterState.Idle or CharacterState.Move & isLeader)
+        {
             HandleInput();
+        }
+
+        if (!isLeader)
+        {
+            HandleAI();
+        }
 
         base.Update();
 
@@ -230,4 +248,217 @@ protected override void HandleIdle()
         animator.Play("Idle");
         animator.SetFloat("speed", normalizedSpeed);
     }
+
+    private void HandleTargeting()
+    {
+        float narrowAngle = characterData.narrowAngle;
+        float wideAngle = characterData.wideAngle;
+        float shortDistance = characterData.shortDistance;
+        float longDistance = characterData.longDistance;
+
+        CharacterBehaviour newTarget = null;
+        float bestWeight = float.MinValue;
+
+        foreach (var enemy in EntityContainer.Instance.CharacterList)
+        {
+            if (enemy is EnemyController)
+            {
+                Vector3 toEnemy = enemy.transform.position - transform.position;
+                float distance = toEnemy.magnitude;
+                float angle = Vector3.Angle(transform.forward, toEnemy);
+
+                // 두 부채꼴 중 하나라도 적이 포함되면 타겟팅 가능
+                bool isInNarrowSector = angle <= narrowAngle && distance <= longDistance;
+                bool isInWideSector = angle <= wideAngle && distance <= shortDistance;
+
+                if (!isInNarrowSector && !isInWideSector)
+                {
+                    continue; // 두 부채꼴 중 어느 쪽에도 포함되지 않으면 건너뜀
+                }
+
+                float weight = CalculateTargetWeight(distance, angle, narrowAngle, wideAngle, shortDistance, longDistance);
+
+                if (weight > bestWeight)
+                {
+                    bestWeight = weight;
+                    newTarget = enemy;
+                }
+            }
+        }
+
+        target = newTarget;
+    }
+
+    private float CalculateTargetWeight(float distance, float angle, float narrowAngle, float wideAngle, float shortDistance, float longDistance)
+    {
+        float distanceFactor = 1f - Mathf.Clamp01(distance / longDistance); // 거리가 가까울수록 가중치가 높음
+        float angleFactor;
+
+        if (angle <= narrowAngle)
+        {
+            angleFactor = 1f; // 좁은 각도에서는 높은 가중치
+        }
+        else if (angle <= wideAngle)
+        {
+            angleFactor = 1f - Mathf.Clamp01((angle - narrowAngle) / (wideAngle - narrowAngle));
+        }
+        else
+        {
+            angleFactor = 0f; // 넓은 각도 범위를 벗어나면 가중치 없음
+        }
+
+        // 슬라이더 값에 따라 가중치를 계산
+        float combinedWeight = Mathf.Lerp(distanceFactor, angleFactor, characterData.targetingWeightThreshold);
+
+        return combinedWeight;
+    }
+
+    /// AI관련
+    private void HandleAI()
+    {
+        switch (aiType)
+        {
+            case AIType.Aggressive:
+                HandleAggressiveAI();
+                break;
+            case AIType.Cooperative:
+                HandleCooperativeAI();
+                break;
+            case AIType.Supportive:
+                HandleSupportiveAI();
+                break;
+            case AIType.Vanguard:
+                HandleVanguardAI();
+                break;
+        }
+    }
+
+    private void HandleAggressiveAI()
+    {
+        // 가장 먼저 타겟이 잡힌 적을 타겟으로 설정하고 공격
+        if (target == null)
+        {
+            HandleTargeting();
+        }
+        ProcessInputMessage(InputMessage.A);
+    }
+
+    private void HandleCooperativeAI()
+    {
+        // 리더가 공격하는 타겟을 같이 공격
+        if (target == null && EntityContainer.Instance.LeaderPlayer.target != null)
+        {
+            target = EntityContainer.Instance.LeaderPlayer.target;
+        }
+        ProcessInputMessage(InputMessage.A);
+    }
+
+    private void HandleSupportiveAI()
+    {
+        // 플레이어를 따라다니기만 함
+        if (target == null)
+        {
+            FollowLeader();
+        }
+    }
+
+    private void HandleVanguardAI()
+    {
+        // 플레이어보다 앞서 몬스터를 탐색
+        if (target == null)
+        {
+            Vector3 forwardPosition = EntityContainer.Instance.LeaderPlayer.transform.position + EntityContainer.Instance.LeaderPlayer.transform.forward * 5f;
+            transform.position = Vector3.Lerp(transform.position, forwardPosition, Time.deltaTime * 2f);
+
+            // 리더나 자신이 피격된 경우 공격
+            if (EntityContainer.Instance.LeaderPlayer.target != null)
+            {
+                target = EntityContainer.Instance.LeaderPlayer.target;
+                ProcessInputMessage(InputMessage.A);
+            }
+        }
+    }
+
+    private void FollowLeader()
+    {
+        Vector3 followPosition = EntityContainer.Instance.LeaderPlayer.transform.position - EntityContainer.Instance.LeaderPlayer.transform.forward * 2f;
+        transform.position = Vector3.Lerp(transform.position, followPosition, Time.deltaTime * 2f);
+    }
+
+
+    /// <summary>
+    /// 기즈모
+    /// </summary>
+
+    private void OnDrawGizmos()
+    {
+        if (characterData != null)
+        {
+            Gizmos.color = new Color(0f, 0f, 1f, 0.5f);
+            foreach (var hurtbox in characterData.Hurtboxes)
+            {
+                Vector3 hurtboxPosition = transform.position + transform.forward * hurtbox.Offset.y + transform.right * hurtbox.Offset.x;
+                Gizmos.DrawSphere(hurtboxPosition, hurtbox.Radius);
+            }
+        }
+
+        if (currentState == CharacterState.Action && characterData != null)
+        {
+            if (characterData.TryGetActionData(currentActionKey, out ActionData currentActionData))
+            {
+                foreach (var hitbox in currentActionData.HitboxList)
+                {
+                    if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
+                    {
+                        Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
+                        Vector3 hitboxPosition = transform.position + transform.forward * hitbox.Offset.y + transform.right * hitbox.Offset.x;
+                        Gizmos.DrawSphere(hitboxPosition, hitbox.Radius);
+                    }
+                }
+            }
+        }
+
+        // 타겟 인디케이터 그리기
+        if (target != null)
+        {
+            Gizmos.color = this is PlayerController ? Color.red : Color.blue;
+            Gizmos.DrawSphere(target.transform.position + Vector3.up * 2f, 0.25f);
+        }
+
+        // 부채꼴 시각화
+        DrawTargetingGizmos();
+    }
+
+    private void DrawTargetingGizmos()
+    {
+        Vector3 forward = transform.forward;
+
+        // 좁은 각도/긴 거리 부채꼴
+        Gizmos.color = Color.yellow;
+        DrawArc(forward, characterData.narrowAngle, characterData.longDistance);
+
+        // 넓은 각도/짧은 거리 부채꼴
+        Gizmos.color = Color.green;
+        DrawArc(forward, characterData.wideAngle, characterData.shortDistance);
+    }
+
+    private void DrawArc(Vector3 forward, float angle, float distance)
+    {
+        int segmentCount = 20; // 부채꼴의 세그먼트 수
+        float angleStep = angle / segmentCount;
+
+        Vector3 lastPoint = transform.position + Quaternion.Euler(0, -angle / 2, 0) * forward * distance;
+
+        for (int i = 1; i <= segmentCount; i++)
+        {
+            float currentAngle = -angle / 2 + angleStep * i;
+            Vector3 nextPoint = transform.position + Quaternion.Euler(0, currentAngle, 0) * forward * distance;
+
+            Gizmos.DrawLine(lastPoint, nextPoint);
+            lastPoint = nextPoint;
+        }
+
+        Gizmos.DrawLine(transform.position, lastPoint);
+    }
+
 }

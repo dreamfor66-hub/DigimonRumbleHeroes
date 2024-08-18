@@ -36,6 +36,20 @@ public class CharacterData : ScriptableObject
         actionData = null;
         return false;
     }
+
+    [Title("Targeting")]
+    [Range(0f, 1f)]
+    [LabelText("0은 거리 중심, 1은 각도 중심")]
+    public float targetingWeightThreshold = 0.5f;
+
+    [LabelText("넓고 짧은 부채꼴 : 거리")]
+    public float shortDistance = 5f; // 짧은 거리
+    [LabelText("넓고 짧은 부채꼴 : 각도")]
+    public float wideAngle = 90f;    // 넓은 각도
+    [LabelText("좁고 긴 부채꼴 : 각도")]
+    public float narrowAngle = 30f;  // 좁은 각도
+    [LabelText("좁고 긴 부채꼴 : 거리")]
+    public float longDistance = 10f; // 긴 거리
 }
 
 

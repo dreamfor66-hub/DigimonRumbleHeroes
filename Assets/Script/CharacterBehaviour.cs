@@ -1,5 +1,7 @@
 using Sirenix.OdinInspector;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public abstract class CharacterBehaviour : MonoBehaviour
@@ -27,6 +29,20 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     public SphereCollider collisionCollider;
 
+    // Knockback 관련 변수들
+    private Vector3 knockBackDirection;
+    private float knockBackSpeed;
+    private float knockBackDuration;
+    private float knockBackTimer;
+
+    // HitStop 관련 변수들
+    private float hitStopTimer; // HitStop 시간을 관리하는 타이머
+    private bool isHitStopped; // HitStop 상태를 나타내는 변수
+
+    // target 관련 변수
+    public CharacterBehaviour target;
+    private GameObject targetIndicator;
+
     protected virtual void Start()
     {
         animator = GetComponentInChildren<Animator>();
@@ -36,6 +52,8 @@ public abstract class CharacterBehaviour : MonoBehaviour
         InitializeCollisionCollider();
         InitializeHealth();
         EntityContainer.Instance.RegisterCharacter(this);
+        hitStopTimer = 0f;
+        isHitStopped = false;
     }
 
     protected void InitializeHurtboxes()
@@ -71,6 +89,16 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (isHitStopped)
+        {
+            hitStopTimer -= Time.deltaTime;
+            if (hitStopTimer <= 0f)
+            {
+                ResumeAfterHitStop();
+            }
+            return;
+        }
+
         switch (currentState)
         {
             case CharacterState.Idle:
@@ -81,6 +109,12 @@ public abstract class CharacterBehaviour : MonoBehaviour
                 break;
             case CharacterState.Action:
                 HandleAction();
+                break;
+            case CharacterState.KnockBack:
+                HandleKnockback();
+                break;
+            case CharacterState.KnockBackSmash:
+                HandleKnockbackSmash();
                 break;
         }
     }
@@ -95,10 +129,15 @@ public abstract class CharacterBehaviour : MonoBehaviour
         {
             currentFrame += Time.deltaTime * 60f;
 
+            if (currentFrame <= 1)
+            {
+                ApplyAutoCorrection(currentActionData); // 첫 프레임에 AutoCorrection 적용
+            }
+
             float animationFrame = currentActionData.AnimationCurve.Evaluate(currentFrame);
             animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
 
-            //TransformMove
+            // TransformMove
             foreach (var movement in currentActionData.MovementList)
             {
                 if (currentFrame >= movement.StartFrame && currentFrame <= movement.EndFrame)
@@ -158,8 +197,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
                 }
             }
 
-
-            //Hitbox Cast
+            // Hitbox Cast
             foreach (var hitbox in currentActionData.HitboxList)
             {
                 if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
@@ -227,14 +265,46 @@ public abstract class CharacterBehaviour : MonoBehaviour
         return 1f;
     }
 
+    protected void ApplyHitStop(float durationInFrames)
+    {
+        float durationInSeconds = durationInFrames / 60f;
+
+        isHitStopped = true;
+        hitStopTimer = durationInSeconds;
+
+        // 애니메이션 정지
+        if (animator != null)
+        {
+            animator.speed = 0f;
+        }
+    }
+
+    protected void ResumeAfterHitStop()
+    {
+        isHitStopped = false;
+
+        // 애니메이션 재개
+        if (animator != null)
+        {
+            animator.speed = 1f;
+        }
+    }
+
     protected void HandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
     {
         var hitData = currentActionData.HitIdList.Find(hit => hit.HitId == hitId);
 
         if (hitData != null)
         {
-            target.TakeDamage(hitData.HitDamage);
-            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitstopTime} seconds hitstop.");
+            Vector3 hitDirection = (target.transform.position - transform.position).normalized;
+            target.TakeDamage(hitData.HitDamage, hitDirection, hitData);
+
+            // HitStop을 프레임 단위로 계산
+            float hitStopDuration = hitData.HitStopFrame;
+            ApplyHitStop(hitStopDuration);
+            target.ApplyHitStop(hitStopDuration);
+
+            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitStopFrame} frames of hitstop.");
         }
     }
 
@@ -245,7 +315,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
         currentFrame = 0;
     }
 
-    protected void TakeDamage(float damage)
+    protected void TakeDamage(float damage, Vector3 hitDirection, HitData hitData)
     {
         currentHealth -= damage;
 
@@ -254,13 +324,184 @@ public abstract class CharacterBehaviour : MonoBehaviour
             currentHealth = 0;
             Die();
         }
-        else if (currentHealth > characterData.maxHealth)
+        else
         {
-            currentHealth = characterData.maxHealth;
+            if (hitData.hitType == HitType.DamageOnly)
+            {
+                return;
+            }
+
+            switch (hitData.hitType)
+            {
+                case HitType.Weak:
+                    animator.SetTrigger("hit");
+                    StartKnockBack(hitDirection, hitData);
+                    break;
+
+                case HitType.Strong:
+                    animator.SetTrigger("hit");
+                    StartKnockBackSmash(hitDirection, hitData);
+                    break;
+            }
+        }
+    }
+
+    private void StartKnockBack(Vector3 hitDirection, HitData hitData)
+    {
+        currentState = CharacterState.KnockBack;
+        knockBackDirection = hitDirection.normalized;
+        knockBackSpeed = hitData.KnockbackPower;
+
+        // HitStun을 프레임 단위로 계산
+        knockBackDuration = Mathf.Max(hitData.HitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackTimer = 0f;
+
+        animator.Play("Knockback");
+    }
+
+    private void StartKnockBackSmash(Vector3 hitDirection, HitData hitData)
+    {
+        currentState = CharacterState.KnockBackSmash;
+        knockBackDirection = hitDirection.normalized;
+        knockBackSpeed = hitData.KnockbackPower;
+
+        // HitStun을 프레임 단위로 계산
+        knockBackDuration = Mathf.Max(hitData.HitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackTimer = 0f;
+
+        animator.Play("Knockback");
+    }
+
+    private float initialBurstDuration = 0.2f; // 초기 강한 넉백 구간
+    private float flightDuration = 0.3f;  // 일정한 속도로 날아가는 시간 (감속 포함)
+    private float decelerationDuration = 0.3f;  // 감속 시간
+    private float totalDuration => initialBurstDuration + flightDuration + decelerationDuration; // 총 넉백 지속 시간
+
+    protected virtual void HandleKnockback()
+    {
+        knockBackTimer += Time.deltaTime;
+
+        float speedModifier;
+
+        if (knockBackTimer <= initialBurstDuration)
+        {
+            float t = knockBackTimer / initialBurstDuration;
+            speedModifier = Mathf.Lerp(2f, 1f, t);
+        }
+        else if (knockBackTimer <= initialBurstDuration + flightDuration)
+        {
+            float t = (knockBackTimer - initialBurstDuration) / flightDuration;
+            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+        }
+        else
+        {
+            float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
+            speedModifier = Mathf.Lerp(0.5f, 0f, t);
         }
 
-        animator.SetTrigger("hit");
+        Vector3 knockBackMovement = knockBackDirection * knockBackSpeed * speedModifier * Time.deltaTime;
+
+        RaycastHit hit;
+        var radius = characterData.colliderRadius;
+        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+
+        // 첫 번째 충돌 감지
+        if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
+        {
+            Vector3 normal = hit.normal;
+            Vector3 slideDirection = Vector3.ProjectOnPlane(knockBackDirection, normal).normalized;
+
+            // 첫 번째 충돌에 대한 속도 감소
+            float firstAngle = Vector3.Angle(knockBackDirection, normal);
+            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
+
+            // 두 번째 충돌 감지 및 처리
+            if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, knockBackMovement.magnitude, wallLayer))
+            {
+                Vector3 secondNormal = hit.normal;
+                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
+
+                // 두 번째 충돌에 대한 속도 감소
+                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
+                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
+
+                // 첫 번째 속도 감소에 두 번째 속도 감소를 곱합
+                firstSpeedAdjustment *= secondSpeedAdjustment;
+            }
+
+            // 벽을 따라 미끄러지면서 이동 및 속도 적용
+            transform.position += slideDirection * knockBackSpeed * firstSpeedAdjustment * speedModifier * Time.deltaTime;
+        }
+        else
+        {
+            // 벽에 닿지 않았을 때는 기본 이동
+            transform.position += knockBackMovement;
+        }
+
+        if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
+        {
+            currentState = CharacterState.Idle;
+            knockBackSpeed = 0f;
+        }
     }
+
+    protected virtual void HandleKnockbackSmash()
+    {
+        knockBackTimer += Time.deltaTime;
+
+        float speedModifier;
+
+        if (knockBackTimer <= initialBurstDuration)
+        {
+            float t = knockBackTimer / initialBurstDuration;
+            speedModifier = Mathf.Lerp(2f, 1f, t);
+        }
+        else if (knockBackTimer <= initialBurstDuration + flightDuration)
+        {
+            float t = (knockBackTimer - initialBurstDuration) / flightDuration;
+            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+        }
+        else
+        {
+            float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
+            speedModifier = Mathf.Lerp(0.5f, 0f, t);
+        }
+
+        Vector3 knockBackMovement = knockBackDirection * knockBackSpeed * speedModifier * Time.deltaTime;
+
+        RaycastHit hit;
+        var radius = characterData.colliderRadius;
+        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+
+        if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
+        {
+            // 벽에 충돌했을 때 HitStop 적용
+            ApplyHitStop(5);  // 대상자에게만 HitStop 5프레임 적용
+
+            // 반사 시 속도 감소
+            Vector3 collisionNormal = hit.normal;
+            Vector3 reflectDirection = Vector3.Reflect(knockBackDirection, collisionNormal).normalized;
+            knockBackDirection = reflectDirection;
+            knockBackSpeed *= 0.5f;
+        }
+        else
+        {
+            transform.position += knockBackMovement;
+        }
+
+        if (knockBackSpeed < 7f)
+        {
+            currentState = CharacterState.KnockBack;
+            knockBackDuration = Mathf.Max(knockBackTimer, knockBackSpeed / 10f);
+        }
+
+        if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
+        {
+            currentState = CharacterState.Idle;
+            knockBackSpeed = 0f;
+        }
+    }
+
 
     protected virtual void Die()
     {
@@ -296,7 +537,6 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void MoveCharacter()
     {
-
         Vector3 targetPosition = transform.position + direction * currentSpeed * Time.deltaTime;
         Vector3 remainingMovement = direction * currentSpeed * Time.deltaTime;
 
@@ -344,6 +584,55 @@ public abstract class CharacterBehaviour : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
     }
 
+    /// <summary>
+    /// 오토코렉션
+    /// </summary>
+    protected virtual void ApplyAutoCorrection(ActionData actionData)
+    {
+        switch (actionData.AutoCorrection.correctionType)
+        {
+            case AutoCorrectionType.None:
+                // 아무 동작도 하지 않음
+                break;
+
+            case AutoCorrectionType.Target:
+                if (target != null)
+                {
+                    LookAtTarget(target.transform.position);
+                }
+                break;
+
+            case AutoCorrectionType.Entity:
+                var entity = EntityContainer.Instance.CharacterList
+                    .FirstOrDefault(e => e.name.Contains(actionData.AutoCorrection.entityName));
+                if (entity != null)
+                {
+                    LookAtTarget(entity.transform.position);
+                }
+                break;
+
+            case AutoCorrectionType.Character:
+                var character = EntityContainer.Instance.CharacterList
+                    .FirstOrDefault(c => c.name.Contains(actionData.AutoCorrection.characterName));
+                if (character != null)
+                {
+                    LookAtTarget(character.transform.position);
+                }
+                break;
+        }
+    }
+
+    private void LookAtTarget(Vector3 targetPosition)
+    {
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = targetRotation;
+    }
+
+    /// <summary>
+    /// 인풋 메시지
+    /// </summary>
+
     public void ReceiveInputMessage(InputMessage message)
     {
         HandleInputMessage(message);
@@ -370,10 +659,10 @@ public abstract class CharacterBehaviour : MonoBehaviour
                 StartAction(ActionKey.Basic01);
                 break;
             case InputMessage.B:
-                StartAction(ActionKey.Dash);
+                StartAction(ActionKey.Special01); // 이전 Dash 대신 Special01로 대체
                 break;
             case InputMessage.C:
-                StartAction(ActionKey.Special01);
+                StartAction(ActionKey.Special02); // 추가적인 스페셜 액션
                 break;
             default:
                 Debug.LogWarning("처리되지 않은 InputMessage: " + message);
@@ -382,9 +671,8 @@ public abstract class CharacterBehaviour : MonoBehaviour
     }
 
     /// <summary>
-    /// 기즈모드로잉
+    /// 기즈모 드로잉
     /// </summary>
-
     private void OnDrawGizmos()
     {
         if (characterData != null)
@@ -411,6 +699,13 @@ public abstract class CharacterBehaviour : MonoBehaviour
                     }
                 }
             }
+        }
+
+        // 타겟 인디케이터 그리기
+        if (target != null)
+        {
+            Gizmos.color = this is PlayerController ? Color.red : Color.blue;
+            Gizmos.DrawSphere(target.transform.position + Vector3.up * 2f, 0.25f);
         }
     }
 }

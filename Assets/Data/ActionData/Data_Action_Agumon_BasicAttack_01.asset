@@ -38,19 +38,28 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MovementList:
-  - StartFrame: 15
-    EndFrame: 20
-    StartValue: {x: 10, y: 0}
-    EndValue: {x: 10, y: 10}
+  MovementList: []
   HitboxList:
-  - StartFrame: 0
-    EndFrame: 0
+  - StartFrame: 25
+    EndFrame: 30
     Offset: {x: 0, y: 0}
-    Radius: 0
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  - StartFrame: 25
+    EndFrame: 30
+    Offset: {x: 0, y: 2}
+    Radius: 1
     HitId: 0
     HitGroup: 0
   HitIdList:
   - HitId: 0
     HitDamage: 0
-    HitstopTime: 0
+    HitStopFrame: 12
+    HitStunFrame: 0
+    KnockbackPower: 50
+    hitType: 2
+  AutoCorrection:
+    correctionType: 1
+    entityName: Kiwi
+    characterName: Kiwi

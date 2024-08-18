@@ -34,9 +34,9 @@ public class UIInputMessageToPlayer : MonoBehaviour
 
     private void SendInputToPlayer(InputMessage message)
     {
-        if (EntityContainer.Instance.PlayerCharacter != null)
+        if (EntityContainer.Instance.LeaderPlayer != null)
         {
-            EntityContainer.Instance.PlayerCharacter.ProcessInputMessage(message);
+            EntityContainer.Instance.LeaderPlayer.ProcessInputMessage(message);
         }
         else
         {

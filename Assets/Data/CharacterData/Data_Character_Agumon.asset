@@ -15,7 +15,7 @@ MonoBehaviour:
   maxHealth: 10
   moveSpeed: 5
   attackPower: 1.5
-  colliderRadius: 0.35
+  colliderRadius: 0.45
   mass: 10
   drag: 10
   attackRange: 1.5
@@ -31,3 +31,8 @@ MonoBehaviour:
     ActionData: {fileID: 11400000, guid: 6995d946a2b8a13428230d2ae5a5f0c3, type: 2}
   - ActionKey: 100
     ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
+  targetingWeightThreshold: 0.273
+  shortDistance: 5
+  wideAngle: 90
+  narrowAngle: 30
+  longDistance: 10

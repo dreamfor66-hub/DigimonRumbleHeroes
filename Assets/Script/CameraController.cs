@@ -16,6 +16,6 @@ public class CameraController : MonoBehaviour
             transform.position = smoothedPosition;
         }
         else
-            target = EntityContainer.Instance.PlayerCharacter.transform;
+            target = EntityContainer.Instance.LeaderPlayer.transform;
     }
 }

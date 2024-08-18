@@ -210,7 +210,7 @@ ModelImporter:
       name: hurt
       takeName: hurt
       internalID: 2963219463598164401
-      firstFrame: 0
+      firstFrame: 2.4
       lastFrame: 31
       wrapMode: 0
       orientationOffsetY: 0

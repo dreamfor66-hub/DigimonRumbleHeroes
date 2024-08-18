@@ -7,14 +7,14 @@ using UnityEditor.Animations;
 [CreateAssetMenu(fileName = "Data_Action_New", menuName = "Data/Action Data", order = 1)]
 public class ActionData : ScriptableObject
 {
-    [PropertyOrder(0)]
-    public int ActionFrame;  // 액션의 전체 길이 (프레임 단위)
+   [PropertyOrder(0)]
+    public int ActionFrame;
 
     [PropertyOrder(0)]
-    public string AnimationKey;  // 애니메이션 스테이트의 명칭
+    public string AnimationKey;
 
     [PropertyOrder(0)]
-    public AnimationCurve AnimationCurve;  // 애니메이션 커브
+    public AnimationCurve AnimationCurve;
 
     [PropertyOrder(0)]
     [Button("Reset AnimationCurve")]
@@ -24,52 +24,28 @@ public class ActionData : ScriptableObject
         InitializeAnimationCurve();
     }
 
-    [System.Serializable]
-    public class MovementData
-    {
-        public int StartFrame;  // 움직임 시작 프레임
-
-        public int EndFrame;  // 움직임 종료 프레임
-
-        public Vector2 StartValue;  // x, z축 시작 위치/값
-
-        public Vector2 EndValue;  // x, z축 종료 위치/값
-    }
-
     [Title("Move")]
     [PropertyOrder(1)]
     [TableList(AlwaysExpanded = true)]
     public List<MovementData> MovementList = new List<MovementData>();
-
-    [System.Serializable]
-    public class HitboxData
-    {
-
-        public int StartFrame;  // 히트박스 시작 프레임
-        public int EndFrame;    // 히트박스 종료 프레임
-        public Vector2 Offset;  // 히트박스 위치 오프셋
-        public float Radius;    // 히트박스 반경
-        public int HitId;       // 히트박스 ID
-        public int HitGroup;    // 히트 그룹 ID 추가
-    }
 
     [Title("Hitboxes")]
     [PropertyOrder(1)]
     [TableList(AlwaysExpanded = true)]
     public List<HitboxData> HitboxList = new List<HitboxData>();
 
-    [System.Serializable]
-    public class HitData
-    {
-        public int HitId;  // 히트 ID
-        public float HitDamage;  // 히트 데미지
-        public float HitstopTime;  // 히트 스탑 시간
-    }
-
     [HideLabel]
     [PropertyOrder(1)]
     public List<HitData> HitIdList = new List<HitData>();
 
+    [Title("Auto Correction")]
+    [PropertyOrder(2)]
+    [HideLabel]
+    public AutoCorrectionData AutoCorrection;
+
+    /// <summary>
+    /// 커브 생성버튼
+    /// </summary>
     private void InitializeAnimationCurve()
     {
         // 1. ActionFrame을 x축으로 설정
@@ -138,5 +114,55 @@ public class ActionData : ScriptableObject
 
         Debug.Log("AnimationCurve가 초기화되었습니다.");
     }
+}
+
+// Inner Classes
+[System.Serializable]
+public class MovementData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public Vector2 StartValue;
+    public Vector2 EndValue;
+}
+
+[System.Serializable]
+public class HitboxData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public Vector2 Offset;
+    public float Radius;
+    public int HitId;
+    public int HitGroup;
+}
+
+[System.Serializable]
+public class HitData
+{
+    public int HitId;
+    public float HitDamage;
+    public float HitStopFrame;
+    public float HitStunFrame;
+    public float KnockbackPower;
+    public HitType hitType;
+}
+
+[System.Serializable]
+public class AutoCorrectionData
+{
+    [HorizontalGroup("AutoCorrection")]
+    [HideLabel]
+    public AutoCorrectionType correctionType;
+
+    [HorizontalGroup("AutoCorrection")]
+    [ShowIf("correctionType", AutoCorrectionType.Entity)]
+    [LabelText("Entity Name")]
+    public string entityName;
+
+    [HorizontalGroup("AutoCorrection")]
+    [ShowIf("correctionType", AutoCorrectionType.Character)]
+    [LabelText("Character Name")]
+    public string characterName;
 }
 
