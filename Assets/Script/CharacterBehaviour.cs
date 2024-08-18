@@ -461,55 +461,6 @@ public abstract class CharacterBehaviour : MonoBehaviour
         return false;
     }
 
-    protected virtual void MoveCharacter()
-    {
-        Vector3 targetPosition = transform.position + direction * currentSpeed * Time.deltaTime;
-        Vector3 remainingMovement = direction * currentSpeed * Time.deltaTime;
-
-        int maxIterations = 10; // 무한 루프 방지를 위한 최대 반복 횟수 설정
-        int iteration = 0;
-
-        while (remainingMovement.magnitude > 0.01f && iteration < maxIterations)
-        {
-            iteration++;
-            if (IsCollisionDetected(targetPosition, collisionCollider.radius, out Vector3 collisionNormal, out RaycastHit[] hits))
-            {
-                // 충돌이 발생한 경우 속도 감소 계산
-                float angle = Vector3.Angle(collisionNormal, direction);
-                float speedModifier = Mathf.Clamp01(1 - (angle / 90f)); // 각도에 따른 속도 감소
-
-                // 슬라이드 방향 계산
-                Vector3 slideDirection = Vector3.zero;
-                foreach (RaycastHit hit in hits)
-                {
-                    slideDirection += Vector3.ProjectOnPlane(remainingMovement, hit.normal);
-                }
-                slideDirection.Normalize();
-
-                // 남은 이동량 계산
-                remainingMovement = slideDirection * remainingMovement.magnitude * speedModifier;
-                targetPosition = transform.position + remainingMovement;
-
-                // 슬라이드 후에도 충돌이 발생하지 않는지 확인
-                if (!IsCollisionDetected(targetPosition, collisionCollider.radius, out _, out _))
-                {
-                    transform.position = targetPosition;
-                    break; // 슬라이딩 성공, 루프 탈출
-                }
-            }
-            else
-            {
-                // 더 이상 충돌이 없을 경우 남은 이동량만큼 이동
-                transform.position += remainingMovement;
-                break;
-            }
-        }
-
-        // 캐릭터의 회전
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-    }
-
     protected Vector3 HandleCollisionAndSliding(Vector3 moveDirection, float moveSpeed)
     {
         RaycastHit hit;

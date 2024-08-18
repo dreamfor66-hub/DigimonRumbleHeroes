@@ -188,7 +188,6 @@ protected override void HandleIdle()
                 animator.SetBool("isMoving", false);
                 currentSpeed = 0;
             }
-            MoveCharacter();
         }
         animator.Play("Idle");
         animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
