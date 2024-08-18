@@ -5,6 +5,50 @@ using UnityEngine;
 
 public class MapEditorWindow : OdinEditorWindow
 {
+    [MenuItem("Window/Map Editor")]
+    private static void OpenWindow()
+    {
+        GetWindow<MapEditorWindow>("Map Editor").Show();
+    }
+
+    [Title("Map Settings")]
+    [InlineEditor(InlineEditorObjectFieldModes.Boxed)]
+    [Required]
+    [PropertyOrder(0)]
+    public Map currentMap;
+
+    [PropertyOrder(10)]
+    [Button("Save Changes")]
+    private void SaveChanges()
+    {
+        if (currentMap != null)
+        {
+            EditorUtility.SetDirty(currentMap);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Map settings saved.");
+        }
+        else
+        {
+            Debug.LogWarning("No map selected.");
+        }
+    }
+
+    [PropertyOrder(0)]
+    [Button("Create / Set Map")]
+    void MapSetting()
+    {
+        currentMap = null;
+        if (GameObject.FindFirstObjectByType<Map>() == null)
+        {
+            var newMap = new GameObject("Map").AddComponent<Map>();
+            currentMap = newMap;
+        }
+        else
+        {
+            currentMap = GameObject.FindFirstObjectByType<Map>();
+        }
+    }
+
     [Title("Block Prefab Settings")]
     [InfoBox("Insert the prefab you want to use for creating blocks in the map.")]
     [InlineEditor(InlineEditorModes.LargePreview)]
@@ -13,16 +57,39 @@ public class MapEditorWindow : OdinEditorWindow
     [Title("Boundary Settings")]
     [PropertyOrder(1)]
     public Material floorMaterial;
+
     [PropertyOrder(2)]
     public GameObject wallPrefab;
+
     [PropertyOrder(3)]
+    [OnValueChanged("UpdateMapSize")]  // MapSizeÍ∞Ä Î≥ÄÍ≤ΩÎê† ÎïåÎßàÎã§ Îßµ Ïò§Î∏åÏ†ùÌä∏Ïóê Ï†ÄÏû•
     public Vector2 mapSize = new Vector2(2, 3);
 
-    [Button("Create Boundary")]
     [PropertyOrder(4)]
+    [ShowInInspector, OnValueChanged("UpdateMapStartPoint")]
+    [PropertyTooltip("The start point for the player on the map.")]
+    public Vector2 PlayerStartPoint
+    {
+        get => currentMap != null ? currentMap.PlayerStartPoint : Vector2.zero;
+        set
+        {
+            if (currentMap != null)
+            {
+                currentMap.PlayerStartPoint = value;
+                MarkSceneDirty();
+            }
+        }
+    }
+
+    [Button("Create Boundary")]
+    [PropertyOrder(5)]
     private void CreateBoundary()
     {
-        // Boundary ª˝º∫ ∑Œ¡˜
+        if (currentMap != null)
+        {
+            currentMap.MapSize = mapSize; // MapSizeÎ•º Îßµ Ïò§Î∏åÏ†ùÌä∏Ïóê Ï†ÄÏû•
+        }
+
         GameObject floorParent = GameObject.Find("Map/Floor");
         if (floorParent != null)
         {
@@ -81,13 +148,13 @@ public class MapEditorWindow : OdinEditorWindow
     }
 
     [Title("Edit Mode")]
-    [PropertyOrder(0)]
     public bool isEditing = false;
     public bool isErasing = false;
 
     private Vector3? previewPosition = null;
-    private Vector3 lastMousePosition;
     private float gridSnapSize = 1f;
+
+    private bool isDraggingHandle = false; // Ìï∏Îì§ ÎìúÎûòÍ∑∏ ÏÉÅÌÉúÎ•º ÌôïÏù∏ÌïòÎäî Î≥ÄÏàò
 
     [Button(ButtonSizes.Large)]
     [GUIColor(0.5f, 1f, 0.5f)]
@@ -98,12 +165,12 @@ public class MapEditorWindow : OdinEditorWindow
         {
             Selection.activeObject = null;
             SceneView.duringSceneGui += OnSceneGUI;
-            Tools.current = Tool.None; // Transform µµ±∏ ∫Ò»∞º∫»≠
+            Tools.current = Tool.None; // Transform ÎèÑÍµ¨ ÎπÑÌôúÏÑ±Ìôî
         }
         else
         {
             SceneView.duringSceneGui -= OnSceneGUI;
-            Tools.current = Tool.Move; // Edit ∏µÂ ∫Ò»∞º∫»≠ Ω√ MoveTool∑Œ ∫π±∏
+            Tools.current = Tool.Move; // Edit Î™®Îìú ÎπÑÌôúÏÑ±Ìôî Ïãú MoveToolÎ°ú Î≥µÍµ¨
         }
     }
 
@@ -117,60 +184,56 @@ public class MapEditorWindow : OdinEditorWindow
 
     private void OnEnable()
     {
-        if (isEditing)
-        {
-            SceneView.duringSceneGui += OnSceneGUI;
-            Tools.current = Tool.None; // Transform µµ±∏ ∫Ò»∞º∫»≠
-        }
+        SceneView.duringSceneGui += OnSceneGUI;
     }
 
     private void OnDisable()
     {
         SceneView.duringSceneGui -= OnSceneGUI;
-        Tools.current = Tool.Move; // Edit ∏µÂ ∫Ò»∞º∫»≠ Ω√ MoveTool∑Œ ∫π±∏
     }
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        if (isEditing)
+        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+
+        if (currentMap != null)
         {
-            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            DrawHandle();
 
-            Event e = Event.current;
-            if (e.type == EventType.MouseMove || e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
+            if (isEditing)
             {
-                Vector3 currentMousePosition = e.mousePosition;
+                Event e = Event.current;
 
-                Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                if (e.type == EventType.MouseMove || e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
                 {
-                    Vector3 targetPosition = hit.point;
-                    targetPosition.y = 0;
-
-                    targetPosition.x = Mathf.Round(targetPosition.x);
-                    targetPosition.z = Mathf.Round(targetPosition.z);
-
-                    previewPosition = targetPosition;
-
-                    if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
+                    Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
+                    if (Physics.Raycast(ray, out RaycastHit hit))
                     {
-                        if (e.button == 0 && isEditing)
+                        Vector3 targetPosition = hit.point;
+                        targetPosition.y = 0;
+
+                        targetPosition.x = Mathf.Round(targetPosition.x);
+                        targetPosition.z = Mathf.Round(targetPosition.z);
+
+                        previewPosition = targetPosition;
+
+                        if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
                         {
-                            if (isErasing || e.control)
+                            if (e.button == 0 && !e.control)
                             {
-                                EraseBlock(targetPosition);
+                                CreateBlock(previewPosition.Value);
                             }
-                            else
+                            else if (e.button == 0 && e.control)
                             {
-                                CreateBlock(targetPosition);
+                                EraseBlock(previewPosition.Value);
                             }
                             e.Use();
                         }
                     }
-                }
-                else
-                {
-                    previewPosition = null;
+                    else
+                    {
+                        previewPosition = null;
+                    }
                 }
                 sceneView.Repaint();
             }
@@ -182,10 +245,56 @@ public class MapEditorWindow : OdinEditorWindow
         }
     }
 
+    private void DrawHandle()
+    {
+        Vector3 startPosition = new Vector3(PlayerStartPoint.x, 0, PlayerStartPoint.y);
+
+        EditorGUI.BeginChangeCheck();
+        var fmh_253_74_638595741349808741 = Quaternion.identity; Vector3 newStartPosition = Handles.FreeMoveHandle(startPosition, 0.75f, Vector3.one * 0.5f, Handles.SphereHandleCap);
+        if (EditorGUI.EndChangeCheck())
+        {
+            newStartPosition.x = Mathf.Round(newStartPosition.x);
+            newStartPosition.z = Mathf.Round(newStartPosition.z);
+
+            PlayerStartPoint = new Vector2(newStartPosition.x, newStartPosition.z);
+            UpdateMapStartPoint();
+        }
+
+        Handles.color = Color.yellow;
+        Handles.SphereHandleCap(0, startPosition, Quaternion.identity, 0.75f, EventType.Repaint);
+        Handles.Label(startPosition + Vector3.up * 1.5f, "Player Start Point");
+    }
+
     private void DrawPreviewGizmo(Vector3 position)
     {
         Handles.color = Color.yellow;
         Handles.DrawWireCube(position + Vector3.up * 0.5f, Vector3.one);
+    }
+
+    private void UpdateMapStartPoint()
+    {
+        if (currentMap != null)
+        {
+            currentMap.PlayerStartPoint = PlayerStartPoint;
+            MarkSceneDirty();
+        }
+    }
+
+    private void UpdateMapSize()
+    {
+        if (currentMap != null)
+        {
+            currentMap.MapSize = mapSize;
+            MarkSceneDirty();
+        }
+    }
+
+    private void MarkSceneDirty()
+    {
+        if (!Application.isPlaying)
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        }
     }
 
     private void CreateBlock(Vector3 position)
