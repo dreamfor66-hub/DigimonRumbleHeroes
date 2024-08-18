@@ -12,11 +12,14 @@ public class PlayerController : CharacterBehaviour
 
     public bool isLeader;
     public AIType aiType;
+    public int playerNumber;  // 고유 플레이어 넘버 (1, 2, 3)
 
     protected override void Start()
     {
         base.Start();
         lastPosition = transform.position;
+
+        EntityContainer.Instance.RegisterPlayer(this);
 
         if (isLeader)
         {
@@ -33,12 +36,12 @@ public class PlayerController : CharacterBehaviour
             HandleInput();
         }
 
+        base.Update();
+
         if (!isLeader)
         {
             HandleAI();
         }
-
-        base.Update();
 
         // 현재 프레임에서 실제 이동한 속도 계산
         float movementSpeed = (transform.position - lastPosition).magnitude / Time.deltaTime;
