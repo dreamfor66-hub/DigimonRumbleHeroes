@@ -13,6 +13,7 @@ public class PlayerController : CharacterBehaviour
     public bool isLeader;
     public AIType aiType;
     public int playerNumber;  // 고유 플레이어 넘버 (1, 2, 3)
+    public float followDistance = 2;
 
     protected override void Start()
     {
@@ -313,10 +314,8 @@ protected override void HandleIdle()
     private void HandleSupportiveAI()
     {
         // 플레이어를 따라다니기만 함
-        if (target == null)
-        {
-            FollowLeader();
-        }
+        FollowLeader();
+        
     }
 
     private void HandleVanguardAI()
@@ -338,8 +337,98 @@ protected override void HandleIdle()
 
     private void FollowLeader()
     {
-        Vector3 followPosition = EntityContainer.Instance.LeaderPlayer.transform.position - EntityContainer.Instance.LeaderPlayer.transform.forward * 2f;
-        transform.position = Vector3.Lerp(transform.position, followPosition, Time.deltaTime * 2f);
+        var leader = EntityContainer.Instance.LeaderPlayer;
+
+        if (leader != null)
+        {
+            // 기본 설정값
+            float baseFollowDistance = 0.4f; //1.2-0.4-0.4
+            float angleOffset = 60f;
+
+            // Leader와 AI의 크기를 고려한 followDistance 계산
+            float leaderRadius = leader.characterData.colliderRadius;
+            float thisRadius = this.characterData.colliderRadius;
+
+            float followDistance = baseFollowDistance + leaderRadius + thisRadius;
+
+            // Leader와 AI의 크기를 고려한 각 포인트 계산
+            Vector3 leaderPosition = leader.transform.position;
+            Vector3 leaderDirection = leader.transform.forward;
+
+            Vector3 targetPosition1 = leaderPosition - Quaternion.Euler(0, angleOffset, 0) * leaderDirection * followDistance;
+            Vector3 targetPosition2 = leaderPosition - Quaternion.Euler(0, -angleOffset, 0) * leaderDirection * followDistance;
+
+            // 다른 AI 캐릭터의 위치 확인
+            var otherAI = EntityContainer.Instance.PlayerList.FirstOrDefault(ai => ai != this && !ai.isLeader);
+
+            Vector3 selectedTarget;
+
+            if (otherAI != null)
+            {
+                float otherAIRadius = otherAI.characterData.colliderRadius;
+
+                float distanceToTarget1 = Vector3.Distance(transform.position, targetPosition1);
+                float distanceToTarget2 = Vector3.Distance(transform.position, targetPosition2);
+
+                float otherAIDistanceToTarget1 = Vector3.Distance(otherAI.transform.position, targetPosition1);
+                float otherAIDistanceToTarget2 = Vector3.Distance(otherAI.transform.position, targetPosition2);
+
+                if (otherAIDistanceToTarget1 < followDistance)
+                {
+                    selectedTarget = targetPosition2;
+                }
+                else if (otherAIDistanceToTarget2 < followDistance)
+                {
+                    selectedTarget = targetPosition1;
+                }
+                else
+                {
+                    selectedTarget = distanceToTarget1 < distanceToTarget2 ? targetPosition1 : targetPosition2;
+                }
+
+                // 두 AI의 colliderRadius를 더하여 combinedRadius 계산
+                float combinedRadius = thisRadius + otherAIRadius;
+
+                // 다른 AI와의 충돌을 피하기 위해 반대 방향으로 이동 (회피 로직)
+                float otherAIDistance = Vector3.Distance(transform.position, otherAI.transform.position);
+
+                if (otherAIDistance < combinedRadius)
+                {
+                    Vector3 avoidanceDirection = (transform.position - otherAI.transform.position).normalized;
+                    selectedTarget += avoidanceDirection * (combinedRadius - otherAIDistance);
+                }
+            }
+            else
+            {
+                // 다른 AI가 없는 경우, 가까운 목표 포인트 선택
+                selectedTarget = Vector3.Distance(transform.position, targetPosition1) < Vector3.Distance(transform.position, targetPosition2) ? targetPosition1 : targetPosition2;
+            }
+
+            Vector3 directionToTarget = (selectedTarget - transform.position).normalized;
+            float distanceToSelectedTarget = Vector3.Distance(transform.position, selectedTarget);
+
+            if (distanceToSelectedTarget > followDistance || (otherAI != null && Vector3.Distance(transform.position, otherAI.transform.position) < thisRadius + otherAI.characterData.colliderRadius))
+            {
+                Vector3 finalMoveVector = HandleCollisionAndSliding(directionToTarget, characterData.moveSpeed);
+                transform.position += finalMoveVector;
+
+                Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+
+                // 애니메이션 속도 반영
+                float movementSpeed = finalMoveVector.magnitude / Time.deltaTime;
+                float normalizedSpeed = movementSpeed / characterData.moveSpeed;
+                animator.SetFloat("speed", normalizedSpeed, 0.035f, Time.deltaTime);
+            }
+            else
+            {
+                Vector3 finalMoveVector = directionToTarget * currentSpeed * Time.deltaTime;
+                transform.position += finalMoveVector;
+
+                // 애니메이션 속도를 감속시키며 0으로 변경
+                animator.SetFloat("speed", 0f, 0.75f, Time.deltaTime);
+            }
+        }
     }
 
 

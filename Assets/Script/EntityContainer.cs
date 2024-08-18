@@ -4,7 +4,7 @@ using System.Linq;
 
 public class EntityContainer : SingletonBehaviour<EntityContainer>
 {
-    public List<PlayerController> PlayerCharacters = new List<PlayerController>();
+    public List<PlayerController> PlayerList = new List<PlayerController>();
     public PlayerController LeaderPlayer;
 
     private CameraController cameraController;
@@ -22,8 +22,8 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
 
     public void RegisterPlayer(PlayerController player)
     {
-        player.playerNumber = PlayerCharacters.Count + 1;  // 고유 넘버 부여
-        PlayerCharacters.Add(player);
+        player.playerNumber = PlayerList.Count + 1;  // 고유 넘버 부여
+        PlayerList.Add(player);
 
         if (player.isLeader)
         {
@@ -34,7 +34,7 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
     public PlayerController GetNextLeader(PlayerController currentLeader)
     {
         // 현재 리더의 넘버를 기준으로 다음 플레이어를 찾는다
-        var nextLeader = PlayerCharacters
+        var nextLeader = PlayerList
             .Where(p => p != currentLeader && p != null)
             .OrderBy(p => (p.playerNumber > currentLeader.playerNumber) ? p.playerNumber : int.MaxValue)
             .FirstOrDefault();
@@ -42,7 +42,7 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
         // 만약 다음 리더가 없다면 첫 번째 플레이어로 돌아간다
         if (nextLeader == null)
         {
-            nextLeader = PlayerCharacters
+            nextLeader = PlayerList
                 .Where(p => p != currentLeader && p != null)
                 .OrderBy(p => p.playerNumber)
                 .FirstOrDefault();
@@ -61,7 +61,7 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
 
     public void ChangeLeader(PlayerController newLeader)
     {
-        foreach (var player in PlayerCharacters)
+        foreach (var player in PlayerList)
         {
             player.isLeader = false;
         }
@@ -80,7 +80,7 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
     {
         if (character is PlayerController player)
         {
-            PlayerCharacters.Remove(player);
+            PlayerList.Remove(player);
         }
 
         if (CharacterList.Contains(character))
