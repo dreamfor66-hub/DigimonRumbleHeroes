@@ -15,7 +15,7 @@ MonoBehaviour:
   maxHealth: 10
   moveSpeed: 5
   attackPower: 1.5
-  colliderRadius: 0.45
+  colliderRadius: 0.4
   mass: 10
   drag: 10
   attackRange: 1.5
