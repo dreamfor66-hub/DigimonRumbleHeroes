@@ -37,7 +37,6 @@ public class MapEditorWindow : OdinEditorWindow
     [Button("Create / Set Map")]
     void MapSetting()
     {
-        currentMap = null;
         if (GameObject.FindFirstObjectByType<Map>() == null)
         {
             var newMap = new GameObject("Map").AddComponent<Map>();
@@ -152,39 +151,20 @@ public class MapEditorWindow : OdinEditorWindow
     public bool isErasing = false;
 
     private Vector3? previewPosition = null;
-    private float gridSnapSize = 1f;
-
-    private bool isDraggingHandle = false; // 핸들 드래그 상태를 확인하는 변수
-
-    [Button(ButtonSizes.Large)]
-    [GUIColor(0.5f, 1f, 0.5f)]
-    private void ToggleEditing()
-    {
-        isEditing = !isEditing;
-        if (isEditing)
-        {
-            Selection.activeObject = null;
-            SceneView.duringSceneGui += OnSceneGUI;
-            Tools.current = Tool.None; // Transform 도구 비활성화
-        }
-        else
-        {
-            SceneView.duringSceneGui -= OnSceneGUI;
-            Tools.current = Tool.Move; // Edit 모드 비활성화 시 MoveTool로 복구
-        }
-    }
-
-    [Button(ButtonSizes.Large)]
-    [GUIColor(1f, 0.5f, 0.5f)]
-    [ShowIf("isEditing")]
-    private void ToggleErasing()
-    {
-        isErasing = !isErasing;
-    }
 
     private void OnEnable()
     {
         SceneView.duringSceneGui += OnSceneGUI;
+
+        // 플레이 모드에서 돌아올 때 currentMap을 갱신하고 Edit 모드로 자동 진입
+        if (GameObject.FindFirstObjectByType<Map>() != null)
+        {
+            currentMap = GameObject.FindFirstObjectByType<Map>();
+            if (!isEditing)
+            {
+                ToggleEditing();
+            }
+        }
     }
 
     private void OnDisable()
@@ -194,63 +174,84 @@ public class MapEditorWindow : OdinEditorWindow
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+        Event e = Event.current;
 
-        if (currentMap != null)
+        if (currentMap == null)
         {
-            DrawHandle();
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            return;
+        }
 
-            if (isEditing)
+        DrawHandle();
+
+        // 우클릭 및 휠 클릭으로 씬 뷰 카메라 조작 허용
+        if (isEditing && (e.button == 0 || e.button == 1 || e.button == 2))
+        {
+            if (e.type == EventType.MouseMove || e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
             {
-                Event e = Event.current;
-
-                if (e.type == EventType.MouseMove || e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
+                Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    Vector3 targetPosition = hit.point;
+                    targetPosition.y = 0;
+                    targetPosition.x = Mathf.Round(targetPosition.x);
+                    targetPosition.z = Mathf.Round(targetPosition.z);
+
+                    previewPosition = targetPosition;
+
+                    if (e.button == 0 && (e.type == EventType.MouseDown || e.type == EventType.MouseDrag))
                     {
-                        Vector3 targetPosition = hit.point;
-                        targetPosition.y = 0;
-
-                        targetPosition.x = Mathf.Round(targetPosition.x);
-                        targetPosition.z = Mathf.Round(targetPosition.z);
-
-                        previewPosition = targetPosition;
-
-                        if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
+                        if (!e.control)
                         {
-                            if (e.button == 0 && !e.control)
-                            {
-                                CreateBlock(previewPosition.Value);
-                            }
-                            else if (e.button == 0 && e.control)
-                            {
-                                EraseBlock(previewPosition.Value);
-                            }
-                            e.Use();
+                            CreateBlock(targetPosition);
                         }
-                    }
-                    else
-                    {
-                        previewPosition = null;
+                        else
+                        {
+                            EraseBlock(targetPosition);
+                        }
+                        e.Use();
                     }
                 }
-                sceneView.Repaint();
+                else
+                {
+                    previewPosition = null;
+                }
             }
+            sceneView.Repaint();
+        }
 
-            if (previewPosition.HasValue)
-            {
-                DrawPreviewGizmo(previewPosition.Value);
-            }
+        if (previewPosition.HasValue)
+        {
+            DrawPreviewGizmo(previewPosition.Value);
+        }
+    }
+
+    [Button(ButtonSizes.Large)]
+    [GUIColor(0.5f, 1f, 0.5f)]
+    private void ToggleEditing()
+    {
+        isEditing = !isEditing;
+        if (isEditing)
+        {
+            Selection.activeObject = null;
+            Tools.current = Tool.None; // Transform 도구 비활성화
+            SceneView.RepaintAll(); // 씬뷰 갱신
+        }
+        else
+        {
+            Tools.current = Tool.Move; // Edit 모드 비활성화 시 MoveTool로 복구
         }
     }
 
     private void DrawHandle()
     {
+        if (currentMap == null) return;
+
         Vector3 startPosition = new Vector3(PlayerStartPoint.x, 0, PlayerStartPoint.y);
 
         EditorGUI.BeginChangeCheck();
-        var fmh_253_74_638595741349808741 = Quaternion.identity; Vector3 newStartPosition = Handles.FreeMoveHandle(startPosition, 0.75f, Vector3.one * 0.5f, Handles.SphereHandleCap);
+        var fmh_253_74_638595741349808741 = Quaternion.identity;
+        Vector3 newStartPosition = Handles.FreeMoveHandle(startPosition, 0.75f, Vector3.one * 0.5f, Handles.SphereHandleCap);
         if (EditorGUI.EndChangeCheck())
         {
             newStartPosition.x = Mathf.Round(newStartPosition.x);

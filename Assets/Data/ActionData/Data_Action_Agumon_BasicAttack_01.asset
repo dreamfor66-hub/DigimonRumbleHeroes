@@ -55,9 +55,9 @@ MonoBehaviour:
   HitIdList:
   - HitId: 0
     HitDamage: 0
-    HitStopFrame: 5
+    HitStopFrame: 10
     HitStunFrame: 0
-    KnockbackPower: 50
+    KnockbackPower: 10
     hitType: 2
   AutoCorrection:
     correctionType: 1
