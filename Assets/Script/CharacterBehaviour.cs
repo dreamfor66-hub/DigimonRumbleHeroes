@@ -142,58 +142,20 @@ public abstract class CharacterBehaviour : MonoBehaviour
             {
                 if (currentFrame >= movement.StartFrame && currentFrame <= movement.EndFrame)
                 {
-                    // 프레임 사이의 비율 계산
-                    float t = (currentFrame - movement.StartFrame) / (movement.EndFrame - movement.StartFrame);
+                    // 프레임 사이의 비율 계산 (0부터 1까지의 값)
+                    float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
 
-                    // 속도 계산
-                    Vector2 currentSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
+                    // StartValue에서 EndValue로 선형 보간
+                    Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
 
-                    // 이동 처리
-                    Vector3 moveVector = new Vector3(currentSpeed.x, 0, currentSpeed.y);
-                    Vector3 moveDirection = transform.TransformDirection(moveVector).normalized;
+                    // 보간된 값을 이동 벡터로 변환
+                    Vector3 moveVector = new Vector3(interpolatedSpeed.x, 0, interpolatedSpeed.y);
 
-                    RaycastHit hit;
-                    var radius = characterData.colliderRadius;
-                    LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+                    // 충돌과 슬라이딩을 처리한 후 이동
+                    Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
-                    // 첫 번째 충돌을 감지하는 SphereCast
-                    if (Physics.SphereCast(transform.position, radius, moveDirection, out hit, moveVector.magnitude * Time.deltaTime, wallLayer))
-                    {
-                        // 첫 번째 벽의 표면 노멀을 얻는다
-                        Vector3 normal = hit.normal;
-
-                        // 첫 번째 벽을 따라 미끄러질 방향을 계산
-                        Vector3 slideDirection = Vector3.ProjectOnPlane(moveDirection, normal).normalized;
-
-                        // 첫 번째 벽에 대한 감속 처리
-                        float firstAngle = Vector3.Angle(moveDirection, normal);
-                        float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
-
-                        // 수정된 방향으로 두 번째 충돌을 검사하는 SphereCast
-                        if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, moveVector.magnitude * Time.deltaTime, wallLayer))
-                        {
-                            // 두 번째 벽의 표면 노멀을 얻는다
-                            Vector3 secondNormal = hit.normal;
-
-                            // 두 번째 벽을 따라 미끄러질 방향을 다시 계산
-                            slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
-
-                            // 두 번째 벽에 대한 감속 처리
-                            float secondAngle = Vector3.Angle(slideDirection, secondNormal);
-                            float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
-
-                            // 두 번째 벽에 대한 감속 적용
-                            firstSpeedAdjustment *= secondSpeedAdjustment;
-                        }
-
-                        // 벽을 따라 미끄러지면서 이동, 감속 적용
-                        transform.position += slideDirection * currentSpeed.magnitude * firstSpeedAdjustment * Time.deltaTime;
-                    }
-                    else
-                    {
-                        // 벽에 닿지 않았을 때는 기본 이동
-                        transform.position += moveDirection * currentSpeed.magnitude * Time.deltaTime;
-                    }
+                    // 최종적으로 캐릭터의 위치를 업데이트
+                    transform.position += finalMoveVector;
                 }
             }
 
@@ -399,44 +361,8 @@ public abstract class CharacterBehaviour : MonoBehaviour
             speedModifier = Mathf.Lerp(0.5f, 0f, t);
         }
 
-        Vector3 knockBackMovement = knockBackDirection * knockBackSpeed * speedModifier * Time.deltaTime;
-
-        RaycastHit hit;
-        var radius = characterData.colliderRadius;
-        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
-
-        // 첫 번째 충돌 감지
-        if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
-        {
-            Vector3 normal = hit.normal;
-            Vector3 slideDirection = Vector3.ProjectOnPlane(knockBackDirection, normal).normalized;
-
-            // 첫 번째 충돌에 대한 속도 감소
-            float firstAngle = Vector3.Angle(knockBackDirection, normal);
-            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
-
-            // 두 번째 충돌 감지 및 처리
-            if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, knockBackMovement.magnitude, wallLayer))
-            {
-                Vector3 secondNormal = hit.normal;
-                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
-
-                // 두 번째 충돌에 대한 속도 감소
-                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
-                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
-
-                // 첫 번째 속도 감소에 두 번째 속도 감소를 곱합
-                firstSpeedAdjustment *= secondSpeedAdjustment;
-            }
-
-            // 벽을 따라 미끄러지면서 이동 및 속도 적용
-            transform.position += slideDirection * knockBackSpeed * firstSpeedAdjustment * speedModifier * Time.deltaTime;
-        }
-        else
-        {
-            // 벽에 닿지 않았을 때는 기본 이동
-            transform.position += knockBackMovement;
-        }
+        Vector3 knockBackMovement = HandleCollisionAndSliding(knockBackDirection, knockBackSpeed * speedModifier);
+        transform.position += knockBackMovement;
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
@@ -476,7 +402,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
         if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
         {
             // 벽에 충돌했을 때 HitStop 적용
-            ApplyHitStop(5);  // 대상자에게만 HitStop 5프레임 적용
+            ApplyHitStop(5.5f);  // 대상자에게만 HitStop 5프레임 적용
 
             // 반사 시 속도 감소
             Vector3 collisionNormal = hit.normal;
@@ -582,6 +508,41 @@ public abstract class CharacterBehaviour : MonoBehaviour
         // 캐릭터의 회전
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+    }
+
+    protected Vector3 HandleCollisionAndSliding(Vector3 moveDirection, float moveSpeed)
+    {
+        RaycastHit hit;
+        var radius = characterData.colliderRadius;
+        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+
+        // 첫 번째 충돌을 감지하는 SphereCast
+        if (Physics.SphereCast(transform.position, radius, moveDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
+        {
+            Vector3 normal = hit.normal;
+            Vector3 slideDirection = Vector3.ProjectOnPlane(moveDirection, normal).normalized;
+
+            float firstAngle = Vector3.Angle(moveDirection, normal);
+            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
+
+            // 수정된 방향으로 두 번째 충돌을 검사하는 SphereCast
+            if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
+            {
+                Vector3 secondNormal = hit.normal;
+                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
+
+                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
+                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
+
+                firstSpeedAdjustment *= secondSpeedAdjustment;
+            }
+
+            return slideDirection * moveSpeed * firstSpeedAdjustment * Time.deltaTime;
+        }
+        else
+        {
+            return moveDirection * moveSpeed * Time.deltaTime;
+        }
     }
 
     /// <summary>

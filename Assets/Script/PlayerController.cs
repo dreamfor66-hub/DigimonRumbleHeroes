@@ -196,57 +196,12 @@ protected override void HandleIdle()
 
     protected override void HandleMovement()
     {
-        RaycastHit hit;
-
-        var radius = characterData.colliderRadius;
-        var moveDirection = direction.normalized;
-
-        // WallCollider 레이어 마스크 설정 (Inspector에서 설정 가능)
-        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
-
-        // 첫 번째 충돌을 감지하는 SphereCast
-        if (Physics.SphereCast(transform.position, radius, moveDirection, out hit, currentSpeed * Time.deltaTime, wallLayer))
-        {
-            // 첫 번째 벽의 표면 노멀을 얻는다
-            Vector3 normal = hit.normal;
-
-            // 첫 번째 벽을 따라 미끄러질 방향을 계산
-            Vector3 slideDirection = Vector3.ProjectOnPlane(moveDirection, normal).normalized;
-
-            // 첫 번째 벽에 대한 감속 처리
-            float firstAngle = Vector3.Angle(moveDirection, normal);
-            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
-
-            // 수정된 방향으로 두 번째 충돌을 검사하는 SphereCast
-            if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, currentSpeed * Time.deltaTime, wallLayer))
-            {
-                // 두 번째 벽의 표면 노멀을 얻는다
-                Vector3 secondNormal = hit.normal;
-
-                // 두 번째 벽을 따라 미끄러질 방향을 다시 계산
-                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
-
-                // 두 번째 벽에 대한 감속 처리
-                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
-                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
-
-                // 두 번째 벽에 대한 감속 적용
-                firstSpeedAdjustment *= secondSpeedAdjustment;
-            }
-
-            // 벽을 따라 미끄러지면서 이동, 감속 적용
-            transform.position += slideDirection * currentSpeed * firstSpeedAdjustment * Time.deltaTime;
-        }
-        else
-        {
-            // 벽에 닿지 않았을 때는 기본 이동
-            transform.position += moveDirection * currentSpeed * Time.deltaTime;
-        }
+        Vector3 moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
+        transform.position += moveVector;
 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
 
-        // 이동 속도를 애니메이션에 반영
         float normalizedSpeed = currentSpeed / characterData.moveSpeed;
         animator.Play("Idle");
         animator.SetFloat("speed", normalizedSpeed);
