@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class MapEditorWindow : OdinEditorWindow
 {
+    private bool wasEditingBeforePlay = false;
+
     [MenuItem("Window/Map Editor")]
     private static void OpenWindow()
     {
@@ -156,20 +158,42 @@ public class MapEditorWindow : OdinEditorWindow
     {
         SceneView.duringSceneGui += OnSceneGUI;
 
-        // 플레이 모드에서 돌아올 때 currentMap을 갱신하고 Edit 모드로 자동 진입
         if (GameObject.FindFirstObjectByType<Map>() != null)
         {
             currentMap = GameObject.FindFirstObjectByType<Map>();
-            if (!isEditing)
+            if (wasEditingBeforePlay)
             {
                 ToggleEditing();
             }
         }
+
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
 
     private void OnDisable()
     {
         SceneView.duringSceneGui -= OnSceneGUI;
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+    }
+
+    private void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.ExitingEditMode)
+        {
+            wasEditingBeforePlay = isEditing;
+        }
+
+        if (state == PlayModeStateChange.EnteredEditMode)
+        {
+            if (currentMap == null)
+            {
+                MapSetting(); // currentMap 갱신
+            }
+            if (wasEditingBeforePlay)
+            {
+                ToggleEditing();
+            }
+        }
     }
 
     private void OnSceneGUI(SceneView sceneView)
@@ -231,6 +255,7 @@ public class MapEditorWindow : OdinEditorWindow
     private void ToggleEditing()
     {
         isEditing = !isEditing;
+
         if (isEditing)
         {
             Selection.activeObject = null;
