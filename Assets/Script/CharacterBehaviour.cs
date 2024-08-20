@@ -259,7 +259,8 @@ public abstract class CharacterBehaviour : MonoBehaviour
         if (hitData != null)
         {
             Vector3 hitDirection = (target.transform.position - transform.position).normalized;
-            target.TakeDamage(hitData.HitDamage, hitDirection, hitData);
+            target.TakeDamage(hitData.HitDamage, hitDirection, hitData, this);
+            OnHit(target);
 
             // HitStop을 프레임 단위로 계산
             float hitStopDuration = hitData.HitStopFrame;
@@ -277,9 +278,17 @@ public abstract class CharacterBehaviour : MonoBehaviour
         currentFrame = 0;
     }
 
-    protected void TakeDamage(float damage, Vector3 hitDirection, HitData hitData)
+    protected virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
     {
         currentHealth -= damage;
+
+        // 공격자가 있다면 그 방향을 바라보게 함
+        if (attacker != null)
+        {
+            Vector3 directionToAttacker = (attacker.transform.position - transform.position).normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(directionToAttacker);
+            transform.rotation = lookRotation; // 즉시 회전
+        }
 
         if (currentHealth <= 0)
         {
@@ -296,16 +305,53 @@ public abstract class CharacterBehaviour : MonoBehaviour
             switch (hitData.hitType)
             {
                 case HitType.Weak:
-                    animator.SetTrigger("hit");
                     StartKnockBack(hitDirection, hitData);
                     break;
 
                 case HitType.Strong:
-                    animator.SetTrigger("hit");
                     StartKnockBackSmash(hitDirection, hitData);
                     break;
             }
         }
+
+        OnAttacked(attacker);
+    }
+
+    [HideInInspector] public bool hit;
+    [HideInInspector] public CharacterBehaviour currentHitTarget;
+    [HideInInspector] public CharacterBehaviour lastHitTarget;
+    [HideInInspector] public bool attacked;
+    [HideInInspector] public CharacterBehaviour currentAttacker;
+    [HideInInspector] public CharacterBehaviour lastAttacker;
+    public void OnHit(CharacterBehaviour target)
+    {
+        hit = true;
+        currentHitTarget = target;
+        lastHitTarget = target;
+        StartCoroutine(ResetHitRecentlyFlag());
+    }
+
+    // 리더가 공격을 당했을 때 호출
+    public void OnAttacked(CharacterBehaviour attacker)
+    {
+        attacked = true;
+        currentAttacker = attacker;
+        lastAttacker = attacker;
+        StartCoroutine(ResetAttackedRecentlyFlag());
+    }
+
+    private IEnumerator ResetHitRecentlyFlag()
+    {
+        yield return null; // 1 프레임 대기
+        hit = false;
+        currentHitTarget = null;
+    }
+
+    private IEnumerator ResetAttackedRecentlyFlag()
+    {
+        yield return null; // 1 프레임 대기
+        attacked = false;
+        currentAttacker = null;
     }
 
     private void StartKnockBack(Vector3 hitDirection, HitData hitData)
@@ -431,7 +477,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void Die()
     {
-        animator.SetTrigger("die");
+        animator.Play("Die");
         if (EntityContainer.InstanceExist)
         {
             EntityContainer.Instance.UnregisterCharacter(this);

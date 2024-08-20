@@ -54,10 +54,10 @@ MonoBehaviour:
     HitGroup: 0
   HitIdList:
   - HitId: 0
-    HitDamage: 0
-    HitStopFrame: 10
+    HitDamage: 1
+    HitStopFrame: 5
     HitStunFrame: 0
-    KnockbackPower: 10
+    KnockbackPower: 7
     hitType: 2
   AutoCorrection:
     correctionType: 1

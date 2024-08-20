@@ -4,7 +4,6 @@ using UnityEngine;
 public class EnemyController : CharacterBehaviour
 {
     public BotAIData botAIData;
-    private Transform player;
     [ShowInInspector]
     private bool isAware = false;
     [ShowInInspector]
@@ -15,7 +14,6 @@ public class EnemyController : CharacterBehaviour
     protected override void Start()
     {
         base.Start();
-        player = GameObject.FindGameObjectWithTag("Player").transform;
         currentState = CharacterState.Init;
         FindClosestPlayer();
         UpdateCurrentAIState();
@@ -65,7 +63,7 @@ public class EnemyController : CharacterBehaviour
 
     private void TransitionToNextState()
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        float distanceToPlayer = Vector3.Distance(transform.position, target.transform.position);
 
         for (int i = 0; i < botAIData.botAIStates.Count; i++)
         {
@@ -96,9 +94,9 @@ public class EnemyController : CharacterBehaviour
 
     private void HandleAwareness()
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
 
-        if (!isAware && distanceToPlayer <= characterData.attackRange)
+        if (!isAware && distanceToTarget <= characterData.attackRange)
         {
             isAware = true;
             if (currentState == CharacterState.Init)
@@ -131,15 +129,15 @@ public class EnemyController : CharacterBehaviour
     {
         if (target == null) return;
 
-        Vector3 directionToPlayer = (target.transform.position - transform.position).normalized;
+        Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
 
-        if (directionToPlayer != Vector3.zero)
+        if (directionToTarget != Vector3.zero)
         {
-            Vector3 targetPosition = transform.position + directionToPlayer * characterData.moveSpeed * Time.deltaTime;
+            Vector3 targetPosition = transform.position + directionToTarget * characterData.moveSpeed * Time.deltaTime;
 
             transform.position = targetPosition;
 
-            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
         animator.Play("Move");
@@ -168,12 +166,12 @@ public class EnemyController : CharacterBehaviour
 
     private void LookAtPlayer()
     {
-        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
 
-        // directionToPlayer가 Vector3.zero인지 확인하고, 아니라면 회전 처리
-        if (directionToPlayer != Vector3.zero)
+        // directionToTarget Vector3.zero인지 확인하고, 아니라면 회전 처리
+        if (directionToTarget != Vector3.zero)
         {
-            Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+            Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
         }
     }

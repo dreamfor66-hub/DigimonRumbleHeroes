@@ -67,6 +67,8 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
         }
 
         newLeader.isLeader = true;
+        newLeader.lastAttacker = null;
+        newLeader.lastHitTarget = null;
         LeaderPlayer = newLeader;
 
         // 리더가 바뀔 때 카메라 타겟 업데이트

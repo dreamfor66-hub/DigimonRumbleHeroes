@@ -21,7 +21,7 @@ MonoBehaviour:
   - state: 1
     distanceRange: {x: 3, y: 10}
     nextState: 2
-    duration: 1
+    duration: 0.5
     actionKey: 0
   - state: 1
     distanceRange: {x: 0, y: 3}
@@ -31,15 +31,10 @@ MonoBehaviour:
   - state: 2
     distanceRange: {x: 3, y: 5}
     nextState: 2
-    duration: 1
+    duration: 0.5
     actionKey: 0
   - state: 2
     distanceRange: {x: 0, y: 3}
     nextState: 3
     duration: 1
-    actionKey: 10
-  - state: 1
-    distanceRange: {x: 0, y: 5}
-    nextState: 3
-    duration: 2
     actionKey: 10
