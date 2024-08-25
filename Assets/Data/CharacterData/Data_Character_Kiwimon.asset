@@ -12,16 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_Kiwimon
   m_EditorClassIdentifier: 
+  characterSprite: {fileID: 21300000, guid: f9eca216e6e3a784bb84a4dfd70e816d, type: 3}
+  characterName: "\uD0A4\uC704\uBAAC"
+  characterItemColor: 2
+  characterItemForm: 3
+  characterItemTrait1: 5
+  characterItemTrait2: 10
+  characterItemTrait3: 101
   maxHealth: 10
   moveSpeed: 2
   attackPower: 1.5
   colliderRadius: 0.45
   mass: 10
   drag: 10
-  attackRange: 5
+  attackRange: 5.5
   Hurtboxes:
   - Offset: {x: 0, y: 0}
     Radius: 0.5
   ActionTable:
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: c6ee7dd7219bb764c845936db0e97f7d, type: 2}
+  targetingWeightThreshold: 0.5
+  shortDistance: 5
+  wideAngle: 90
+  narrowAngle: 30
+  longDistance: 10

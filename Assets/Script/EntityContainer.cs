@@ -59,16 +59,22 @@ public class EntityContainer : SingletonBehaviour<EntityContainer>
         }
     }
 
-    public void ChangeLeader(PlayerController newLeader)
+    public void ChangeLeader(PlayerController currentLeader, PlayerController newLeader)
     {
         foreach (var player in PlayerList)
         {
             player.isLeader = false;
         }
 
+        if (currentLeader.currentState == CharacterState.Move)
+            currentLeader.currentState = CharacterState.Idle;
+        currentLeader.currentAIState = AIState.Follow;
+
         newLeader.isLeader = true;
         newLeader.lastAttacker = null;
         newLeader.lastHitTarget = null;
+        if (newLeader.currentState == CharacterState.Move)
+            newLeader.currentState = CharacterState.Idle;
         LeaderPlayer = newLeader;
 
         // 리더가 바뀔 때 카메라 타겟 업데이트

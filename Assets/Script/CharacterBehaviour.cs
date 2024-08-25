@@ -16,8 +16,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
     protected float stopTime = 0.05f;
     protected float stopTimer;
 
-    [ShowInInspector]
-    protected CharacterState currentState = CharacterState.Idle;
+    public CharacterState currentState = CharacterState.Idle;
     protected ActionKey currentActionKey;
 
     protected float currentFrame;
@@ -84,7 +83,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected void InitializeHealth()
     {
-        currentHealth = characterData.maxHealth;
+        currentHealth = characterData.baseHP;
     }
 
     protected virtual void Update()

@@ -54,7 +54,7 @@ MonoBehaviour:
     HitGroup: 0
   HitIdList:
   - HitId: 0
-    HitDamage: 1
+    HitDamage: 1.5
     HitStopFrame: 5
     HitStunFrame: 0
     KnockbackPower: 7

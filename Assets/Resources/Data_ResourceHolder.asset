@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f963a6f4204c06948b4d4e3a263ad8d5, type: 3}
+  m_Name: Data_ResourceHolder
+  m_EditorClassIdentifier: 
+  playerInventoryData: {fileID: 11400000, guid: e0ad7672dd851424c918b2061d74f0da,
+    type: 2}
+  modelTable: {fileID: 11400000, guid: bf44581a6ea388b49b072918dac498d1, type: 2}
+  playerOutgameData: {fileID: 11400000, guid: abd945f1eb026774baa793bc969cc132, type: 2}
+  playerPartySetUpData: {fileID: 11400000, guid: 18ae1adb58aa4b448a9f6b510d35a918,
+    type: 2}
+  gameVariables: {fileID: 11400000, guid: e1434fcdd73416240835f7bbde03190f, type: 2}

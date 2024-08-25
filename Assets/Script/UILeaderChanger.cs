@@ -10,7 +10,7 @@ public class UILeaderChanger : MonoBehaviour
 
         if (nextLeader != null)
         {
-            EntityContainer.Instance.ChangeLeader(nextLeader);
+            EntityContainer.Instance.ChangeLeader(currentLeader, nextLeader);
         }
     }
 }

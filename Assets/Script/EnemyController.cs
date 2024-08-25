@@ -21,6 +21,8 @@ public class EnemyController : CharacterBehaviour
 
     protected override void Update()
     {
+        if (target == null)
+            FindClosestPlayer();
         base.Update();
 
         if (currentState != CharacterState.Action)
@@ -94,16 +96,25 @@ public class EnemyController : CharacterBehaviour
 
     private void HandleAwareness()
     {
-        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+        float distanceToAnyPlayer = float.MaxValue;
+        CharacterBehaviour awarePlayer = null;
 
-        if (!isAware && distanceToTarget <= characterData.attackRange)
+        foreach (var player in EntityContainer.Instance.PlayerList)
         {
+            distanceToAnyPlayer = Vector3.Distance(transform.position, player.transform.position);
+            awarePlayer = player;
+        }
+
+        if (!isAware && distanceToAnyPlayer <= characterData.attackRange)
+        {
+            target = awarePlayer;
             isAware = true;
             if (currentState == CharacterState.Init)
             {
                 TransitionToNextState();
             }
         }
+
     }
 
     private void HandleCurrentState()

@@ -5,10 +5,57 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Data_Character_New", menuName = "Data/CharacterData", order = 1)]
 public class CharacterData : ScriptableObject
 {
-    [Title("Stat")]
-    public float maxHealth = 10f;
-    public float moveSpeed = 5f;
-    public float attackPower = 5f;
+    [Title("Appearance")]
+    [HorizontalGroup("Character", Width = 0.4f)] // A 구역
+    [PreviewField(220, ObjectFieldAlignment.Center)]
+    [HideLabel]
+    public Sprite characterSprite;
+
+    [Title("")]
+    [Title("이름")] 
+    [HideLabel]
+    [VerticalGroup("Character/RightSide")] // B 구역
+    public string characterName;
+
+    [Title("컬러")]
+    [HideLabel]
+    [EnumToggleButtons]
+    [VerticalGroup("Character/RightSide")]
+    public CharacterItemColor characterItemColor;
+
+    [Title("진화단계")]
+    [HideLabel]
+    [EnumToggleButtons]
+    [VerticalGroup("Character/RightSide")]
+    public CharacterItemForm characterItemForm;
+
+    [Title("특성")]
+    [HideLabel]
+    [VerticalGroup("Character/RightSide")]
+    [HorizontalGroup("Character/RightSide/Traits")]
+    public CharacterItemTrait characterItemTrait1;
+
+    [Title("")]
+    [HideLabel]
+    [VerticalGroup("Character/RightSide")]
+    [HorizontalGroup("Character/RightSide/Traits")]
+    public CharacterItemTrait characterItemTrait2;
+
+    [Title("")]
+    [HideLabel]
+    [VerticalGroup("Character/RightSide")]
+    [HorizontalGroup("Character/RightSide/Traits")]
+    public CharacterItemTrait characterItemTrait3;
+
+
+    [Title("BaseStat")]
+    public float baseHP = 10f;
+    public float baseATK = 5;
+    public float moveSpeed = 5;
+
+    // 레벨업 당 증가하는 HP와 ATK
+    public float hpPerLevel = 1;
+    public float atkPerLevel = 1;
 
     [Title("Physics")]
     public float colliderRadius = 0.5f;

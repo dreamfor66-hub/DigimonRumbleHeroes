@@ -1,11 +1,16 @@
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities.Editor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 public class MapEditorWindow : OdinEditorWindow
 {
     private bool wasEditingBeforePlay = false;
+    private int rotate = 0;
 
     [MenuItem("Window/Map Editor")]
     private static void OpenWindow()
@@ -19,7 +24,7 @@ public class MapEditorWindow : OdinEditorWindow
     [PropertyOrder(0)]
     public Map currentMap;
 
-    [PropertyOrder(10)]
+    [PropertyOrder(4)]
     [Button("Save Changes")]
     private void SaveChanges()
     {
@@ -50,10 +55,60 @@ public class MapEditorWindow : OdinEditorWindow
         }
     }
 
-    [Title("Block Prefab Settings")]
+    public enum ObjectType { Block, Character }
+
+    [Title("Object Type Settings")]
+    [PropertyOrder(0)]
+    [EnumToggleButtons]
+    public ObjectType objectType = ObjectType.Block;
+
+    [ShowIf("objectType", ObjectType.Block)]
+    [Title("Block Prefab")]
     [InfoBox("Insert the prefab you want to use for creating blocks in the map.")]
     [InlineEditor(InlineEditorModes.LargePreview)]
     public GameObject blockPrefab;
+
+    [ShowIf("objectType", ObjectType.Character)]
+    [HorizontalGroup("Character", Width = 0.4f, MarginRight = 0.05f)]
+    [VerticalGroup("Character/a")]
+    [AssetsOnly]
+    [Title("Character Prefab"), PreviewField(220, Sirenix.OdinInspector.ObjectFieldAlignment.Center), HideLabel]
+    public GameObject selectedCharacter;
+
+    private string searchString = "";
+
+    [ShowIf("objectType", ObjectType.Character)]
+    [Title("Character Selection")]
+    [VerticalGroup("Character/b")]
+    //[HorizontalGroup("Character", Width = 0.5f, MarginRight = 0.05f)]
+    [OnInspectorGUI]
+    public void CharacterSelectionGUI()
+    {
+        ShowPrefabSelectButtons("Assets/Prefabs/Character/");
+    }
+
+    private void ShowPrefabSelectButtons(string path)
+    {
+        //searchString = EditorGUILayout.TextField(searchString);
+        var assets = AssetDatabase.FindAssets("t:Prefab", new[] { path });
+        foreach (var guid in assets)
+        {
+            var filePath = AssetDatabase.GUIDToAssetPath(guid);
+            var name = Path.GetFileNameWithoutExtension(filePath);
+            var style = SirenixGUIStyles.Button;
+            style.alignment = TextAnchor.MiddleLeft;
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                if (!name.ToLower().Contains(searchString.ToLower()))
+                    continue;
+            }
+            if (GUILayout.Button(name, style))
+            {
+                selectedCharacter = AssetDatabase.LoadAssetAtPath<GameObject>(filePath);
+            }
+        }
+    }
+
 
     [Title("Boundary Settings")]
     [PropertyOrder(1)]
@@ -63,7 +118,7 @@ public class MapEditorWindow : OdinEditorWindow
     public GameObject wallPrefab;
 
     [PropertyOrder(3)]
-    [OnValueChanged("UpdateMapSize")]  // MapSize가 변경될 때마다 맵 오브젝트에 저장
+    [OnValueChanged("UpdateMapSize")]
     public Vector2 mapSize = new Vector2(2, 3);
 
     [PropertyOrder(4)]
@@ -88,7 +143,7 @@ public class MapEditorWindow : OdinEditorWindow
     {
         if (currentMap != null)
         {
-            currentMap.MapSize = mapSize; // MapSize를 맵 오브젝트에 저장
+            currentMap.MapSize = mapSize;
         }
 
         GameObject floorParent = GameObject.Find("Map/Floor");
@@ -158,13 +213,18 @@ public class MapEditorWindow : OdinEditorWindow
     {
         SceneView.duringSceneGui += OnSceneGUI;
 
-        if (GameObject.FindFirstObjectByType<Map>() != null)
+        if (GameObject.FindFirstObjectByType<Map>() == null)
+        {
+            MapSetting();  // Initialize currentMap if it doesn't exist.
+        }
+        else
         {
             currentMap = GameObject.FindFirstObjectByType<Map>();
-            if (wasEditingBeforePlay)
-            {
-                ToggleEditing();
-            }
+        }
+
+        if (wasEditingBeforePlay)
+        {
+            ToggleEditing();
         }
 
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -187,7 +247,7 @@ public class MapEditorWindow : OdinEditorWindow
         {
             if (currentMap == null)
             {
-                MapSetting(); // currentMap 갱신
+                MapSetting();
             }
             if (wasEditingBeforePlay)
             {
@@ -208,7 +268,6 @@ public class MapEditorWindow : OdinEditorWindow
 
         DrawHandle();
 
-        // 우클릭 및 휠 클릭으로 씬 뷰 카메라 조작 허용
         if (isEditing && (e.button == 0 || e.button == 1 || e.button == 2))
         {
             if (e.type == EventType.MouseMove || e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
@@ -227,11 +286,18 @@ public class MapEditorWindow : OdinEditorWindow
                     {
                         if (!e.control)
                         {
-                            CreateBlock(targetPosition);
+                            CreateObject(targetPosition);
                         }
                         else
                         {
-                            EraseBlock(targetPosition);
+                            if (objectType == ObjectType.Block)
+                            {
+                                EraseBlock(targetPosition);
+                            }
+                            else if (objectType == ObjectType.Character)
+                            {
+                                EraseCharacter(targetPosition);
+                            }
                         }
                         e.Use();
                     }
@@ -248,6 +314,12 @@ public class MapEditorWindow : OdinEditorWindow
         {
             DrawPreviewGizmo(previewPosition.Value);
         }
+
+        // Handle rotation input
+        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.R)
+        {
+            rotate = (rotate + 1) % 8; // Rotate by 45 degrees
+        }
     }
 
     [Button(ButtonSizes.Large)]
@@ -259,12 +331,12 @@ public class MapEditorWindow : OdinEditorWindow
         if (isEditing)
         {
             Selection.activeObject = null;
-            Tools.current = Tool.None; // Transform 도구 비활성화
-            SceneView.RepaintAll(); // 씬뷰 갱신
+            Tools.current = Tool.None;
+            SceneView.RepaintAll();
         }
         else
         {
-            Tools.current = Tool.Move; // Edit 모드 비활성화 시 MoveTool로 복구
+            Tools.current = Tool.Move;
         }
     }
 
@@ -295,6 +367,13 @@ public class MapEditorWindow : OdinEditorWindow
     {
         Handles.color = Color.yellow;
         Handles.DrawWireCube(position + Vector3.up * 0.5f, Vector3.one);
+
+        if (objectType == ObjectType.Character)
+        {
+            var rotation = Quaternion.Euler(0, rotate * 45f, 0);
+            var direction = rotation * Vector3.forward;
+            Handles.DrawLine(position, position + direction);
+        }
     }
 
     private void UpdateMapStartPoint()
@@ -323,6 +402,18 @@ public class MapEditorWindow : OdinEditorWindow
         }
     }
 
+    private void CreateObject(Vector3 position)
+    {
+        if (objectType == ObjectType.Block)
+        {
+            CreateBlock(position);
+        }
+        else if (objectType == ObjectType.Character)
+        {
+            CreateCharacter(position);
+        }
+    }
+
     private void CreateBlock(Vector3 position)
     {
         if (blockPrefab == null)
@@ -331,7 +422,7 @@ public class MapEditorWindow : OdinEditorWindow
             return;
         }
 
-        GameObject mapObject = GameObject.Find("Map");
+        GameObject mapObject = currentMap.gameObject;
         if (mapObject == null)
         {
             Debug.LogWarning("Map object not found.");
@@ -364,7 +455,7 @@ public class MapEditorWindow : OdinEditorWindow
 
     private void EraseBlock(Vector3 position)
     {
-        GameObject mapObject = GameObject.Find("Map");
+        GameObject mapObject = currentMap.gameObject;
         if (mapObject == null)
         {
             Debug.LogWarning("Map object not found.");
@@ -386,5 +477,93 @@ public class MapEditorWindow : OdinEditorWindow
                 return;
             }
         }
+    }
+
+    private void CreateCharacter(Vector3 position)
+    {
+        if (selectedCharacter == null)
+        {
+            Debug.LogWarning("No Character prefab selected.");
+            return;
+        }
+
+        GameObject mapObject = currentMap.gameObject;
+        if (mapObject == null)
+        {
+            Debug.LogWarning("Map object not found.");
+            return;
+        }
+
+        Transform enemiesTransform = mapObject.transform.Find("Enemies");
+        if (enemiesTransform == null)
+        {
+            GameObject enemiesObject = new GameObject("Enemies");
+            enemiesTransform = enemiesObject.transform;
+            enemiesTransform.SetParent(mapObject.transform);
+        }
+
+        foreach (Transform child in enemiesTransform)
+        {
+            if (child.position == position)
+            {
+                return;
+            }
+        }
+
+        GameObject newCharacter = PrefabUtility.InstantiatePrefab(selectedCharacter) as GameObject;
+        newCharacter.transform.position = position;
+        newCharacter.transform.rotation = Quaternion.Euler(0, rotate * 45f, 0); // Apply rotation
+        newCharacter.transform.SetParent(enemiesTransform);
+
+        Undo.RegisterCreatedObjectUndo(newCharacter, "Create Character");
+    }
+
+    private void EraseCharacter(Vector3 position)
+    {
+        GameObject mapObject = currentMap.gameObject;
+        if (mapObject == null)
+        {
+            Debug.LogWarning("Map object not found.");
+            return;
+        }
+
+        Transform enemiesTransform = mapObject.transform.Find("Enemies");
+        if (enemiesTransform == null)
+        {
+            Debug.LogWarning("Enemies object not found.");
+            return;
+        }
+
+        // 큐브 기즈모의 크기 및 중심 좌표
+        Vector3 cubeCenter = position + Vector3.up * 0.5f;
+        Vector3 cubeSize = Vector3.one;
+
+        List<Transform> charactersToRemove = new List<Transform>();
+
+        foreach (Transform child in enemiesTransform)
+        {
+            // 캐릭터가 큐브 기즈모 내부에 있는지 확인
+            if (IsInsideCube(cubeCenter, cubeSize, child.position))
+            {
+                charactersToRemove.Add(child);
+            }
+        }
+
+        foreach (Transform character in charactersToRemove)
+        {
+            Undo.DestroyObjectImmediate(character.gameObject);
+        }
+
+        if (charactersToRemove.Count > 0)
+        {
+            EditorUtility.SetDirty(mapObject);
+        }
+    }
+
+    private bool IsInsideCube(Vector3 cubeCenter, Vector3 cubeSize, Vector3 point)
+    {
+        return (point.x >= cubeCenter.x - cubeSize.x / 2 && point.x <= cubeCenter.x + cubeSize.x / 2) &&
+               (point.y >= cubeCenter.y - cubeSize.y / 2 && point.y <= cubeCenter.y + cubeSize.y / 2) &&
+               (point.z >= cubeCenter.z - cubeSize.z / 2 && point.z <= cubeCenter.z + cubeSize.z / 2);
     }
 }

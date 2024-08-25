@@ -12,9 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_TestDummy
   m_EditorClassIdentifier: 
+  characterSprite: {fileID: 0}
+  characterName: "\uD14C\uC2A4\uD2B8\uB354\uBBF8"
+  characterItemColor: 0
+  characterItemForm: 0
+  characterItemTrait1: 5
+  characterItemTrait2: 0
+  characterItemTrait3: 0
   maxHealth: 10
   moveSpeed: 2
   attackPower: 1.5
+  colliderRadius: 0.5
+  mass: 10
+  drag: 10
   attackRange: 5
   Hurtboxes:
   - Offset: {x: 0, y: 0}
@@ -22,3 +32,8 @@ MonoBehaviour:
   ActionTable:
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: c6ee7dd7219bb764c845936db0e97f7d, type: 2}
+  targetingWeightThreshold: 0.5
+  shortDistance: 5
+  wideAngle: 90
+  narrowAngle: 30
+  longDistance: 10

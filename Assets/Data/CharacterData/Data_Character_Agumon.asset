@@ -12,10 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_Agumon
   m_EditorClassIdentifier: 
-  maxHealth: 10
+  characterSprite: {fileID: 21300000, guid: d14f6aefdb1673c4a85ed81dfdce1817, type: 3}
+  characterName: "\uC544\uAD6C\uBAAC"
+  characterItemColor: 0
+  characterItemForm: 2
+  characterItemTrait1: 5
+  characterItemTrait2: 10
+  characterItemTrait3: 102
+  baseHP: 10
+  baseATK: 5
   moveSpeed: 5
-  attackPower: 1.5
-  colliderRadius: 0.4
+  hpPerLevel: 2
+  atkPerLevel: 1
+  colliderRadius: 0.45
   mass: 10
   drag: 10
   attackRange: 1.5

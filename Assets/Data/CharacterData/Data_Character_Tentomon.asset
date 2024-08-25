@@ -12,6 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_Tentomon
   m_EditorClassIdentifier: 
+  characterSprite: {fileID: 21300000, guid: c7344eec880a6a3468d32799f3e95d2b, type: 3}
+  characterName: "\uD150\uD0C0\uBAAC"
+  characterItemColor: 2
+  characterItemForm: 2
+  characterItemTrait1: 5
+  characterItemTrait2: 11
+  characterItemTrait3: 103
   maxHealth: 12
   moveSpeed: 4
   attackPower: 1.5
