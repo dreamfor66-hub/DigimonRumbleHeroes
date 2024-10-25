@@ -22,8 +22,9 @@ public class ResourceHolder : ScriptableObject
     }
 
     public PlayerInventoryData playerInventoryData;
-    public ModelTable modelTable;
+    public CharacterVisualMap characterVisualMap;
     public PlayerOutgameData playerOutgameData;
     public PlayerPartySetUpData playerPartySetUpData;
     public GameVariables gameVariables;
+    public EvolutionTable evolutionTable;
 }

@@ -14,30 +14,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterItems:
   - serialNumber: 0
-    characterData: {fileID: 11400000, guid: 0cdadc69ac8a28842a2de92b46faa0c6, type: 2}
-    level: 13
+    characterData: {fileID: 11400000, guid: 37ece68613516134aa37719950c81f9b, type: 2}
+    level: 30
     maxLevel: 30
-    expStockConsumed: 14
+    expStockConsumed: 7
   - serialNumber: 22
     characterData: {fileID: 11400000, guid: be5641a28c712614fa85a4153ac681ce, type: 2}
-    level: 1
+    level: 30
     maxLevel: 30
     expStockConsumed: 0
   - serialNumber: 2222
     characterData: {fileID: 11400000, guid: be5641a28c712614fa85a4153ac681ce, type: 2}
-    level: 1
+    level: 11
     maxLevel: 30
-    expStockConsumed: 0
+    expStockConsumed: 10
   - serialNumber: 222
     characterData: {fileID: 11400000, guid: ac2b08466397f5d478fbf8a8040a0db8, type: 2}
-    level: 1
+    level: 2
     maxLevel: 30
-    expStockConsumed: 0
+    expStockConsumed: 4
   - serialNumber: 22222
     characterData: {fileID: 11400000, guid: 20dcab44db8f38d41aa8e37122d46287, type: 2}
-    level: 3
+    level: 4
     maxLevel: 30
-    expStockConsumed: 0
+    expStockConsumed: 1
   - serialNumber: 222222
     characterData: {fileID: 11400000, guid: 20dcab44db8f38d41aa8e37122d46287, type: 2}
     level: 3

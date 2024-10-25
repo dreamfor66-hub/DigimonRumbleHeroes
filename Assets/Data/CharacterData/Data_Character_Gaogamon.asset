@@ -19,9 +19,11 @@ MonoBehaviour:
   characterItemTrait1: 2
   characterItemTrait2: 10
   characterItemTrait3: 100
-  maxHealth: 10
+  baseHP: 10
+  baseATK: 5
   moveSpeed: 6
-  attackPower: 1
+  hpPerLevel: 2
+  atkPerLevel: 2
   colliderRadius: 0.55
   mass: 10
   drag: 10

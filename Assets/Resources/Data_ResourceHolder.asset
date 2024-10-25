@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInventoryData: {fileID: 11400000, guid: e0ad7672dd851424c918b2061d74f0da,
     type: 2}
-  modelTable: {fileID: 11400000, guid: bf44581a6ea388b49b072918dac498d1, type: 2}
+  characterVisualMap: {fileID: 11400000, guid: bf44581a6ea388b49b072918dac498d1, type: 2}
   playerOutgameData: {fileID: 11400000, guid: abd945f1eb026774baa793bc969cc132, type: 2}
   playerPartySetUpData: {fileID: 11400000, guid: 18ae1adb58aa4b448a9f6b510d35a918,
     type: 2}
   gameVariables: {fileID: 11400000, guid: e1434fcdd73416240835f7bbde03190f, type: 2}
+  evolutionTable: {fileID: 11400000, guid: 57e7c10f90c78074d915b8f4682b7b45, type: 2}

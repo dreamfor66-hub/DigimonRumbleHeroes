@@ -3,6 +3,18 @@ using UnityEngine.UI;
 
 public class OutGameUIManager : MonoBehaviour
 {
+    public static OutGameUIManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     // Button references
     public Button backButton;
     public Button homeButton;
@@ -15,6 +27,10 @@ public class OutGameUIManager : MonoBehaviour
     public GameObject characterPanel;
     public GameObject gachaPanel;
     public GameObject menuPanel;
+
+
+    // PopUp Panel
+    public GameObject popUpPanel; // ÆË¾÷ ÆÐ³Î
 
     // Panel managers
     [HideInInspector] public HomePanelManager homePanelManager;
@@ -40,6 +56,7 @@ public class OutGameUIManager : MonoBehaviour
 
         // Show home panel by default
         ShowPanel(homePanel);
+        popUpPanel.SetActive(true);
     }
 
     void ShowPanel(GameObject panel)

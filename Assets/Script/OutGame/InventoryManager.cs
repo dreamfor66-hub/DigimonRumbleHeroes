@@ -10,7 +10,7 @@ public class InventoryManager : MonoBehaviour
 
     // PartySetUp 관련 참조
     public PartySetUpManager partySetUpManager;
-    public LevelUpPanelManager levelUpPanelManager;
+    public UpgradePanelManager levelUpPanelManager;
 
     // InventoryPanel 관련 참조
     public GameObject levelUpInventoryPanel;
