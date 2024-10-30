@@ -5,8 +5,8 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.subsystemregistration": "1.1.0",
-        "com.unity.profiling.core": "1.0.2"
+        "com.unity.profiling.core": "1.0.2",
+        "com.unity.subsystemregistration": "1.1.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -116,9 +116,9 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {
+        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -141,6 +141,13 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.veriorpies.parrelsync": {
+      "version": "https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "d1ef610e9fe3ad0b490cce91594449fc0af809a6"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

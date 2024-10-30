@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2264505462597491491}
   - component: {fileID: 4771394053400359985}
+  - component: {fileID: 1841091628799428591}
+  - component: {fileID: 6081057547175396904}
   m_Layer: 6
   m_Name: PF_PlayerCharacter_Agumon
   m_TagString: Player
@@ -45,12 +47,57 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a698c58af7160b44b0d944239cd2933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   characterData: {fileID: 11400000, guid: 0cdadc69ac8a28842a2de92b46faa0c6, type: 2}
   currentSpeed: 0
+  currentState: 1
+  isDie: 0
   collisionCollider: {fileID: 0}
-  maxDistance: 200
-  tapThreshold: 0.12
-  dragThreshold: 12
+  target: {fileID: 0}
+  hit: 0
+  currentHitTarget: {fileID: 0}
+  lastHitTarget: {fileID: 0}
+  attacked: 0
+  currentAttacker: {fileID: 0}
+  lastAttacker: {fileID: 0}
+  playerNumber: 0
+--- !u!114 &1841091628799428591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  _assetId: 2408166478
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
+--- !u!114 &6081057547175396904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79874ac94d5b1314788ecf0e86bd23fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  showRoomGUI: 1
+  readyToBegin: 0
+  index: 0
 --- !u!1001 &1021396828413036294
 PrefabInstance:
   m_ObjectHideFlags: 0

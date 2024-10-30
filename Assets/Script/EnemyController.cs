@@ -1,12 +1,13 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Mirror;
 
 public class EnemyController : CharacterBehaviour
 {
     public BotAIData botAIData;
-    [ShowInInspector]
+    [Sirenix.OdinInspector.ShowInInspector]
     private bool isAware = false;
-    [ShowInInspector]
+    [Sirenix.OdinInspector.ShowInInspector]
     private float stateTimer = 0f;
     private int currentBotAIIndex = 0;
     private float duration = 0f;

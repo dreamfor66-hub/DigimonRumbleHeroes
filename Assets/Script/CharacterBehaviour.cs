@@ -1,10 +1,11 @@
+using Mirror;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public abstract class CharacterBehaviour : MonoBehaviour
+public abstract class CharacterBehaviour : NetworkBehaviour
 {
     public CharacterData characterData;
     private Collider[] hurtboxColliders;
@@ -20,8 +21,10 @@ public abstract class CharacterBehaviour : MonoBehaviour
     protected ActionKey currentActionKey;
 
     protected float currentFrame;
+    [SyncVar]
+    public bool isDie;
 
-    [ShowInInspector, ReadOnly]
+    [Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.ReadOnly, SyncVar]
     protected float currentHealth;
 
     protected Dictionary<CharacterBehaviour, List<int>> hitTargets;
@@ -51,6 +54,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
         InitializeCollisionCollider();
         InitializeHealth();
         EntityContainer.Instance.RegisterCharacter(this);
+        isDie = false;
         hitStopTimer = 0f;
         isHitStopped = false;
     }
@@ -97,6 +101,9 @@ public abstract class CharacterBehaviour : MonoBehaviour
             }
             return;
         }
+
+        if (isDie)
+            return;
 
         switch (currentState)
         {
@@ -476,6 +483,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void Die()
     {
+        isDie = true;
         animator.Play("Die");
         if (EntityContainer.InstanceExist)
         {
