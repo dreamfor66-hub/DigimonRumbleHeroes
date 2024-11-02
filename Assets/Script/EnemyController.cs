@@ -15,7 +15,7 @@ public class EnemyController : CharacterBehaviour
     protected override void Start()
     {
         base.Start();
-        currentState = CharacterState.Init;
+        CmdChangeState(CharacterState.Init);
         FindClosestPlayer();
         UpdateCurrentAIState();
     }
@@ -59,7 +59,7 @@ public class EnemyController : CharacterBehaviour
     protected override void EndAction()
     {
         base.EndAction();
-        currentState = CharacterState.Init;
+        CmdChangeState(CharacterState.Init);
         stateTimer = 0f;
         TransitionToNextState();
     }
@@ -97,6 +97,8 @@ public class EnemyController : CharacterBehaviour
 
     private void HandleAwareness()
     {
+
+
         float distanceToAnyPlayer = float.MaxValue;
         CharacterBehaviour awarePlayer = null;
 

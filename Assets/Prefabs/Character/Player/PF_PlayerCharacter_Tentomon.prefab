@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2264505462597491491}
   - component: {fileID: 4771394053400359985}
+  - component: {fileID: 5638426862482969371}
+  - component: {fileID: 5285704184642457507}
   m_Layer: 6
   m_Name: PF_PlayerCharacter_Tentomon
   m_TagString: Player
@@ -45,14 +47,57 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a698c58af7160b44b0d944239cd2933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   characterData: {fileID: 11400000, guid: 20dcab44db8f38d41aa8e37122d46287, type: 2}
   currentSpeed: 0
+  currentState: 1
+  isDie: 0
   collisionCollider: {fileID: 0}
   target: {fileID: 0}
-  isLeader: 0
-  aiType: 0
+  hit: 0
+  currentHitTarget: {fileID: 0}
+  lastHitTarget: {fileID: 0}
+  attacked: 0
+  currentAttacker: {fileID: 0}
+  lastAttacker: {fileID: 0}
   playerNumber: 0
-  followDistance: 2
+--- !u!114 &5638426862482969371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79874ac94d5b1314788ecf0e86bd23fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  showRoomGUI: 1
+  readyToBegin: 0
+  index: 0
+--- !u!114 &5285704184642457507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  _assetId: 1389943960
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &3111394221011219928
 GameObject:
   m_ObjectHideFlags: 0

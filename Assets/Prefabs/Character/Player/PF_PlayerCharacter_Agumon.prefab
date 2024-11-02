@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2264505462597491491}
   - component: {fileID: 4771394053400359985}
   - component: {fileID: 1841091628799428591}
-  - component: {fileID: 6081057547175396904}
+  - component: {fileID: 7775866477397053862}
   m_Layer: 6
   m_Name: PF_PlayerCharacter_Agumon
   m_TagString: Player
@@ -80,7 +80,7 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
---- !u!114 &6081057547175396904
+--- !u!114 &7775866477397053862
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

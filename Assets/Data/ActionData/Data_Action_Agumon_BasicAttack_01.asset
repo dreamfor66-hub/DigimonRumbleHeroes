@@ -38,7 +38,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MovementList: []
+  MovementList:
+  - StartFrame: 0
+    EndFrame: 10
+    StartValue: {x: 0, y: 10}
+    EndValue: {x: 0, y: 0}
   HitboxList:
   - StartFrame: 25
     EndFrame: 30

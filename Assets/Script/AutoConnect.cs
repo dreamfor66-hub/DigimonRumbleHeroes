@@ -3,18 +3,26 @@ using UnityEngine;
 
 public class AutoConnect : MonoBehaviour
 {
-    void Start()
-    {
-        // 네트워크 서버로 자동 연결 시도
-        if (!NetworkClient.isConnected && !NetworkServer.active)
-        {
-            NetworkManager.singleton.StartHost();  // 자동으로 방을 생성하며 호스트로 연결
-        }
-    }
+    public bool startAsHost = true; // Host로 시작할지 클라이언트로 시작할지 결정하는 플래그
 
-    void OnConnectedToServer()
+    private void Start()
     {
-        // 연결이 완료되면 자동으로 Online 씬으로 이동
-        NetworkManager.singleton.ServerChangeScene("OnlineScene");
+        NetworkRoomManager roomManager = GetComponent<NetworkRoomManager>();
+        if (roomManager != null && !roomManager.isNetworkActive)
+        {
+            if (startAsHost)
+            {
+                // Host로 시작
+                roomManager.StartHost();
+                Debug.Log("서버(Host)가 자동으로 시작되었습니다.");
+            }
+            else
+            {
+                // Client로 시작
+                roomManager.networkAddress = "localhost"; // 서버 주소 설정
+                roomManager.StartClient();
+                Debug.Log("클라이언트(Client)로 접속 시도 중...");
+            }
+        }
     }
 }

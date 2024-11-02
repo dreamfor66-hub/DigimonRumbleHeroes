@@ -11,6 +11,14 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/OnlineScene.unity
     guid: 2f2c951a306e18f448660f89a26f5d4e
+  - enabled: 1
+    path: Assets/Scenes/RoomScene.unity
+    guid: 997106b06f296024d9fa2b7c644a31fd
+  - enabled: 1
+    path: Assets/Scenes/GamePlayScene.unity
+    guid: 53f1c2955301a1a4fb7f94903fa32c03
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: a3cc8a6b7c0fa194995d899ff29e3bf8,
+      type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000,
       guid: ce3d3e39a32a39a469722a410ea905fd, type: 2}

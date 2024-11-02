@@ -13,13 +13,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     protected Animator animator;
     protected Vector3 direction;
     [SerializeField]
+    [SyncVar]
     protected float currentSpeed;
     protected float stopTime = 0.05f;
     protected float stopTimer;
 
-    public CharacterState currentState = CharacterState.Idle;
+    [SyncVar]
+    public CharacterState currentState = CharacterState.Idle; // SyncVar로 변경하여 동기화
+    [SyncVar]
     protected ActionKey currentActionKey;
 
+    [SyncVar]
     protected float currentFrame;
     [SyncVar]
     public bool isDie;
@@ -92,6 +96,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected virtual void Update()
     {
+        if (!isServer && !isLocalPlayer)
+            return; // 클라이언트에서만 동작이 실행되지 않도록 설정
+
         if (isHitStopped)
         {
             hitStopTimer -= Time.deltaTime;
@@ -124,10 +131,15 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 break;
         }
     }
+    [Command] // 서버에서 상태 변경을 관리
+    public void CmdChangeState(CharacterState newState)
+    {
+        currentState = newState;
+    }
 
     protected virtual void HandleIdle() { }
 
-    protected virtual void HandleMovement() { }
+    protected virtual void HandleMovement() { } 
 
     protected void HandleAction()
     {
@@ -141,27 +153,29 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             }
 
             float animationFrame = currentActionData.AnimationCurve.Evaluate(currentFrame);
-            animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+
+            // 로컬 플레이어일 경우 애니메이션 재생 및 서버에 요청
+            if (isLocalPlayer)
+            {
+                animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+                CmdPlayAnimation(currentActionData.AnimationKey, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+            }
 
             // TransformMove
             foreach (var movement in currentActionData.MovementList)
             {
                 if (currentFrame >= movement.StartFrame && currentFrame <= movement.EndFrame)
                 {
-                    // 프레임 사이의 비율 계산 (0부터 1까지의 값)
                     float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
-
-                    // StartValue에서 EndValue로 선형 보간
                     Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
-
-                    // 보간된 값을 이동 벡터로 변환
                     Vector3 moveVector = new Vector3(interpolatedSpeed.x, 0, interpolatedSpeed.y);
-
-                    // 충돌과 슬라이딩을 처리한 후 이동
                     Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
-                    // 최종적으로 캐릭터의 위치를 업데이트
-                    transform.position += finalMoveVector;
+                    // 로컬 플레이어의 이동을 서버에 동기화
+                    if (isLocalPlayer)
+                    {
+                        CmdSyncMovement(finalMoveVector);
+                    }
                 }
             }
 
@@ -171,7 +185,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
                 {
                     Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
-
                     Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
 
                     foreach (var hitCollider in hitColliders)
@@ -193,29 +206,110 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                                 continue;
                             }
 
-                            HandleHit(hitbox.HitId, target, currentActionData);
-
-                            if (!hitTargets.ContainsKey(target))
+                            // 히트를 로컬 플레이어에서 서버에 요청
+                            if (isLocalPlayer)
                             {
-                                hitTargets[target] = new List<int>();
-                            }
-                            hitTargets[target].Add(hitbox.HitGroup);
+                                //CmdHandleHit(hitbox.HitId, target, currentActionData);
+                                HandleHit(hitbox.HitId, target, currentActionData);
 
-                            break;
+                                if (!hitTargets.ContainsKey(target))
+                                {
+                                    hitTargets[target] = new List<int>();
+                                }
+                                hitTargets[target].Add(hitbox.HitGroup);
+
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (currentFrame >= currentActionData.ActionFrame)
-            {
-                EndAction();
+                if (currentFrame >= currentActionData.ActionFrame)
+                {
+                    EndAction();
+                }
             }
         }
         else
         {
             Debug.LogWarning($"ActionData for {currentActionKey} not found in ActionTable.");
             EndAction();
+        }
+    }
+
+    // 서버에 애니메이션 재생 요청
+    [Command]
+    private void CmdPlayAnimation(string animationKey, float normalizedTime)
+    {
+        RpcPlayAnimation(animationKey, normalizedTime);
+    }
+
+    // 클라이언트에 애니메이션 재생 동기화
+    [ClientRpc]
+    private void RpcPlayAnimation(string animationKey, float normalizedTime)
+    {
+        if (!isLocalPlayer)
+        {
+            animator.Play(animationKey, 0, normalizedTime);
+        }
+    }
+
+    // 서버에 캐릭터 이동 동기화 요청
+    [Command]
+    private void CmdSyncMovement(Vector3 moveVector)
+    {
+        RpcSyncMovement(moveVector);
+    }
+
+    // 클라이언트에 캐릭터 이동 동기화
+    [ClientRpc]
+    private void RpcSyncMovement(Vector3 moveVector)
+    {
+        if (!isLocalPlayer)
+        {
+            transform.position += moveVector;
+        }
+    }
+
+    protected void HandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+    {
+        var hitData = currentActionData.HitIdList.Find(hit => hit.HitId == hitId);
+
+        if (hitData != null)
+        {
+            Vector3 hitDirection = (target.transform.position - transform.position).normalized;
+            // 서버에 피해 적용 요청
+            target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitData, this);
+            OnHit(target);
+
+            // HitStop 적용
+            float hitStopDuration = hitData.HitStopFrame;
+            ApplyHitStop(hitStopDuration);
+            target.ApplyHitStop(hitStopDuration);
+
+            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitStopFrame} frames of hitstop.");
+        }
+    }
+
+
+    [Command]
+    private void CmdHandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+    {
+        if (target != null)
+        {
+            HandleHit(hitId, target, currentActionData);
+            // 서버에서 처리 후 클라이언트에 타겟이 맞았음을 알림
+            RpcHandleHit(hitId, target, currentActionData);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcHandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+        {
+        if (target != null && !isLocalPlayer)
+        {
+            // 클라이언트에서 실제로 히트를 처리
+            HandleHit(hitId, target, currentActionData);
         }
     }
 
@@ -258,31 +352,16 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
     }
 
-    protected void HandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
-    {
-        var hitData = currentActionData.HitIdList.Find(hit => hit.HitId == hitId);
-
-        if (hitData != null)
-        {
-            Vector3 hitDirection = (target.transform.position - transform.position).normalized;
-            target.TakeDamage(hitData.HitDamage, hitDirection, hitData, this);
-            OnHit(target);
-
-            // HitStop을 프레임 단위로 계산
-            float hitStopDuration = hitData.HitStopFrame;
-            ApplyHitStop(hitStopDuration);
-            target.ApplyHitStop(hitStopDuration);
-
-            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitStopFrame} frames of hitstop.");
-        }
-    }
+   
 
     protected virtual void EndAction()
     {
         hitTargets.Clear();
-        currentState = CharacterState.Idle;
+        CmdChangeState(CharacterState.Idle);
         currentFrame = 0;
     }
+
+
 
     protected virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
     {
@@ -311,16 +390,35 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             switch (hitData.hitType)
             {
                 case HitType.Weak:
-                    StartKnockBack(hitDirection, hitData);
+                    RpcStartKnockBack(hitDirection, hitData);
                     break;
 
                 case HitType.Strong:
-                    StartKnockBackSmash(hitDirection, hitData);
+                    RpcStartKnockBackSmash(hitDirection, hitData);
                     break;
             }
         }
 
         OnAttacked(attacker);
+    }
+
+    [Command]
+    private void CmdTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    {
+        if (attacker != null)
+        {
+            // 서버에서 피해 처리 후 클라이언트에 동기화
+            RpcTakeDamage(damage, hitDirection, hitData, attacker);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    {
+        if (attacker != null)
+        {
+            TakeDamage(damage, hitDirection, hitData, attacker);
+        }
     }
 
     [HideInInspector] public bool hit;
@@ -331,14 +429,77 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [HideInInspector] public CharacterBehaviour lastAttacker;
     public void OnHit(CharacterBehaviour target)
     {
+        // 로컬에서 호출 시 서버에 동기화 요청
+        if (isLocalPlayer)
+        {
+            CmdOnHit(target);
+        }
+        else
+        {
+            // 로컬에서 처리
+            ProcessOnHit(target);
+        }
+    }
+
+    [Command]
+    private void CmdOnHit(CharacterBehaviour target)
+    {
+        // 서버에서 처리 후 클라이언트에 동기화
+        RpcOnHit(target);
+        ProcessOnHit(target); // 서버에서 로컬 처리
+    }
+
+    [ClientRpc]
+    private void RpcOnHit(CharacterBehaviour target)
+    {
+        if (!isLocalPlayer)
+        {
+            // 다른 클라이언트에서 처리
+            ProcessOnHit(target);
+        }
+    }
+
+    private void ProcessOnHit(CharacterBehaviour target)
+    {
         hit = true;
         currentHitTarget = target;
         lastHitTarget = target;
         StartCoroutine(ResetHitRecentlyFlag());
     }
 
-    // 리더가 공격을 당했을 때 호출
     public void OnAttacked(CharacterBehaviour attacker)
+    {
+        // 로컬에서 호출 시 서버에 동기화 요청
+        if (isLocalPlayer)
+        {
+            CmdOnAttacked(attacker);
+        }
+        else
+        {
+            // 로컬에서 처리
+            ProcessOnAttacked(attacker);
+        }
+    }
+
+    [Command]
+    private void CmdOnAttacked(CharacterBehaviour attacker)
+    {
+        // 서버에서 처리 후 클라이언트에 동기화
+        RpcOnAttacked(attacker);
+        ProcessOnAttacked(attacker); // 서버에서 로컬 처리
+    }
+
+    [ClientRpc]
+    private void RpcOnAttacked(CharacterBehaviour attacker)
+    {
+        if (!isLocalPlayer)
+        {
+            // 다른 클라이언트에서 처리
+            ProcessOnAttacked(attacker);
+        }
+    }
+
+    private void ProcessOnAttacked(CharacterBehaviour attacker)
     {
         attacked = true;
         currentAttacker = attacker;
@@ -362,7 +523,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     private void StartKnockBack(Vector3 hitDirection, HitData hitData)
     {
-        currentState = CharacterState.KnockBack;
+        CmdChangeState(CharacterState.KnockBack);
         knockBackDirection = hitDirection.normalized;
         knockBackSpeed = hitData.KnockbackPower;
 
@@ -375,7 +536,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     private void StartKnockBackSmash(Vector3 hitDirection, HitData hitData)
     {
-        currentState = CharacterState.KnockBackSmash;
+        CmdChangeState(CharacterState.KnockBackSmash);
         knockBackDirection = hitDirection.normalized;
         knockBackSpeed = hitData.KnockbackPower;
 
@@ -384,6 +545,30 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         knockBackTimer = 0f;
 
         animator.Play("Knockback");
+    }
+
+    [Command]
+    public void CmdStartKnockBack(Vector3 hitDirection, HitData hitData)
+    {
+        RpcStartKnockBack(hitDirection, hitData);
+    }
+
+    [ClientRpc]
+    private void RpcStartKnockBack(Vector3 hitDirection, HitData hitData)
+    {
+        StartKnockBack(hitDirection, hitData);
+    }
+
+    [Command]
+    public void CmdStartKnockBackSmash(Vector3 hitDirection, HitData hitData)
+    {
+        RpcStartKnockBackSmash(hitDirection, hitData);
+    }
+
+    [ClientRpc]
+    private void RpcStartKnockBackSmash(Vector3 hitDirection, HitData hitData)
+    {
+        StartKnockBackSmash(hitDirection, hitData);
     }
 
     private float initialBurstDuration = 0.2f; // 초기 강한 넉백 구간
@@ -418,7 +603,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
-            currentState = CharacterState.Idle;
+            CmdChangeState(CharacterState.Idle);
             knockBackSpeed = 0f;
         }
     }
@@ -469,13 +654,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (knockBackSpeed < 7f)
         {
-            currentState = CharacterState.KnockBack;
+            CmdChangeState(CharacterState.KnockBack);
             knockBackDuration = Mathf.Max(knockBackTimer, knockBackSpeed / 10f);
         }
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
-            currentState = CharacterState.Idle;
+            CmdChangeState(CharacterState.Idle);
             knockBackSpeed = 0f;
         }
     }
@@ -496,7 +681,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         Debug.Log($"Starting action: {actionKey}");
         currentActionKey = actionKey;
-        currentState = CharacterState.Action;
+        CmdChangeState(CharacterState.Action);
         currentFrame = 0;
 
         hitTargets.Clear();

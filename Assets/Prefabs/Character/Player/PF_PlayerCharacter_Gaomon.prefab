@@ -10,6 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 2264505462597491491}
   - component: {fileID: 4771394053400359985}
+  - component: {fileID: 1364712523616598095}
+  - component: {fileID: 2125300937055032745}
+  - component: {fileID: 9141246701114346842}
+  - component: {fileID: 2224489096985872234}
   m_Layer: 6
   m_Name: PF_PlayerCharacter_Gaomon
   m_TagString: Player
@@ -45,8 +49,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a698c58af7160b44b0d944239cd2933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   characterData: {fileID: 11400000, guid: be5641a28c712614fa85a4153ac681ce, type: 2}
   currentSpeed: 0
+  currentState: 1
+  isDie: 0
   collisionCollider: {fileID: 0}
   target: {fileID: 0}
   hit: 0
@@ -55,10 +64,92 @@ MonoBehaviour:
   attacked: 0
   currentAttacker: {fileID: 0}
   lastAttacker: {fileID: 0}
-  isLeader: 0
-  aiType: 0
-  currentAIState: 0
   playerNumber: 0
+--- !u!114 &1364712523616598095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  _assetId: 3660469356
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
+--- !u!114 &2125300937055032745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79874ac94d5b1314788ecf0e86bd23fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  showRoomGUI: 1
+  readyToBegin: 0
+  index: 0
+--- !u!114 &9141246701114346842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a553cb17010b2403e8523b558bffbc14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  target: {fileID: 2264505462597491491}
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 1
+  onlySyncOnChange: 1
+  compressRotation: 1
+  interpolatePosition: 1
+  interpolateRotation: 1
+  interpolateScale: 1
+  coordinateSpace: 0
+  timelineOffset: 1
+  showGizmos: 0
+  showOverlay: 0
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  bufferResetMultiplier: 3
+  positionSensitivity: 0.01
+  rotationSensitivity: 0.01
+  scaleSensitivity: 0.01
+--- !u!114 &2224489096985872234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  clientAuthority: 0
+  animator: {fileID: 1313321061739581859}
 --- !u!1001 &4851308247610977330
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -712,6 +803,12 @@ MonoBehaviour:
   Tangle: 0
   AnimateRoll: 0
   OverrideKeyframeAnimation: 0
+--- !u!95 &1313321061739581859 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 4efb20177c9229f4aa9f773eda069ad0,
+    type: 3}
+  m_PrefabInstance: {fileID: 4851308247610977330}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1568369664380499452 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2985683402417268274, guid: 4efb20177c9229f4aa9f773eda069ad0,

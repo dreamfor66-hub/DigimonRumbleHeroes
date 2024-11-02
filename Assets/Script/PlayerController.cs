@@ -25,7 +25,10 @@ public class PlayerController : CharacterBehaviour
         {
             InitializeLocalPlayer();
         }
-
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
     }
 
     private void InitializeLocalPlayer()
@@ -152,11 +155,11 @@ public class PlayerController : CharacterBehaviour
 
             currentSpeed = characterData.moveSpeed * speedMultiplier;
 
-            currentState = CharacterState.Move;
+            CmdChangeState(CharacterState.Move);
         }
         else
         {
-            currentState = CharacterState.Idle;
+            CmdChangeState(CharacterState.Idle);
             currentSpeed = 0;
         }
     }
@@ -176,7 +179,7 @@ public class PlayerController : CharacterBehaviour
         }
         else
         {
-            currentState = CharacterState.Idle;
+            CmdChangeState(CharacterState.Idle);
         }
 
         isTouching = false;
@@ -184,7 +187,7 @@ public class PlayerController : CharacterBehaviour
     }
 
 
-protected override void HandleIdle()
+    protected override void HandleIdle()
     {
         if (stopTimer > 0)
         {
@@ -197,11 +200,16 @@ protected override void HandleIdle()
                 currentSpeed = 0;
             }
         }
-        //if (isLeader)
-        //{
-            animator.Play("Idle");
-            animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
-        //}
+
+        // 기존 로직 유지
+        animator.Play("Idle");
+        animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
+
+        // 네트워크 동기화 부분 추가 (로컬 플레이어일 때만 서버에 명령)
+        if (isLocalPlayer)
+        {
+            CmdSetAnimatorParameters("Idle", 0f);
+        }
     }
 
     protected override void HandleMovement()
@@ -214,11 +222,39 @@ protected override void HandleIdle()
 
         float normalizedSpeed = currentSpeed / characterData.moveSpeed;
 
-        //if (isLeader)
-        //{
-            animator.Play("Idle");
-            animator.SetFloat("speed", normalizedSpeed);
-        //}
+        // 기존 로직 유지
+        animator.Play("Idle");
+        animator.SetFloat("speed", normalizedSpeed);
+
+        // 네트워크 동기화 부분 추가 (로컬 플레이어일 때만 서버에 명령)
+        if (isLocalPlayer)
+        {
+            CmdSetAnimatorParameters("Idle", normalizedSpeed);
+        }
+    }
+
+    // 서버에 애니메이터 매개변수를 설정하는 메서드
+    [Command]
+    private void CmdSetAnimatorParameters(string animationKey, float speed)
+    {
+        RpcSetAnimatorParameters(animationKey, speed);
+    }
+
+    // 클라이언트에서 애니메이터 매개변수를 설정하는 메서드
+    [ClientRpc]
+    private void RpcSetAnimatorParameters(string animationKey, float speed)
+    {
+        if (animator == null)
+        {
+            Debug.LogWarning("Animator is null. Skipping animation update.");
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(animationKey))
+        {
+            animator.Play(animationKey);
+        }
+        animator.SetFloat("speed", speed);
     }
 
     private void HandleTargeting()
@@ -284,6 +320,12 @@ protected override void HandleIdle()
 
         return combinedWeight;
     }
+
+
+    ///
+    /// 서버
+    ///
+
 
 
     /// <summary>

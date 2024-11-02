@@ -132,9 +132,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 81771288}
-  - component: {fileID: 81771292}
   - component: {fileID: 81771290}
   - component: {fileID: 81771291}
+  - component: {fileID: 81771292}
   m_Layer: 0
   m_Name: NetworkRoomManager
   m_TagString: Untagged
@@ -166,43 +166,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 81771286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7424c1070fad4ba2a7a96b02fbeb4bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  port: 7777
-  NoDelay: 1
-  SendTimeout: 5000
-  ReceiveTimeout: 30000
-  serverMaxMessageSize: 16384
-  serverMaxReceivesPerTick: 10000
-  serverSendQueueLimitPerConnection: 10000
-  serverReceiveQueueLimitPerConnection: 10000
-  clientMaxMessageSize: 16384
-  clientMaxReceivesPerTick: 1000
-  clientSendQueueLimit: 10000
-  clientReceiveQueueLimit: 10000
---- !u!114 &81771291
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 81771286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65fc29c7a0593064f8e6c4f950b0c2c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &81771292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 81771286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d94492f94d4303d42b6a06abe4dff06b, type: 3}
+  m_Script: {fileID: 11500000, guid: 615e6c6589cf9e54cad646b5a11e0529, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroyOnLoad: 1
@@ -213,13 +177,13 @@ MonoBehaviour:
   offlineScene: Assets/Scenes/Title.unity
   onlineScene: Assets/Scenes/OnlineScene.unity
   offlineSceneLoadDelay: 0
-  transport: {fileID: 81771290}
+  transport: {fileID: 0}
   networkAddress: localhost
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 289781361294771909, guid: 3a923a8917fd2534d9b516a3e32c3933,
+  playerPrefab: {fileID: 289781361294771909, guid: 8d5830a293d42f14cb8b176ad17c7512,
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
@@ -239,63 +203,57 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
-  showRoomGUI: 0
+  showRoomGUI: 1
   minPlayers: 1
-  roomPlayerPrefab: {fileID: 6081057547175396904, guid: 3a923a8917fd2534d9b516a3e32c3933,
+  roomPlayerPrefab: {fileID: 2125300937055032745, guid: 8d5830a293d42f14cb8b176ad17c7512,
     type: 3}
-  RoomScene: Assets/Scenes/OnlineScene.unity
-  GameplayScene: Assets/Scenes/OnlineScene.unity
+  RoomScene: Assets/Scenes/RoomScene.unity
+  GameplayScene: Assets/Scenes/GamePlayScene.unity
   _allPlayersReady: 0
   clientIndex: 0
-  activeRoomCodes: []
-  roomCode: 
---- !u!1 &947661192
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 947661194}
-  - component: {fileID: 947661193}
-  m_Layer: 0
-  m_Name: Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &947661193
+--- !u!114 &81771291
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 947661192}
+  m_GameObject: {fileID: 81771286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce1476e3cf143b24f9e4101306d86017, type: 3}
+  m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Party: []
-  PlayerStartPoint: {x: 0, y: 0}
-  MapSize: {x: 0, y: 0}
---- !u!4 &947661194
-Transform:
+  offsetX: 0
+  offsetY: 0
+--- !u!114 &81771292
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 947661192}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_GameObject: {fileID: 81771286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  port: 7777
+  DualMode: 1
+  NoDelay: 1
+  Interval: 10
+  Timeout: 10000
+  RecvBufferSize: 7361536
+  SendBufferSize: 7361536
+  FastResend: 2
+  ReceiveWindowSize: 4096
+  SendWindowSize: 4096
+  MaxRetransmit: 40
+  MaximizeSocketBuffers: 1
+  ReliableMaxMessageSize: 297433
+  UnreliableMaxMessageSize: 1194
+  debugLog: 0
+  statisticsGUI: 0
+  statisticsLog: 0
 --- !u!1 &1881740959
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,4 +447,3 @@ SceneRoots:
   - {fileID: 1881740962}
   - {fileID: 1883060503}
   - {fileID: 81771288}
-  - {fileID: 947661194}
