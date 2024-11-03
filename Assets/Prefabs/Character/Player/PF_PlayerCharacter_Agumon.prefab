@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 4771394053400359985}
   - component: {fileID: 1841091628799428591}
   - component: {fileID: 7775866477397053862}
+  - component: {fileID: 2772748040953012727}
+  - component: {fileID: 5592787441883611669}
   m_Layer: 6
   m_Name: PF_PlayerCharacter_Agumon
   m_TagString: Player
@@ -98,6 +100,56 @@ MonoBehaviour:
   showRoomGUI: 1
   readyToBegin: 0
   index: 0
+--- !u!114 &2772748040953012727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  clientAuthority: 0
+  animator: {fileID: 6865225985483455127}
+--- !u!114 &5592787441883611669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289781361294771909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a553cb17010b2403e8523b558bffbc14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  target: {fileID: 2264505462597491491}
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 1
+  onlySyncOnChange: 1
+  compressRotation: 1
+  interpolatePosition: 1
+  interpolateRotation: 1
+  interpolateScale: 1
+  coordinateSpace: 0
+  timelineOffset: 1
+  showGizmos: 0
+  showOverlay: 0
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  bufferResetMultiplier: 3
+  positionSensitivity: 0.01
+  rotationSensitivity: 0.01
+  scaleSensitivity: 0.01
 --- !u!1001 &1021396828413036294
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -179,6 +231,12 @@ PrefabInstance:
 --- !u!4 &695245930566803693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 63d2c6455fa88d348b6f38dfb32039d3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1021396828413036294}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6865225985483455127 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 63d2c6455fa88d348b6f38dfb32039d3,
     type: 3}
   m_PrefabInstance: {fileID: 1021396828413036294}
   m_PrefabAsset: {fileID: 0}

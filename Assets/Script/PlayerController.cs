@@ -155,11 +155,11 @@ public class PlayerController : CharacterBehaviour
 
             currentSpeed = characterData.moveSpeed * speedMultiplier;
 
-            CmdChangeState(CharacterState.Move);
+            ChangeStatePrev(CharacterState.Move);
         }
         else
         {
-            CmdChangeState(CharacterState.Idle);
+            ChangeStatePrev(CharacterState.Idle);
             currentSpeed = 0;
         }
     }
@@ -179,7 +179,7 @@ public class PlayerController : CharacterBehaviour
         }
         else
         {
-            CmdChangeState(CharacterState.Idle);
+            ChangeStatePrev(CharacterState.Idle);
         }
 
         isTouching = false;

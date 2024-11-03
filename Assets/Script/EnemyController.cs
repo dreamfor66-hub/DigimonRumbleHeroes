@@ -15,7 +15,7 @@ public class EnemyController : CharacterBehaviour
     protected override void Start()
     {
         base.Start();
-        CmdChangeState(CharacterState.Init);
+        ChangeStatePrev(CharacterState.Init);
         FindClosestPlayer();
         UpdateCurrentAIState();
     }
@@ -59,7 +59,7 @@ public class EnemyController : CharacterBehaviour
     protected override void EndAction()
     {
         base.EndAction();
-        CmdChangeState(CharacterState.Init);
+        ChangeStatePrev(CharacterState.Init);
         stateTimer = 0f;
         TransitionToNextState();
     }
@@ -180,6 +180,9 @@ public class EnemyController : CharacterBehaviour
 
     private void LookAtPlayer()
     {
+        if (target == null)
+            return;
+
         Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
 
         // directionToTarget Vector3.zero인지 확인하고, 아니라면 회전 처리

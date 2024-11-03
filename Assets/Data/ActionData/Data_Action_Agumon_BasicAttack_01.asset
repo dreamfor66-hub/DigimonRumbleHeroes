@@ -60,9 +60,9 @@ MonoBehaviour:
   - HitId: 0
     HitDamage: 1.5
     HitStopFrame: 5
-    HitStunFrame: 0
+    HitStunFrame: 10
     KnockbackPower: 7
-    hitType: 2
+    hitType: 1
   AutoCorrection:
     correctionType: 1
     entityName: Kiwi
