@@ -9,9 +9,20 @@ public class PlayerController : CharacterBehaviour
     private Vector3 targetPosition;
     private Vector3 lastPosition;
     private bool isTouching = false;
-    private Vector3 initialTouchPosition;
-    private float touchStartTime;
     private bool isTapConfirmed = false;
+
+    [SerializeField]
+    [SyncVar]
+    //줄어들 수록 좋은 float. 1이면 1초에 1번 발사, 0.5면 0.5초에 1번 발사 이런 식
+    float basicAttackCycle;
+
+    [SyncVar]
+    float basicTimer = 0f;
+
+    [SerializeField]
+    [SyncVar]
+    //Update를 돌다가, 만약 idle이거나 Move인 동시에 basicReady라면 basic01 어택 실행 시키는 것을 감지하기
+    bool basicReady;
 
 
     protected override void Start()
@@ -46,26 +57,48 @@ public class PlayerController : CharacterBehaviour
         base.Update();
 
         if (NetworkClient.localPlayer == null || !isLocalPlayer) return;
-        //if (isLeader)
+
         HandleTargeting();
 
-        if (currentState is CharacterState.Idle or CharacterState.Move/* & isLeader*/)
+        if (currentState is CharacterState.Idle or CharacterState.Move)
         {
             HandleInput();
         }
 
-        // 현재 프레임에서 실제 이동한 속도 계산
+        // 기본 공격 주기 처리
+        basicTimer += Time.deltaTime;
+        if (basicTimer >= basicAttackCycle)
+        {
+            basicReady = true;
+        }
+
+        // Idle 또는 Move 상태일 때, 조건에 맞으면 기본 공격 실행
+        if (basicReady && (currentState == CharacterState.Idle || currentState == CharacterState.Move))
+        {
+            if (target != null)
+            {
+                float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+                if (distanceToTarget <= characterData.attackRange)
+                {
+                    HandleInputMessage(InputMessage.A);
+                    basicTimer = 0f; // 타이머 초기화
+                    basicReady = false; // 다시 대기 상태로 변경
+                }
+            }
+        }
+
+        //// 현재 프레임에서 실제 이동한 속도 계산
         float movementSpeed = (transform.position - lastPosition).magnitude / Time.deltaTime;
 
-        // 캐릭터가 이동 중일 때만 currentSpeed 업데이트
-        if (currentState == CharacterState.Move)
-        {
-            currentSpeed = Mathf.Max(movementSpeed, characterData.moveSpeed); // 최소한의 속도를 보장
-        }
-        else
-        {
-            currentSpeed = 0; // 이동하지 않으면 속도를 0으로 설정
-        }
+        //// 캐릭터가 이동 중일 때만 currentSpeed 업데이트
+        //if (currentState == CharacterState.Move)
+        //{
+        //    currentSpeed = Mathf.Clamp(movementSpeed, , characterData.moveSpeed); // 최소한의 속도를 보장
+        //}
+        //else
+        //{
+        //    currentSpeed = 0; // 이동하지 않으면 속도를 0으로 설정
+        //}
 
         // 현재 위치를 다음 프레임을 위해 저장
         lastPosition = transform.position;
@@ -131,17 +164,17 @@ public class PlayerController : CharacterBehaviour
         if (!isTouching)
             return;
 
-        Vector3 touchDelta = position - initialTouchPosition;
-        float distance = touchDelta.magnitude;
-        float elapsedTime = Time.time - touchStartTime;
+        touchDelta = position - initialTouchPosition;
+        touchDeltaDistance = touchDelta.magnitude;
+        touchElapsedTime = Time.time - touchStartTime;
 
-        if (elapsedTime > ResourceHolder.Instance.gameVariables.tapThreshold || distance >= ResourceHolder.Instance.gameVariables.dragThreshold)
+        if (touchElapsedTime > ResourceHolder.Instance.gameVariables.tapThreshold || touchDeltaDistance >= ResourceHolder.Instance.gameVariables.dragThreshold)
         {
             isTapConfirmed = false;
 
-            float speedMultiplier = Mathf.Clamp(distance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+            speedMultiplier = Mathf.Clamp(touchDeltaDistance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
 
-            Vector3 inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
+            inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
 
             Vector3 cameraForward = Camera.main.transform.forward;
             cameraForward.y = 0;
@@ -152,7 +185,6 @@ public class PlayerController : CharacterBehaviour
             cameraRight.Normalize();
 
             direction = inputDirection.x * cameraRight + inputDirection.z * cameraForward;
-
             currentSpeed = characterData.moveSpeed * speedMultiplier;
 
             ChangeStatePrev(CharacterState.Move);
@@ -169,11 +201,11 @@ public class PlayerController : CharacterBehaviour
         if (!isTouching)
             return;
 
-        Vector3 touchDelta = position - initialTouchPosition;
-        float distance = touchDelta.magnitude;
-        float elapsedTime = Time.time - touchStartTime;
+        touchDelta = position - initialTouchPosition;
+        touchDeltaDistance = touchDelta.magnitude;
+        touchElapsedTime = Time.time - touchStartTime;
 
-        if (distance < ResourceHolder.Instance.gameVariables.dragThreshold && elapsedTime < ResourceHolder.Instance.gameVariables.tapThreshold)
+        if (touchDeltaDistance < ResourceHolder.Instance.gameVariables.dragThreshold && touchElapsedTime < ResourceHolder.Instance.gameVariables.tapThreshold)
         {
             HandleInputMessage(InputMessage.A);
         }
@@ -214,10 +246,10 @@ public class PlayerController : CharacterBehaviour
 
     protected override void HandleMovement()
     {
-        Vector3 moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
+        moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
         transform.position += moveVector;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
 
         float normalizedSpeed = currentSpeed / characterData.moveSpeed;
@@ -232,6 +264,25 @@ public class PlayerController : CharacterBehaviour
             CmdSetAnimatorParameters("Idle", normalizedSpeed);
         }
     }
+
+
+    public Vector3 GetInputDirection()
+    {
+        return inputDirection;
+    }
+
+    public Vector3 GetInitialPosition()
+    {
+        return initialTouchPosition;
+    }
+
+    public float GetSpeedMultiplier()
+    {
+        float distance = (initialTouchPosition - Camera.main.WorldToScreenPoint(transform.position)).magnitude;
+        return Mathf.Clamp(distance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+    }
+
+
 
     // 서버에 애니메이터 매개변수를 설정하는 메서드
     [Command]

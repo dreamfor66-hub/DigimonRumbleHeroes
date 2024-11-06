@@ -46,12 +46,28 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private float knockBackTimer;
 
     // HitStop 관련 변수들
+    [SyncVar]
     private float hitStopTimer; // HitStop 시간을 관리하는 타이머
+    [SyncVar]
     private bool isHitStopped; // HitStop 상태를 나타내는 변수
 
     // target 관련 변수
+    [SyncVar]
     public CharacterBehaviour target;
     private GameObject targetIndicator;
+
+    // ActionMove에 관한, player에서 주로 사용할 변수목록
+    public Vector3 moveVector;
+    public Quaternion targetRotation;
+    public Vector3 initialTouchPosition;
+    public Vector3 touchDelta;
+    public float touchDeltaDistance;
+    public float touchElapsedTime;
+    public Vector3 inputDirection;
+    public float speedMultiplier;
+    public float touchStartTime; 
+
+    public bool canInputInAction;
 
     protected virtual void Start()
     {
@@ -191,6 +207,18 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
                 CmdPlayAnimation(currentActionData.AnimationKey, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+            }
+
+            //SpecialMove
+            foreach (var specialMovement in currentActionData.SpecialMovementList)
+            {
+                if (currentFrame >= specialMovement.StartFrame && currentFrame <= specialMovement.EndFrame)
+                {
+                    canInputInAction = true;
+                    ApplySpecialMovement(specialMovement);
+                }
+                else if (currentFrame > specialMovement.EndFrame)
+                    canInputInAction = false;
             }
 
             // TransformMove
@@ -442,6 +470,101 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
+    private void ApplySpecialMovement(SpecialMovementData specialMovementData)
+    {
+        switch (specialMovementData.MoveType)
+        {
+            case SpecialMovementType.AddInput:
+                inputDirection = CalculateInputDirection();
+
+                if (inputDirection != Vector3.zero)
+                {
+                    currentSpeed = characterData.moveSpeed * inputDirection.magnitude;
+                    moveVector = HandleCollisionAndSliding(inputDirection.normalized, currentSpeed);
+                    transform.position += moveVector;
+
+                    // 회전 처리
+                    targetRotation = Quaternion.LookRotation(inputDirection);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                }
+                else
+                {
+                    // 인풋이 없는 경우 속도를 줄임
+                    currentSpeed = Mathf.Lerp(currentSpeed, 0, Time.deltaTime); // 감속 속도 조절 가능
+                    moveVector = HandleCollisionAndSliding(Vector3.zero, currentSpeed);
+                    transform.position += moveVector;
+                }
+                break;
+
+            case SpecialMovementType.Rotate:
+                if (direction != Vector3.zero)
+                {
+                    Quaternion rotation = Quaternion.LookRotation(direction);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 10f);
+                }
+                break;
+
+            default:
+                Debug.LogWarning("처리되지 않은 SpecialMovementType입니다.");
+                break;
+        }
+    }
+
+    private Vector3 CalculateInputDirection()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetMouseButtonDown(0))
+        {
+            initialTouchPosition = Input.mousePosition;
+            touchStartTime = Time.time;
+            touchDelta = Vector3.zero;
+            //touchDeltaDistance = touchDelta.magnitude;
+            //touchElapsedTime = Time.time - touchStartTime;
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            touchDelta = Input.mousePosition - initialTouchPosition;
+            touchDeltaDistance = touchDelta.magnitude;
+            touchElapsedTime = Time.time - touchStartTime;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            touchDelta = Vector3.zero;
+            touchDeltaDistance = touchDelta.magnitude;
+            touchElapsedTime = Time.time - touchStartTime;
+        }
+        return GetDirectionalInput(touchDelta);
+#endif
+
+#if UNITY_IOS || UNITY_ANDROID
+        if (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Moved || Input.GetTouch(0).phase == TouchPhase.Stationary))
+        {
+            Vector3 currentTouchPosition = Input.GetTouch(0).position;
+            Vector3 touchDelta = currentTouchPosition - Camera.main.WorldToScreenPoint(transform.position);
+            return GetDirectionalInput(touchDelta);
+        }
+#endif
+
+        return Vector3.zero;
+    }
+
+    private Vector3 GetDirectionalInput(Vector3 touchDelta)
+    {
+        touchDeltaDistance = touchDelta.magnitude;
+        speedMultiplier = Mathf.Clamp(touchDeltaDistance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+
+        inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
+
+        Vector3 cameraForward = Camera.main.transform.forward;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+
+        Vector3 cameraRight = Camera.main.transform.right;
+        cameraRight.y = 0;
+        cameraRight.Normalize();
+
+        return (inputDirection.x * cameraRight + inputDirection.z * cameraForward) * speedMultiplier;
+    }
 
 
     protected virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)

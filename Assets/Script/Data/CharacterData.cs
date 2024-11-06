@@ -52,6 +52,7 @@ public class CharacterData : ScriptableObject
     public float baseHP = 10f;
     public float baseATK = 5;
     public float moveSpeed = 5;
+    public float defaultBasicAttackCycle = 1.5f;
 
     // 레벨업 당 증가하는 HP와 ATK
     public float hpPerLevel = 1;

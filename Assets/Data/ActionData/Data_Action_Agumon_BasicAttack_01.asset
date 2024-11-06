@@ -43,6 +43,10 @@ MonoBehaviour:
     EndFrame: 10
     StartValue: {x: 0, y: 10}
     EndValue: {x: 0, y: 0}
+  SpecialMovementList:
+  - StartFrame: 0
+    EndFrame: 120
+    MoveType: 0
   HitboxList:
   - StartFrame: 25
     EndFrame: 30
@@ -64,6 +68,6 @@ MonoBehaviour:
     KnockbackPower: 7
     hitType: 1
   AutoCorrection:
-    correctionType: 1
+    correctionType: 0
     entityName: Kiwi
     characterName: Kiwi

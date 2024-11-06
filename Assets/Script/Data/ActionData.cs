@@ -28,6 +28,10 @@ public class ActionData : ScriptableObject
     [PropertyOrder(1)]
     [TableList(AlwaysExpanded = true)]
     public List<MovementData> MovementList = new List<MovementData>();
+    
+    [PropertyOrder(1)]
+    [TableList(AlwaysExpanded = true)]
+    public List<SpecialMovementData> SpecialMovementList = new List<SpecialMovementData>();
 
     [Title("Hitboxes")]
     [PropertyOrder(1)]
@@ -124,6 +128,20 @@ public class MovementData
     public int EndFrame;
     public Vector2 StartValue;
     public Vector2 EndValue;
+}
+
+[System.Serializable]
+public class SpecialMovementData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public SpecialMovementType MoveType;
+}
+
+public enum SpecialMovementType
+{
+    AddInput = 0,
+    Rotate = 1,
 }
 
 [System.Serializable]

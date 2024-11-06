@@ -5,11 +5,13 @@ using Mirror;
 public class EnemyController : CharacterBehaviour
 {
     public BotAIData botAIData;
-    [Sirenix.OdinInspector.ShowInInspector]
+    [SyncVar, Mirror.ShowInInspector]
     private bool isAware = false;
-    [Sirenix.OdinInspector.ShowInInspector]
+    [SyncVar, Mirror.ShowInInspector]
     private float stateTimer = 0f;
+    [SyncVar, Mirror.ShowInInspector]
     private int currentBotAIIndex = 0;
+    [SyncVar, Mirror.ShowInInspector]
     private float duration = 0f;
 
     protected override void Start()

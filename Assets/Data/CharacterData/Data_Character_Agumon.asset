@@ -22,12 +22,13 @@ MonoBehaviour:
   baseHP: 10
   baseATK: 5
   moveSpeed: 5
+  defaultBasicAttackCycle: 5
   hpPerLevel: 2
   atkPerLevel: 1
   colliderRadius: 0.45
   mass: 10
   drag: 10
-  attackRange: 1.5
+  attackRange: 5
   Hurtboxes:
   - Offset: {x: 0, y: 0}
     Radius: 0.5
@@ -42,6 +43,6 @@ MonoBehaviour:
     ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
   targetingWeightThreshold: 0.273
   shortDistance: 5
-  wideAngle: 90
+  wideAngle: 120
   narrowAngle: 30
   longDistance: 10
