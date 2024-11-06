@@ -67,6 +67,11 @@ MonoBehaviour:
     HitStunFrame: 10
     KnockbackPower: 7
     hitType: 1
+  ActionSpawnBulletList:
+  - SpawnFrame: 0
+    BulletPrefab: {fileID: 0}
+    Offset: {x: 0, y: 0}
+    Angle: 0
   AutoCorrection:
     correctionType: 0
     entityName: Kiwi

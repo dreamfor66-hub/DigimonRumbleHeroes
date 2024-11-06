@@ -42,8 +42,13 @@ public class ActionData : ScriptableObject
     [PropertyOrder(1)]
     public List<HitData> HitIdList = new List<HitData>();
 
-    [Title("Auto Correction")]
+    [Title("SpawnBullet")]
     [PropertyOrder(2)]
+    [TableList(AlwaysExpanded = true)]
+    public List<BulletSpawnData> ActionSpawnBulletList = new List<BulletSpawnData>();
+
+    [Title("Auto Correction")]
+    [PropertyOrder(10)]
     [HideLabel]
     public AutoCorrectionData AutoCorrection;
 
@@ -130,6 +135,7 @@ public class MovementData
     public Vector2 EndValue;
 }
 
+
 [System.Serializable]
 public class SpecialMovementData
 {
@@ -164,6 +170,15 @@ public class HitData
     public float HitStunFrame;
     public float KnockbackPower;
     public HitType hitType;
+}
+
+[System.Serializable]
+public class BulletSpawnData
+{
+    public int SpawnFrame;
+    public BulletBehaviour BulletPrefab;
+    public Vector2 Offset;
+    public float Angle;
 }
 
 [System.Serializable]

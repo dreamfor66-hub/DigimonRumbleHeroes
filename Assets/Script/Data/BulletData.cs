@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using System;
 
+[Serializable]
 [CreateAssetMenu(fileName = "Data_Bullet_New", menuName = "Data/Bullet Data", order = 1)]
 public class BulletData : ScriptableObject
 {
@@ -14,6 +15,8 @@ public class BulletData : ScriptableObject
     public BulletTrigger DespawnBy = BulletTrigger.LifeTime;
 
     [Title("Move")]
+    [PropertyOrder(1)]
+    public BulletMoveType MoveType = BulletMoveType.ConstantSpeed;
     [PropertyOrder(1)]
     public float Speed = 1f;
 

@@ -239,6 +239,18 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 }
             }
 
+            foreach (var spawnData in currentActionData.ActionSpawnBulletList)
+            {
+                if (Mathf.RoundToInt(currentFrame) == spawnData.SpawnFrame)
+                {
+                    Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
+                    Vector3 spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+
+                    BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.identity);
+                    bullet.Initialize(this, spawnDirection);
+                }
+            }
+
             // Hitbox Cast
             foreach (var hitbox in currentActionData.HitboxList)
             {
@@ -419,7 +431,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         return 1f;
     }
 
-    protected void ApplyHitStop(float durationInFrames)
+    public void ApplyHitStop(float durationInFrames)
     {
         float durationInSeconds = durationInFrames / 60f;
 
@@ -537,10 +549,27 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 #endif
 
 #if UNITY_IOS || UNITY_ANDROID
-        if (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Moved || Input.GetTouch(0).phase == TouchPhase.Stationary))
+        if (Input.touchCount > 0)
         {
-            Vector3 currentTouchPosition = Input.GetTouch(0).position;
-            Vector3 touchDelta = currentTouchPosition - Camera.main.WorldToScreenPoint(transform.position);
+            Touch touch = Input.GetTouch(0); // 첫 번째 터치 입력만 처리
+            if (touch.phase == TouchPhase.Began)
+            {
+                initialTouchPosition = touch.position;
+                touchStartTime = Time.time;
+                touchDelta = Vector3.zero;
+            }
+            else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+            {
+                touchDelta = (Vector3)touch.position - initialTouchPosition;
+                touchDeltaDistance = touchDelta.magnitude;
+                touchElapsedTime = Time.time - touchStartTime;
+            }
+            else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                touchDelta = Vector3.zero;
+                touchDeltaDistance = touchDelta.magnitude;
+                touchElapsedTime = Time.time - touchStartTime;
+            }
             return GetDirectionalInput(touchDelta);
         }
 #endif
@@ -567,7 +596,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
-    protected virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    public virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
     {
         Debug.Log("여기");
         currentHealth -= damage;
@@ -631,7 +660,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    public void RpcTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
     {
         if (!isServer)
         {
