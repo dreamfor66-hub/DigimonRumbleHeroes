@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
   m_Name: Data_Action_Agumon_BasicAttack_01
   m_EditorClassIdentifier: 
-  ActionFrame: 120
+  ActionFrame: 100
   AnimationKey: Basic01
   AnimationCurve:
     serializedVersion: 2
@@ -47,30 +47,14 @@ MonoBehaviour:
   - StartFrame: 0
     EndFrame: 120
     MoveType: 0
-  HitboxList:
-  - StartFrame: 25
-    EndFrame: 30
-    Offset: {x: 0, y: 0}
-    Radius: 1
-    HitId: 0
-    HitGroup: 0
-  - StartFrame: 25
-    EndFrame: 30
-    Offset: {x: 0, y: 2}
-    Radius: 1
-    HitId: 0
-    HitGroup: 0
-  HitIdList:
-  - HitId: 0
-    HitDamage: 1.5
-    HitStopFrame: 5
-    HitStunFrame: 10
-    KnockbackPower: 7
-    hitType: 1
+  HitboxList: []
+  HitIdList: []
   ActionSpawnBulletList:
-  - SpawnFrame: 0
-    BulletPrefab: {fileID: 0}
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 5b18152df67d72a4094fa79b5d43f108,
+      type: 3}
     Offset: {x: 0, y: 0}
+    Pivot: 1
     Angle: 0
   AutoCorrection:
     correctionType: 0

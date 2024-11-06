@@ -5,14 +5,15 @@ using UnityEngine;
 
 public class BulletBehaviour : NetworkBehaviour
 {
-    [SerializeField]
-    [InlineEditor]
     public BulletData bulletData;
 
     private float spawnTime;
+    private float currentFrame;
     private Vector3 direction;
     private CharacterBehaviour owner;
     private bool isDespawned;
+    private bool isHitStopped;
+    private float hitStopTimer;
 
     private Dictionary<CharacterBehaviour, List<int>> hitTargets = new Dictionary<CharacterBehaviour, List<int>>();
 
@@ -22,13 +23,24 @@ public class BulletBehaviour : NetworkBehaviour
         this.direction = direction.normalized;
         TriggerBulletDespawn(BulletTrigger.Spawn);
         spawnTime = Time.time;
+        currentFrame = 0;
     }
 
     private void Update()
     {
+        if (isHitStopped)
+        {
+            hitStopTimer -= Time.deltaTime;
+            if (hitStopTimer <= 0)
+                ResumeAfterHitStop();
+            return;
+        }
+
         BulletMove();
         CheckLifetime();
-        PerformHitDetection();
+        HitCast();
+
+        currentFrame += Time.deltaTime * 60f;
     }
 
     private void BulletMove()
@@ -36,7 +48,7 @@ public class BulletBehaviour : NetworkBehaviour
         switch (bulletData.MoveType)
         {
             case BulletMoveType.ConstantSpeed:
-                transform.position += direction * bulletData.Speed * Time.deltaTime;
+                transform.position += transform.forward * bulletData.Speed * Time.deltaTime;
                 break;
 
                 // 추후 다른 움직임 타입 추가 가능
@@ -69,36 +81,41 @@ public class BulletBehaviour : NetworkBehaviour
         Destroy(gameObject);
     }
 
-    private void PerformHitDetection()
+    private void HitCast()
     {
         foreach (var hitbox in bulletData.HitboxList)
         {
-            Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
-            Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
-
-            foreach (var hitCollider in hitColliders)
+            if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
             {
-                CharacterBehaviour target = hitCollider.GetComponentInParent<CharacterBehaviour>();
+                Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
+                Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
 
-                if (target == null || target == owner || (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup)))
-                    continue;
-
-                bool isValidTarget = (owner is PlayerController && target is EnemyController) ||
-                                     (owner is EnemyController && target is PlayerController);
-
-                if (isValidTarget)
+                foreach (var hitCollider in hitColliders)
                 {
-                    HandleHit(hitbox.HitId, target);
+                    CharacterBehaviour target = hitCollider.GetComponentInParent<CharacterBehaviour>();
 
-                    if (!hitTargets.ContainsKey(target))
-                        hitTargets[target] = new List<int>();
+                    if (target == null || target == owner || (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup)))
+                        continue;
 
-                    hitTargets[target].Add(hitbox.HitGroup);
-                    TriggerBulletDespawn(BulletTrigger.Hit);
-                    break;
+                    bool isValidTarget = (owner is PlayerController && target is EnemyController) ||
+                                         (owner is EnemyController && target is PlayerController);
+
+                    if (isValidTarget)
+                    {
+                        HandleHit(hitbox.HitId, target);
+
+                        if (!hitTargets.ContainsKey(target))
+                            hitTargets[target] = new List<int>();
+
+                        hitTargets[target].Add(hitbox.HitGroup);
+                        TriggerBulletDespawn(BulletTrigger.Hit);
+                        break;
+                    }
                 }
             }
         }
+
+        
     }
 
     private void HandleHit(int hitId, CharacterBehaviour target)
@@ -108,33 +125,27 @@ public class BulletBehaviour : NetworkBehaviour
 
         Vector3 hitDirection = (target.transform.position - transform.position).normalized;
 
-        if (isServer)
+        //if (isServer)
         {
             target.TakeDamage(hitData.HitDamage, hitDirection, hitData, owner);
-            target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitData, owner);
+            //target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitData, owner);
+            target.ApplyHitStop(hitData.HitStopFrame);
             OnHit(target);
-            RpcOnHit(target);
-            ApplyHitStop(hitData.HitStopFrame, target);
+            //RpcOnHit(target);
+            ApplyHitStop(hitData.HitStopFrame);
         }
     }
 
-    private void ApplyHitStop(float hitStopDuration, CharacterBehaviour target)
+    private void ApplyHitStop(float hitStopDuration)
     {
-        if (isServer)
-        {
-            owner.ApplyHitStop(hitStopDuration);
-            target.ApplyHitStop(hitStopDuration);
-            RpcApplyHitStop(hitStopDuration);
-        }
+        float durationInSeconds = hitStopDuration / 60f;
+        isHitStopped = true;
+        hitStopTimer = durationInSeconds;  // 프레임을 초로 변환
     }
 
-    [ClientRpc]
-    private void RpcApplyHitStop(float hitStopDuration)
+    private void ResumeAfterHitStop()
     {
-        if (!isServer)
-        {
-            owner.ApplyHitStop(hitStopDuration);
-        }
+        isHitStopped = false;
     }
 
     [ClientRpc]

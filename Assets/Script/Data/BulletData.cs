@@ -5,8 +5,9 @@ using UnityEditor;
 using UnityEditor.Animations;
 using System;
 
-[Serializable]
+
 [CreateAssetMenu(fileName = "Data_Bullet_New", menuName = "Data/Bullet Data", order = 1)]
+[InlineEditor]
 public class BulletData : ScriptableObject
 {
     [PropertyOrder(0)]
@@ -47,3 +48,4 @@ public enum BulletMoveType
 {
     ConstantSpeed = 0,
 }
+

@@ -244,13 +244,36 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (Mathf.RoundToInt(currentFrame) == spawnData.SpawnFrame)
                 {
                     Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
-                    Vector3 spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
 
-                    BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.identity);
-                    bullet.Initialize(this, spawnDirection);
+                    Vector3 spawnDirection;
+                    switch (spawnData.Pivot)
+                    {
+                        case ActionSpawnBulletAnglePivot.Forward:
+                            spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            break;
+
+                        case ActionSpawnBulletAnglePivot.ToTarget:
+                            if (target != null)
+                            {
+                                Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
+                                spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * directionToTarget;
+                            }
+                            else
+                            {
+                                spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            }
+                            break;
+
+                        default:
+                            spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            break;
+                    }
+
+                    // Bullet 인스턴스 생성 및 초기화
+                    BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
+                    bullet.Initialize(this, spawnDirection); // Bullet의 초기 방향 설정
                 }
             }
-
             // Hitbox Cast
             foreach (var hitbox in currentActionData.HitboxList)
             {
@@ -303,6 +326,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 {
                     EndAction();
                 }
+            }
+            if (currentFrame >= currentActionData.ActionFrame)
+            {
+                EndAction();
             }
         }
         else

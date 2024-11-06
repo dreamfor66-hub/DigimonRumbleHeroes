@@ -178,7 +178,14 @@ public class BulletSpawnData
     public int SpawnFrame;
     public BulletBehaviour BulletPrefab;
     public Vector2 Offset;
+    public ActionSpawnBulletAnglePivot Pivot;
     public float Angle;
+}
+
+public enum ActionSpawnBulletAnglePivot
+{
+    Forward = 0,
+    ToTarget = 1,
 }
 
 [System.Serializable]

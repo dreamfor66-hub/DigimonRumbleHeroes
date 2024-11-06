@@ -12,8 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Agumon_Basic01
   m_EditorClassIdentifier: 
-  LiftTime: 0
-  DespawnBy: 1
-  Speed: 1
-  HitboxList: []
-  HitIdList: []
+  LiftTime: 2
+  DespawnBy: 8
+  MoveType: 0
+  Speed: 5
+  HitboxList:
+  - StartFrame: 0
+    EndFrame: 120
+    Offset: {x: 0, y: 0}
+    Radius: 0.5
+    HitId: 0
+    HitGroup: 0
+  HitIdList:
+  - HitId: 0
+    HitDamage: 1
+    HitStopFrame: 5
+    HitStunFrame: 0
+    KnockbackPower: 1
+    hitType: 2
