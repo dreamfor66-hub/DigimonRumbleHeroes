@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Party: []
-  PlayerStartPoint: {x: 0, y: 0}
+  PlayerStartPoint: {x: 0, y: 2}
   MapSize: {x: 0, y: 0}
 --- !u!4 &827873907
 Transform:

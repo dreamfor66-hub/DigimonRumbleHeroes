@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Data_Bullet_Agumon_Basic01
   m_EditorClassIdentifier: 
   LiftTime: 2
-  DespawnBy: 8
+  DespawnBy: 10
   MoveType: 0
-  Speed: 5
+  Speed: 15
   HitboxList:
   - StartFrame: 0
     EndFrame: 120
@@ -25,8 +25,8 @@ MonoBehaviour:
     HitGroup: 0
   HitIdList:
   - HitId: 0
-    HitDamage: 1
+    HitDamage: 0
     HitStopFrame: 5
     HitStunFrame: 0
-    KnockbackPower: 1
-    hitType: 2
+    KnockbackPower: 5
+    hitType: 0

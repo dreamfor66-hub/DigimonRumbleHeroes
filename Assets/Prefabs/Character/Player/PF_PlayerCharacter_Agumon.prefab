@@ -56,8 +56,19 @@ MonoBehaviour:
   currentSpeed: 0
   currentState: 1
   isDie: 0
+  currentHealth: 0
   collisionCollider: {fileID: 0}
   target: {fileID: 0}
+  moveVector: {x: 0, y: 0, z: 0}
+  targetRotation: {x: 0, y: 0, z: 0, w: 0}
+  initialTouchPosition: {x: 0, y: 0, z: 0}
+  touchDelta: {x: 0, y: 0, z: 0}
+  touchDeltaDistance: 0
+  touchElapsedTime: 0
+  inputDirection: {x: 0, y: 0, z: 0}
+  speedMultiplier: 0
+  touchStartTime: 0
+  canInputInAction: 0
   hit: 0
   currentHitTarget: {fileID: 0}
   lastHitTarget: {fileID: 0}
@@ -65,6 +76,8 @@ MonoBehaviour:
   currentAttacker: {fileID: 0}
   lastAttacker: {fileID: 0}
   playerNumber: 0
+  basicAttackCycle: 1.25
+  basicReady: 0
 --- !u!114 &1841091628799428591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,8 +239,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 63d2c6455fa88d348b6f38dfb32039d3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3766855839921030710}
   m_SourcePrefab: {fileID: 100100000, guid: 63d2c6455fa88d348b6f38dfb32039d3, type: 3}
+--- !u!1 &211056553053665879 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 63d2c6455fa88d348b6f38dfb32039d3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1021396828413036294}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3766855839921030710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 211056553053665879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 055cf3f4c91f24344bffaf7d1cbad08b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  headWeight: 1
+  bodyWeight: 0.2
+  animator: {fileID: 0}
 --- !u!4 &695245930566803693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 63d2c6455fa88d348b6f38dfb32039d3,

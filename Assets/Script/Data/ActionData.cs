@@ -142,13 +142,18 @@ public class SpecialMovementData
     public int StartFrame;
     public int EndFrame;
     public SpecialMovementType MoveType;
+    [ShowIf("MoveType", SpecialMovementType.AddInput)]
+    public bool CanRotate;
+    [ShowIf("MoveType", SpecialMovementType.LookRotateTarget)]
+    public float Value;
 }
 
 public enum SpecialMovementType
 {
     AddInput = 0,
-    Rotate = 1,
+    LookRotateTarget = 1,
 }
+
 
 [System.Serializable]
 public class HitboxData

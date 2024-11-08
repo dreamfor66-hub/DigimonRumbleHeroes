@@ -67,7 +67,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public float speedMultiplier;
     public float touchStartTime; 
 
-    public bool canInputInAction;
 
     protected virtual void Start()
     {
@@ -214,11 +213,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 if (currentFrame >= specialMovement.StartFrame && currentFrame <= specialMovement.EndFrame)
                 {
-                    canInputInAction = true;
                     ApplySpecialMovement(specialMovement);
                 }
-                else if (currentFrame > specialMovement.EndFrame)
-                    canInputInAction = false;
             }
 
             // TransformMove
@@ -523,8 +519,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     transform.position += moveVector;
 
                     // 회전 처리
-                    targetRotation = Quaternion.LookRotation(inputDirection);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                    if (specialMovementData.CanRotate)
+                    {
+                        targetRotation = Quaternion.LookRotation(inputDirection);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                    }
                 }
                 else
                 {
@@ -535,11 +534,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 }
                 break;
 
-            case SpecialMovementType.Rotate:
-                if (direction != Vector3.zero)
+            case SpecialMovementType.LookRotateTarget:
+                if (target != null)
                 {
-                    Quaternion rotation = Quaternion.LookRotation(direction);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 10f);
+                    Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
+                    Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,specialMovementData.Value * Time.deltaTime);
                 }
                 break;
 

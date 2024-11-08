@@ -29,7 +29,7 @@ public class PlayerController : CharacterBehaviour
     {
         base.Start();
         lastPosition = transform.position;
-
+        basicAttackCycle = characterData.defaultBasicAttackCycle;
         EntityContainer.Instance.RegisterPlayer(this);
 
         if (isLocalPlayer)
