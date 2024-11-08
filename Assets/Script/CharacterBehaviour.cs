@@ -1,10 +1,11 @@
+using Mirror;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public abstract class CharacterBehaviour : MonoBehaviour
+public abstract class CharacterBehaviour : NetworkBehaviour
 {
     public CharacterData characterData;
     private Collider[] hurtboxColliders;
@@ -12,16 +13,22 @@ public abstract class CharacterBehaviour : MonoBehaviour
     protected Animator animator;
     protected Vector3 direction;
     [SerializeField]
+    [SyncVar]
     protected float currentSpeed;
     protected float stopTime = 0.05f;
     protected float stopTimer;
 
-    public CharacterState currentState = CharacterState.Idle;
+    [SyncVar]
+    public CharacterState currentState = CharacterState.Idle; // SyncVar로 변경하여 동기화
+    [SyncVar]
     protected ActionKey currentActionKey;
 
+    [SyncVar]
     protected float currentFrame;
+    [SyncVar]
+    public bool isDie;
 
-    [ShowInInspector, ReadOnly]
+    [SerializeField,Sirenix.OdinInspector.ReadOnly, SyncVar]
     protected float currentHealth;
 
     protected Dictionary<CharacterBehaviour, List<int>> hitTargets;
@@ -29,18 +36,37 @@ public abstract class CharacterBehaviour : MonoBehaviour
     public SphereCollider collisionCollider;
 
     // Knockback 관련 변수들
+    [SyncVar]
     private Vector3 knockBackDirection;
+    [SyncVar]
     private float knockBackSpeed;
+    [SyncVar]
     private float knockBackDuration;
+    [SyncVar]
     private float knockBackTimer;
 
     // HitStop 관련 변수들
+    [SyncVar]
     private float hitStopTimer; // HitStop 시간을 관리하는 타이머
+    [SyncVar]
     private bool isHitStopped; // HitStop 상태를 나타내는 변수
 
     // target 관련 변수
+    [SyncVar]
     public CharacterBehaviour target;
     private GameObject targetIndicator;
+
+    // ActionMove에 관한, player에서 주로 사용할 변수목록
+    public Vector3 moveVector;
+    public Quaternion targetRotation;
+    public Vector3 initialTouchPosition;
+    public Vector3 touchDelta;
+    public float touchDeltaDistance;
+    public float touchElapsedTime;
+    public Vector3 inputDirection;
+    public float speedMultiplier;
+    public float touchStartTime; 
+
 
     protected virtual void Start()
     {
@@ -51,8 +77,11 @@ public abstract class CharacterBehaviour : MonoBehaviour
         InitializeCollisionCollider();
         InitializeHealth();
         EntityContainer.Instance.RegisterCharacter(this);
+        isDie = false;
         hitStopTimer = 0f;
         isHitStopped = false;
+
+        if (this is PlayerController)animator.SetLayerWeight(1, 0);
     }
 
     protected void InitializeHurtboxes()
@@ -88,6 +117,9 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (!isServer && !isLocalPlayer)
+            return; // 클라이언트에서만 동작이 실행되지 않도록 설정
+
         if (isHitStopped)
         {
             hitStopTimer -= Time.deltaTime;
@@ -97,6 +129,9 @@ public abstract class CharacterBehaviour : MonoBehaviour
             }
             return;
         }
+
+        if (isDie)
+            return;
 
         switch (currentState)
         {
@@ -110,17 +145,57 @@ public abstract class CharacterBehaviour : MonoBehaviour
                 HandleAction();
                 break;
             case CharacterState.KnockBack:
-                HandleKnockback();
+                CmdHandleKnockback();
                 break;
             case CharacterState.KnockBackSmash:
-                HandleKnockbackSmash();
+                CmdHandleKnockbackSmash();
                 break;
+        }
+
+
+        if (this is PlayerController)
+        {
+             animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+        }
+    }
+
+    public void ChangeStatePrev(CharacterState newState)
+    {
+        if (isServer)
+        {
+            ChangeState(newState);
+            RpcChangeState(newState);
+        }
+        else
+        {
+            CmdChangeState(newState);
+        }
+    }
+
+    private void ChangeState(CharacterState newState)
+    {
+        currentState = newState;
+    }
+
+    [Command]
+    public void CmdChangeState(CharacterState newState)
+    {
+        ChangeState(newState);
+        RpcChangeState(newState);
+    }
+    [ClientRpc]
+    private void RpcChangeState(CharacterState newState)
+    {
+        if (!isServer)
+        {
+            ChangeState(newState);
         }
     }
 
     protected virtual void HandleIdle() { }
 
-    protected virtual void HandleMovement() { }
+    protected virtual void HandleMovement() { } 
 
     protected void HandleAction()
     {
@@ -134,37 +209,87 @@ public abstract class CharacterBehaviour : MonoBehaviour
             }
 
             float animationFrame = currentActionData.AnimationCurve.Evaluate(currentFrame);
-            animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+
+            // 로컬 플레이어일 경우 애니메이션 재생 및 서버에 요청
+            if (isLocalPlayer)
+            {
+                animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+                CmdPlayAnimation(currentActionData.AnimationKey, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+            }
+
+            //SpecialMove
+            foreach (var specialMovement in currentActionData.SpecialMovementList)
+            {
+                if (currentFrame >= specialMovement.StartFrame && currentFrame <= specialMovement.EndFrame)
+                {
+                    ApplySpecialMovement(specialMovement);
+                }
+                else
+                {
+                    if (this is PlayerController)
+                        animator.SetLayerWeight(1, 0);
+                }
+            }
 
             // TransformMove
             foreach (var movement in currentActionData.MovementList)
             {
                 if (currentFrame >= movement.StartFrame && currentFrame <= movement.EndFrame)
                 {
-                    // 프레임 사이의 비율 계산 (0부터 1까지의 값)
                     float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
-
-                    // StartValue에서 EndValue로 선형 보간
                     Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
-
-                    // 보간된 값을 이동 벡터로 변환
                     Vector3 moveVector = new Vector3(interpolatedSpeed.x, 0, interpolatedSpeed.y);
-
-                    // 충돌과 슬라이딩을 처리한 후 이동
                     Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
-                    // 최종적으로 캐릭터의 위치를 업데이트
-                    transform.position += finalMoveVector;
+                    // 로컬 플레이어의 이동을 서버에 동기화
+                    if (isLocalPlayer)
+                    {
+                        CmdSyncMovement(finalMoveVector);
+                    }
                 }
             }
 
+            foreach (var spawnData in currentActionData.ActionSpawnBulletList)
+            {
+                if (Mathf.RoundToInt(currentFrame) == spawnData.SpawnFrame)
+                {
+                    Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
+
+                    Vector3 spawnDirection;
+                    switch (spawnData.Pivot)
+                    {
+                        case ActionSpawnBulletAnglePivot.Forward:
+                            spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            break;
+
+                        case ActionSpawnBulletAnglePivot.ToTarget:
+                            if (target != null)
+                            {
+                                Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
+                                spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * directionToTarget;
+                            }
+                            else
+                            {
+                                spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            }
+                            break;
+
+                        default:
+                            spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+                            break;
+                    }
+
+                    // Bullet 인스턴스 생성 및 초기화
+                    BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
+                    bullet.Initialize(this, spawnDirection); // Bullet의 초기 방향 설정
+                }
+            }
             // Hitbox Cast
             foreach (var hitbox in currentActionData.HitboxList)
             {
                 if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
                 {
                     Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
-
                     Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
 
                     foreach (var hitCollider in hitColliders)
@@ -186,8 +311,16 @@ public abstract class CharacterBehaviour : MonoBehaviour
                                 continue;
                             }
 
-                            HandleHit(hitbox.HitId, target, currentActionData);
-
+                            // 히트를 로컬 플레이어에서 서버에 요청
+                            if (isServer)
+                            {
+                                HandleHit(hitbox.HitId, target, currentActionData);
+                                RpcHandleHit(hitbox.HitId, target, currentActionData);
+                            }
+                            //else if (isLocalPlayer)
+                            //{
+                            //    CmdHandleHit(hitbox.HitId, target, currentActionData);
+                            //}
                             if (!hitTargets.ContainsKey(target))
                             {
                                 hitTargets[target] = new List<int>();
@@ -198,8 +331,12 @@ public abstract class CharacterBehaviour : MonoBehaviour
                         }
                     }
                 }
-            }
 
+                if (currentFrame >= currentActionData.ActionFrame)
+                {
+                    EndAction();
+                }
+            }
             if (currentFrame >= currentActionData.ActionFrame)
             {
                 EndAction();
@@ -209,6 +346,111 @@ public abstract class CharacterBehaviour : MonoBehaviour
         {
             Debug.LogWarning($"ActionData for {currentActionKey} not found in ActionTable.");
             EndAction();
+        }
+    }
+
+    // 서버에 애니메이션 재생 요청
+    [Command]
+    private void CmdPlayAnimation(string animationKey, float normalizedTime)
+    {
+        RpcPlayAnimation(animationKey, normalizedTime);
+    }
+
+    // 클라이언트에 애니메이션 재생 동기화
+    [ClientRpc]
+    private void RpcPlayAnimation(string animationKey, float normalizedTime)
+    {
+        if (!isLocalPlayer)
+        {
+            animator.Play(animationKey, 0, normalizedTime);
+        }
+    }
+
+    // 서버에 캐릭터 이동 동기화 요청
+    [Command]
+    private void CmdSyncMovement(Vector3 moveVector)
+    {
+        RpcSyncMovement(moveVector);
+    }
+
+    // 클라이언트에 캐릭터 이동 동기화
+    [ClientRpc]
+    private void RpcSyncMovement(Vector3 moveVector)
+    {
+        if (!isLocalPlayer)
+        {
+            transform.position += moveVector;
+        }
+    }
+
+    protected void HandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+    {
+        var hitData = currentActionData.HitIdList.Find(hit => hit.HitId == hitId);
+
+        if (hitData != null)
+        {
+            Vector3 hitDirection = (target.transform.position - transform.position).normalized;
+            // 서버에 피해 적용 요청
+            if (isServer)
+            {
+                target.TakeDamage(hitData.HitDamage, hitDirection, hitData, this);
+                target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitData, this);
+            }
+            //else
+            //{
+            //    target.CmdTakeDamage(hitData.HitDamage, hitDirection, hitData, this);
+            //}
+
+            if (isServer)
+            {
+                OnHit(target);
+                RpcOnHit(target);
+            }
+            //else
+            //{
+            //    CmdOnHit(target);
+            //}
+            float hitStopDuration = hitData.HitStopFrame;
+            // HitStop 적용
+            if (isServer)
+            {
+                ApplyHitStop(hitStopDuration);
+                RpcApplyHitStop(hitStopDuration);
+                target.ApplyHitStop(hitStopDuration);
+                target.RpcApplyHitStop(hitStopDuration);
+            }
+
+            else
+            {
+                CmdApplyHitStop(hitStopDuration);
+            }
+            
+            
+            
+
+            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitStopFrame} frames of hitstop.");
+        }
+    }
+
+
+    [Command]
+    private void CmdHandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+    {
+        if (target != null)
+        {
+            RpcHandleHit(hitId, target, currentActionData);
+            HandleHit(hitId, target, currentActionData);
+        }
+    }
+    [ClientRpc]
+    private void RpcHandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
+    {
+        if (!isServer && !isLocalPlayer)
+        {
+            if (target != null)
+            {
+                HandleHit(hitId, target, currentActionData);
+            }
         }
     }
 
@@ -226,7 +468,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
         return 1f;
     }
 
-    protected void ApplyHitStop(float durationInFrames)
+    public void ApplyHitStop(float durationInFrames)
     {
         float durationInSeconds = durationInFrames / 60f;
 
@@ -237,6 +479,22 @@ public abstract class CharacterBehaviour : MonoBehaviour
         if (animator != null)
         {
             animator.speed = 0f;
+        }
+    }
+
+    [Command]
+    void CmdApplyHitStop(float durationInFrames)
+    {
+        ApplyHitStop(durationInFrames);
+        RpcApplyHitStop(durationInFrames);
+    }
+
+    [ClientRpc]
+    void RpcApplyHitStop(float durationInFrames)
+    {
+        if (!isServer)
+        {
+            ApplyHitStop(durationInFrames);
         }
     }
 
@@ -251,34 +509,151 @@ public abstract class CharacterBehaviour : MonoBehaviour
         }
     }
 
-    protected void HandleHit(int hitId, CharacterBehaviour target, ActionData currentActionData)
-    {
-        var hitData = currentActionData.HitIdList.Find(hit => hit.HitId == hitId);
-
-        if (hitData != null)
-        {
-            Vector3 hitDirection = (target.transform.position - transform.position).normalized;
-            target.TakeDamage(hitData.HitDamage, hitDirection, hitData, this);
-            OnHit(target);
-
-            // HitStop을 프레임 단위로 계산
-            float hitStopDuration = hitData.HitStopFrame;
-            ApplyHitStop(hitStopDuration);
-            target.ApplyHitStop(hitStopDuration);
-
-            Debug.Log($"Hit {target.name} for {hitData.HitDamage} damage with {hitData.HitStopFrame} frames of hitstop.");
-        }
-    }
+   
 
     protected virtual void EndAction()
     {
         hitTargets.Clear();
-        currentState = CharacterState.Idle;
+        ChangeStatePrev(CharacterState.Idle);
         currentFrame = 0;
     }
 
-    protected virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+
+    private void ApplySpecialMovement(SpecialMovementData specialMovementData)
     {
+        switch (specialMovementData.MoveType)
+        {
+            case SpecialMovementType.AddInput:
+                inputDirection = CalculateInputDirection();
+
+                if (inputDirection != Vector3.zero)
+                {
+                    currentSpeed = characterData.moveSpeed * inputDirection.magnitude;
+                    moveVector = HandleCollisionAndSliding(inputDirection.normalized, currentSpeed) * specialMovementData.Value;
+                    transform.position += moveVector;
+
+                    // 회전 처리
+                    if (specialMovementData.CanRotate)
+                    {
+                        targetRotation = Quaternion.LookRotation(inputDirection);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                    }
+
+                    // 애니메이터에 방향 인풋 신호 전달
+                    Vector3 localInputDirection = transform.InverseTransformDirection(inputDirection);
+                    localInputDirection = localInputDirection.normalized;
+
+                    animator.SetFloat("X", localInputDirection.x);
+                    animator.SetFloat("Z", localInputDirection.z);
+                }
+                else
+                {
+                    // 인풋이 없는 경우 속도를 줄임
+                    currentSpeed = Mathf.Lerp(currentSpeed, 0, Time.deltaTime);
+                    moveVector = HandleCollisionAndSliding(Vector3.zero, currentSpeed) * specialMovementData.Value;
+                    transform.position += moveVector;
+
+                    // 애니메이터 속도 감소
+                    animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+                    animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+                }
+
+                if (this is PlayerController)
+                    animator.SetLayerWeight(1, 1);
+                break;
+
+            case SpecialMovementType.LookRotateTarget:
+                if (target != null)
+                {
+                    Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
+                    Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,specialMovementData.Value * Time.deltaTime);
+                }
+                break;
+
+            default:
+                Debug.LogWarning("처리되지 않은 SpecialMovementType입니다.");
+                break;
+        }
+    }
+
+    private Vector3 CalculateInputDirection()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetMouseButtonDown(0))
+        {
+            initialTouchPosition = Input.mousePosition;
+            touchStartTime = Time.time;
+            touchDelta = Vector3.zero;
+            //touchDeltaDistance = touchDelta.magnitude;
+            //touchElapsedTime = Time.time - touchStartTime;
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            touchDelta = Input.mousePosition - initialTouchPosition;
+            touchDeltaDistance = touchDelta.magnitude;
+            touchElapsedTime = Time.time - touchStartTime;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            touchDelta = Vector3.zero;
+            touchDeltaDistance = touchDelta.magnitude;
+            touchElapsedTime = Time.time - touchStartTime;
+        }
+        return GetDirectionalInput(touchDelta);
+#endif
+
+#if UNITY_IOS || UNITY_ANDROID
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0); // 첫 번째 터치 입력만 처리
+            if (touch.phase == TouchPhase.Began)
+            {
+                initialTouchPosition = touch.position;
+                touchStartTime = Time.time;
+                touchDelta = Vector3.zero;
+            }
+            else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+            {
+                touchDelta = (Vector3)touch.position - initialTouchPosition;
+                touchDeltaDistance = touchDelta.magnitude;
+                touchElapsedTime = Time.time - touchStartTime;
+            }
+            else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                touchDelta = Vector3.zero;
+                touchDeltaDistance = touchDelta.magnitude;
+                touchElapsedTime = Time.time - touchStartTime;
+            }
+            return GetDirectionalInput(touchDelta);
+        }
+#endif
+
+        return Vector3.zero;
+    }
+
+    private Vector3 GetDirectionalInput(Vector3 touchDelta)
+    {
+        touchDeltaDistance = touchDelta.magnitude;
+        speedMultiplier = Mathf.Clamp(touchDeltaDistance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+
+        inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
+
+        Vector3 cameraForward = Camera.main.transform.forward;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+
+        Vector3 cameraRight = Camera.main.transform.right;
+        cameraRight.y = 0;
+        cameraRight.Normalize();
+
+        return (inputDirection.x * cameraRight + inputDirection.z * cameraForward) * speedMultiplier;
+    }
+
+
+    public virtual void TakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    {
+        Debug.Log("여기");
         currentHealth -= damage;
 
         // 공격자가 있다면 그 방향을 바라보게 함
@@ -304,16 +679,56 @@ public abstract class CharacterBehaviour : MonoBehaviour
             switch (hitData.hitType)
             {
                 case HitType.Weak:
-                    StartKnockBack(hitDirection, hitData);
+                    if (isServer)
+                    {
+                        StartKnockBack(hitDirection, hitData);
+                        RpcStartKnockBack(hitDirection, hitData);
+                    }
+                    else
+                    {
+                        CmdStartKnockBack(hitDirection, hitData);
+                    }
                     break;
 
                 case HitType.Strong:
-                    StartKnockBackSmash(hitDirection, hitData);
+                    if (isServer)
+                    {
+                        StartKnockBackSmash(hitDirection, hitData);
+                        RpcStartKnockBackSmash(hitDirection, hitData);
+                    }
+                    else
+                    {
+                        CmdStartKnockBackSmash(hitDirection, hitData);
+                    }
                     break;
             }
         }
 
         OnAttacked(attacker);
+    }
+
+    [Command]
+    public void CmdTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    {
+        TakeDamage(damage, hitDirection, hitData, attacker);
+        RpcTakeDamage(damage, hitDirection, hitData, attacker);
+    }
+
+    [ClientRpc]
+    public void RpcTakeDamage(float damage, Vector3 hitDirection, HitData hitData, CharacterBehaviour attacker)
+    {
+        if (!isServer)
+        {
+            if (isLocalPlayer)
+            {
+                return;
+            }
+
+            if (attacker != null)
+            {
+                TakeDamage(damage, hitDirection, hitData, attacker);
+            }
+        }
     }
 
     [HideInInspector] public bool hit;
@@ -330,8 +745,57 @@ public abstract class CharacterBehaviour : MonoBehaviour
         StartCoroutine(ResetHitRecentlyFlag());
     }
 
-    // 리더가 공격을 당했을 때 호출
+    [Command]
+    private void CmdOnHit(CharacterBehaviour target)
+    {
+        // 서버에서 처리 후 클라이언트에 동기화
+        OnHit(target); // 서버에서 로컬 처리
+        RpcOnHit(target);
+    }
+
+    [ClientRpc]
+    private void RpcOnHit(CharacterBehaviour target)
+    {
+        if (!isServer)
+        {
+            // 다른 클라이언트에서 처리
+            OnHit(target);
+        }
+    }
+
     public void OnAttacked(CharacterBehaviour attacker)
+    {
+        // 로컬에서 호출 시 서버에 동기화 요청
+        if (isLocalPlayer)
+        {
+            CmdOnAttacked(attacker);
+        }
+        else
+        {
+            // 로컬에서 처리
+            ProcessOnAttacked(attacker);
+        }
+    }
+
+    [Command]
+    private void CmdOnAttacked(CharacterBehaviour attacker)
+    {
+        // 서버에서 처리 후 클라이언트에 동기화
+        RpcOnAttacked(attacker);
+        ProcessOnAttacked(attacker); // 서버에서 로컬 처리
+    }
+
+    [ClientRpc]
+    private void RpcOnAttacked(CharacterBehaviour attacker)
+    {
+        if (!isLocalPlayer)
+        {
+            // 다른 클라이언트에서 처리
+            ProcessOnAttacked(attacker);
+        }
+    }
+
+    private void ProcessOnAttacked(CharacterBehaviour attacker)
     {
         attacked = true;
         currentAttacker = attacker;
@@ -355,7 +819,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     private void StartKnockBack(Vector3 hitDirection, HitData hitData)
     {
-        currentState = CharacterState.KnockBack;
+        ChangeStatePrev(CharacterState.KnockBack);
         knockBackDirection = hitDirection.normalized;
         knockBackSpeed = hitData.KnockbackPower;
 
@@ -366,9 +830,26 @@ public abstract class CharacterBehaviour : MonoBehaviour
         animator.Play("Knockback");
     }
 
+    [Command]
+    public void CmdStartKnockBack(Vector3 hitDirection, HitData hitData)
+    {
+        StartKnockBack(hitDirection, hitData); // 서버에서 로직 실행
+        RpcStartKnockBack(hitDirection, hitData); // 클라이언트에 동기화
+    }
+
+    [ClientRpc]
+    private void RpcStartKnockBack(Vector3 hitDirection, HitData hitData)
+    {
+        if (!isServer)
+        {
+            StartKnockBack(hitDirection, hitData); // 클라이언트에서 로컬 동작 실행
+        }
+    }
+
     private void StartKnockBackSmash(Vector3 hitDirection, HitData hitData)
     {
-        currentState = CharacterState.KnockBackSmash;
+        ChangeStatePrev(CharacterState.KnockBackSmash);
+        currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
         knockBackDirection = hitDirection.normalized;
         knockBackSpeed = hitData.KnockbackPower;
 
@@ -377,6 +858,23 @@ public abstract class CharacterBehaviour : MonoBehaviour
         knockBackTimer = 0f;
 
         animator.Play("Knockback");
+    }
+
+    [Command]
+    public void CmdStartKnockBackSmash(Vector3 hitDirection, HitData hitData)
+    {
+        StartKnockBackSmash(hitDirection, hitData); // 서버에서 로직 실행
+        RpcStartKnockBackSmash(hitDirection, hitData); // 클라이언트에 동기화
+    }
+
+    [ClientRpc]
+    private void RpcStartKnockBackSmash(Vector3 hitDirection, HitData hitData)
+    {
+        if (!isServer)
+        {
+            StartKnockBackSmash(hitDirection, hitData);
+        }
+
     }
 
     private float initialBurstDuration = 0.2f; // 초기 강한 넉백 구간
@@ -411,9 +909,25 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
-            currentState = CharacterState.Idle;
+            ChangeStatePrev(CharacterState.Idle);
             knockBackSpeed = 0f;
         }
+    }
+
+    [ClientRpc]
+    void RpcHandleKnockback()
+    {
+        if (!isServer)
+        {
+            HandleKnockback();
+        }
+    }
+
+    [Command]
+    void CmdHandleKnockback()
+    {
+        HandleKnockback();
+        RpcHandleKnockback();
     }
 
     protected virtual void HandleKnockbackSmash()
@@ -462,20 +976,35 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
         if (knockBackSpeed < 7f)
         {
-            currentState = CharacterState.KnockBack;
+            ChangeStatePrev(CharacterState.KnockBack);
             knockBackDuration = Mathf.Max(knockBackTimer, knockBackSpeed / 10f);
         }
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
-            currentState = CharacterState.Idle;
+            ChangeStatePrev(CharacterState.Idle);
             knockBackSpeed = 0f;
         }
     }
+    [ClientRpc]
+    void RpcHandleKnockbackSmash()
+    {
+        if (!isServer)
+        {
+            HandleKnockback();
+        }
+    }
 
+    [Command]
+    void CmdHandleKnockbackSmash()
+    {
+        HandleKnockbackSmash();
+        RpcHandleKnockbackSmash();
+    }
 
     protected virtual void Die()
     {
+        isDie = true;
         animator.Play("Die");
         if (EntityContainer.InstanceExist)
         {
@@ -486,12 +1015,30 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     public void StartAction(ActionKey actionKey)
     {
+
         Debug.Log($"Starting action: {actionKey}");
         currentActionKey = actionKey;
-        currentState = CharacterState.Action;
+        ChangeStatePrev(CharacterState.Action);
         currentFrame = 0;
 
         hitTargets.Clear();
+
+    }
+
+    [ClientRpc]
+    public void RpcStartAction(ActionKey actionKey)
+    {
+        if (!isServer)
+        {
+            StartAction(actionKey);
+        }
+    }
+    
+    [Command]
+    public void CmdStartAction(ActionKey actionKey)
+    {
+        StartAction(actionKey);
+        RpcStartAction(actionKey);
     }
 
     protected bool IsCollisionDetected(Vector3 targetPosition, float radius, out Vector3 collisionNormal, out RaycastHit[] hits)
@@ -597,6 +1144,7 @@ public abstract class CharacterBehaviour : MonoBehaviour
 
     protected virtual void HandleInputMessage(InputMessage message)
     {
+
         switch (currentState)
         {
             case CharacterState.Idle:
@@ -613,13 +1161,43 @@ public abstract class CharacterBehaviour : MonoBehaviour
         switch (message)
         {
             case InputMessage.A:
-                StartAction(ActionKey.Basic01);
+                if (isServer)
+                {
+                    // 서버에서는 직접 abc() 실행 및 모든 클라이언트에 동기화
+                    StartAction(ActionKey.Basic01);
+                    RpcStartAction(ActionKey.Basic01);
+                }
+                else if (isLocalPlayer)
+                {
+                    // 클라이언트는 서버에 요청
+                    CmdStartAction(ActionKey.Basic01);
+                }
                 break;
             case InputMessage.B:
-                StartAction(ActionKey.Special01); // 이전 Dash 대신 Special01로 대체
+                if (isServer)
+                {
+                    // 서버에서는 직접 abc() 실행 및 모든 클라이언트에 동기화
+                    StartAction(ActionKey.Special01);
+                    RpcStartAction(ActionKey.Special01);
+                }
+                else if (isLocalPlayer)
+                {
+                    // 클라이언트는 서버에 요청
+                    CmdStartAction(ActionKey.Special01);
+                }
                 break;
             case InputMessage.C:
-                StartAction(ActionKey.Special02); // 추가적인 스페셜 액션
+                if (isServer)
+                {
+                    // 서버에서는 직접 abc() 실행 및 모든 클라이언트에 동기화
+                    StartAction(ActionKey.Special02);
+                    RpcStartAction(ActionKey.Special02);
+                }
+                else if (isLocalPlayer)
+                {
+                    // 클라이언트는 서버에 요청
+                    CmdStartAction(ActionKey.Special02);
+                }
                 break;
             default:
                 Debug.LogWarning("처리되지 않은 InputMessage: " + message);

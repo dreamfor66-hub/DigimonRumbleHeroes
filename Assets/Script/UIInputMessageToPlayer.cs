@@ -34,14 +34,12 @@ public class UIInputMessageToPlayer : MonoBehaviour
 
     private void SendInputToPlayer(InputMessage message)
     {
-        if (EntityContainer.Instance.LeaderPlayer != null)
-        {
-            EntityContainer.Instance.LeaderPlayer.ProcessInputMessage(message);
-        }
-        else
-        {
+        //if (EntityContainer.Instance.LeaderPlayer != null)
+        //    EntityContainer.Instance.LeaderPlayer.ProcessInputMessage(message);
+        
+        //else
             Debug.LogWarning("PlayerCharacter가 존재하지 않습니다.");
-        }
+        
     }
 
     // 특정 버튼을 활성화 또는 비활성화하는 메서드

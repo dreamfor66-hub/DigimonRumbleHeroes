@@ -1,20 +1,23 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Mirror;
 
 public class EnemyController : CharacterBehaviour
 {
     public BotAIData botAIData;
-    [ShowInInspector]
+    [SyncVar, Mirror.ShowInInspector]
     private bool isAware = false;
-    [ShowInInspector]
+    [SyncVar, Mirror.ShowInInspector]
     private float stateTimer = 0f;
+    [SyncVar, Mirror.ShowInInspector]
     private int currentBotAIIndex = 0;
+    [SyncVar, Mirror.ShowInInspector]
     private float duration = 0f;
 
     protected override void Start()
     {
         base.Start();
-        currentState = CharacterState.Init;
+        ChangeStatePrev(CharacterState.Init);
         FindClosestPlayer();
         UpdateCurrentAIState();
     }
@@ -58,7 +61,7 @@ public class EnemyController : CharacterBehaviour
     protected override void EndAction()
     {
         base.EndAction();
-        currentState = CharacterState.Init;
+        ChangeStatePrev(CharacterState.Init);
         stateTimer = 0f;
         TransitionToNextState();
     }
@@ -96,6 +99,8 @@ public class EnemyController : CharacterBehaviour
 
     private void HandleAwareness()
     {
+
+
         float distanceToAnyPlayer = float.MaxValue;
         CharacterBehaviour awarePlayer = null;
 
@@ -177,6 +182,9 @@ public class EnemyController : CharacterBehaviour
 
     private void LookAtPlayer()
     {
+        if (target == null)
+            return;
+
         Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
 
         // directionToTarget Vector3.zero인지 확인하고, 아니라면 회전 처리

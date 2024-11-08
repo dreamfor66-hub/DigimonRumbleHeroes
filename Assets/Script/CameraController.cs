@@ -8,11 +8,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
-        // 초기 리더를 타겟으로 설정
-        if (EntityContainer.Instance.LeaderPlayer != null)
-        {
-            target = EntityContainer.Instance.LeaderPlayer.transform;
-        }
+
     }
 
     void LateUpdate()
@@ -25,7 +21,7 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    // 리더가 바뀔 때 호출되는 메서드
+    // 카메라로 따라가야 할 캐릭터 대상이 바뀔 수 있도록 해주는 메서드
     public void UpdateTarget(Transform newTarget)
     {
         target = newTarget;

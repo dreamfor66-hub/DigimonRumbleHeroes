@@ -28,6 +28,10 @@ public class ActionData : ScriptableObject
     [PropertyOrder(1)]
     [TableList(AlwaysExpanded = true)]
     public List<MovementData> MovementList = new List<MovementData>();
+    
+    [PropertyOrder(1)]
+    [TableList(AlwaysExpanded = true)]
+    public List<SpecialMovementData> SpecialMovementList = new List<SpecialMovementData>();
 
     [Title("Hitboxes")]
     [PropertyOrder(1)]
@@ -38,8 +42,13 @@ public class ActionData : ScriptableObject
     [PropertyOrder(1)]
     public List<HitData> HitIdList = new List<HitData>();
 
-    [Title("Auto Correction")]
+    [Title("SpawnBullet")]
     [PropertyOrder(2)]
+    [TableList(AlwaysExpanded = true)]
+    public List<BulletSpawnData> ActionSpawnBulletList = new List<BulletSpawnData>();
+
+    [Title("Auto Correction")]
+    [PropertyOrder(10)]
     [HideLabel]
     public AutoCorrectionData AutoCorrection;
 
@@ -126,6 +135,25 @@ public class MovementData
     public Vector2 EndValue;
 }
 
+
+[System.Serializable]
+public class SpecialMovementData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public SpecialMovementType MoveType;
+    [ShowIf("MoveType", SpecialMovementType.AddInput)]
+    public bool CanRotate;
+    public float Value;
+}
+
+public enum SpecialMovementType
+{
+    AddInput = 0,
+    LookRotateTarget = 1,
+}
+
+
 [System.Serializable]
 public class HitboxData
 {
@@ -146,6 +174,22 @@ public class HitData
     public float HitStunFrame;
     public float KnockbackPower;
     public HitType hitType;
+}
+
+[System.Serializable]
+public class BulletSpawnData
+{
+    public int SpawnFrame;
+    public BulletBehaviour BulletPrefab;
+    public Vector2 Offset;
+    public ActionSpawnBulletAnglePivot Pivot;
+    public float Angle;
+}
+
+public enum ActionSpawnBulletAnglePivot
+{
+    Forward = 0,
+    ToTarget = 1,
 }
 
 [System.Serializable]

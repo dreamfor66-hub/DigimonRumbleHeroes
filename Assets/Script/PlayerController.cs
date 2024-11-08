@@ -1,64 +1,104 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using Mirror;
 
 public class PlayerController : CharacterBehaviour
 {
+    public int playerNumber;
     private Vector3 targetPosition;
     private Vector3 lastPosition;
     private bool isTouching = false;
-    private Vector3 initialTouchPosition;
-    private float touchStartTime;
     private bool isTapConfirmed = false;
 
-    public bool isLeader;
-    public AIType aiType;
-    public AIState currentAIState = AIState.Follow; // 기본 상태는 Follow
-    [HideInInspector]
-    public int playerNumber;  // 고유 플레이어 넘버 (1, 2, 3)
+    [SerializeField]
+    [SyncVar]
+    //줄어들 수록 좋은 float. 1이면 1초에 1번 발사, 0.5면 0.5초에 1번 발사 이런 식
+    float basicAttackCycle;
+
+    [SyncVar]
+    float basicTimer = 0f;
+
+    [SerializeField]
+    [SyncVar]
+    //Update를 돌다가, 만약 idle이거나 Move인 동시에 basicReady라면 basic01 어택 실행 시키는 것을 감지하기
+    bool basicReady;
+
 
     protected override void Start()
     {
         base.Start();
         lastPosition = transform.position;
-
+        basicAttackCycle = characterData.defaultBasicAttackCycle;
         EntityContainer.Instance.RegisterPlayer(this);
 
-        if (isLeader)
+        if (isLocalPlayer)
         {
-            EntityContainer.Instance.LeaderPlayer = this;
+            InitializeLocalPlayer();
+        }
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+    }
+
+    private void InitializeLocalPlayer()
+    {
+        // 로컬 플레이어 전용 카메라 설정
+        CameraController cameraController = FindObjectOfType<CameraController>();
+        if (cameraController != null)
+        {
+            cameraController.UpdateTarget(transform);
         }
     }
 
     protected override void Update()
     {
-        if (isLeader)
-            HandleTargeting();
+        base.Update();
 
-        if (currentState is CharacterState.Idle or CharacterState.Move & isLeader)
+        if (NetworkClient.localPlayer == null || !isLocalPlayer) return;
+
+        HandleTargeting();
+
+        if (currentState is CharacterState.Idle or CharacterState.Move)
         {
             HandleInput();
         }
 
-
-        if (currentState is CharacterState.Idle or CharacterState.Move & !isLeader)
+        // 기본 공격 주기 처리
+        basicTimer += Time.deltaTime;
+        if (basicTimer >= basicAttackCycle)
         {
-            HandleAI();
+            basicReady = true;
         }
-        base.Update();
 
-        // 현재 프레임에서 실제 이동한 속도 계산
+        // Idle 또는 Move 상태일 때, 조건에 맞으면 기본 공격 실행
+        if (basicReady && (currentState == CharacterState.Idle || currentState == CharacterState.Move))
+        {
+            if (target != null)
+            {
+                float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+                if (distanceToTarget <= characterData.attackRange)
+                {
+                    HandleInputMessage(InputMessage.A);
+                    basicTimer = 0f; // 타이머 초기화
+                    basicReady = false; // 다시 대기 상태로 변경
+                }
+            }
+        }
+
+        //// 현재 프레임에서 실제 이동한 속도 계산
         float movementSpeed = (transform.position - lastPosition).magnitude / Time.deltaTime;
 
-        // 캐릭터가 이동 중일 때만 currentSpeed 업데이트
-        if (currentState == CharacterState.Move)
-        {
-            currentSpeed = Mathf.Max(movementSpeed, characterData.moveSpeed); // 최소한의 속도를 보장
-        }
-        else
-        {
-            currentSpeed = 0; // 이동하지 않으면 속도를 0으로 설정
-        }
+        //// 캐릭터가 이동 중일 때만 currentSpeed 업데이트
+        //if (currentState == CharacterState.Move)
+        //{
+        //    currentSpeed = Mathf.Clamp(movementSpeed, , characterData.moveSpeed); // 최소한의 속도를 보장
+        //}
+        //else
+        //{
+        //    currentSpeed = 0; // 이동하지 않으면 속도를 0으로 설정
+        //}
 
         // 현재 위치를 다음 프레임을 위해 저장
         lastPosition = transform.position;
@@ -124,17 +164,17 @@ public class PlayerController : CharacterBehaviour
         if (!isTouching)
             return;
 
-        Vector3 touchDelta = position - initialTouchPosition;
-        float distance = touchDelta.magnitude;
-        float elapsedTime = Time.time - touchStartTime;
+        touchDelta = position - initialTouchPosition;
+        touchDeltaDistance = touchDelta.magnitude;
+        touchElapsedTime = Time.time - touchStartTime;
 
-        if (elapsedTime > ResourceHolder.Instance.gameVariables.tapThreshold || distance >= ResourceHolder.Instance.gameVariables.dragThreshold)
+        if (touchElapsedTime > ResourceHolder.Instance.gameVariables.tapThreshold || touchDeltaDistance >= ResourceHolder.Instance.gameVariables.dragThreshold)
         {
             isTapConfirmed = false;
 
-            float speedMultiplier = Mathf.Clamp(distance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+            speedMultiplier = Mathf.Clamp(touchDeltaDistance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
 
-            Vector3 inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
+            inputDirection = new Vector3(touchDelta.x, 0, touchDelta.y).normalized;
 
             Vector3 cameraForward = Camera.main.transform.forward;
             cameraForward.y = 0;
@@ -145,14 +185,13 @@ public class PlayerController : CharacterBehaviour
             cameraRight.Normalize();
 
             direction = inputDirection.x * cameraRight + inputDirection.z * cameraForward;
-
             currentSpeed = characterData.moveSpeed * speedMultiplier;
 
-            currentState = CharacterState.Move;
+            ChangeStatePrev(CharacterState.Move);
         }
         else
         {
-            currentState = CharacterState.Idle;
+            ChangeStatePrev(CharacterState.Idle);
             currentSpeed = 0;
         }
     }
@@ -162,17 +201,17 @@ public class PlayerController : CharacterBehaviour
         if (!isTouching)
             return;
 
-        Vector3 touchDelta = position - initialTouchPosition;
-        float distance = touchDelta.magnitude;
-        float elapsedTime = Time.time - touchStartTime;
+        touchDelta = position - initialTouchPosition;
+        touchDeltaDistance = touchDelta.magnitude;
+        touchElapsedTime = Time.time - touchStartTime;
 
-        if (distance < ResourceHolder.Instance.gameVariables.dragThreshold && elapsedTime < ResourceHolder.Instance.gameVariables.tapThreshold)
+        if (touchDeltaDistance < ResourceHolder.Instance.gameVariables.dragThreshold && touchElapsedTime < ResourceHolder.Instance.gameVariables.tapThreshold)
         {
             HandleInputMessage(InputMessage.A);
         }
         else
         {
-            currentState = CharacterState.Idle;
+            ChangeStatePrev(CharacterState.Idle);
         }
 
         isTouching = false;
@@ -180,7 +219,7 @@ public class PlayerController : CharacterBehaviour
     }
 
 
-protected override void HandleIdle()
+    protected override void HandleIdle()
     {
         if (stopTimer > 0)
         {
@@ -193,28 +232,80 @@ protected override void HandleIdle()
                 currentSpeed = 0;
             }
         }
-        if (isLeader)
+
+        // 기존 로직 유지
+        animator.Play("Idle");
+        animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
+
+        // 네트워크 동기화 부분 추가 (로컬 플레이어일 때만 서버에 명령)
+        if (isLocalPlayer)
         {
-            animator.Play("Idle");
-            animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
+            CmdSetAnimatorParameters("Idle", 0f);
         }
     }
 
     protected override void HandleMovement()
     {
-        Vector3 moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
+        moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
         transform.position += moveVector;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
 
         float normalizedSpeed = currentSpeed / characterData.moveSpeed;
 
-        if (isLeader)
+        // 기존 로직 유지
+        animator.Play("Idle");
+        animator.SetFloat("speed", normalizedSpeed);
+
+        // 네트워크 동기화 부분 추가 (로컬 플레이어일 때만 서버에 명령)
+        if (isLocalPlayer)
         {
-            animator.Play("Idle");
-            animator.SetFloat("speed", normalizedSpeed);
+            CmdSetAnimatorParameters("Idle", normalizedSpeed);
         }
+    }
+
+
+    public Vector3 GetInputDirection()
+    {
+        return inputDirection;
+    }
+
+    public Vector3 GetInitialPosition()
+    {
+        return initialTouchPosition;
+    }
+
+    public float GetSpeedMultiplier()
+    {
+        float distance = (initialTouchPosition - Camera.main.WorldToScreenPoint(transform.position)).magnitude;
+        return Mathf.Clamp(distance / ResourceHolder.Instance.gameVariables.maxDistance, 0f, 1f);
+    }
+
+
+
+    // 서버에 애니메이터 매개변수를 설정하는 메서드
+    [Command]
+    private void CmdSetAnimatorParameters(string animationKey, float speed)
+    {
+        RpcSetAnimatorParameters(animationKey, speed);
+    }
+
+    // 클라이언트에서 애니메이터 매개변수를 설정하는 메서드
+    [ClientRpc]
+    private void RpcSetAnimatorParameters(string animationKey, float speed)
+    {
+        if (animator == null)
+        {
+            Debug.LogWarning("Animator is null. Skipping animation update.");
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(animationKey))
+        {
+            animator.Play(animationKey);
+        }
+        animator.SetFloat("speed", speed);
     }
 
     private void HandleTargeting()
@@ -224,7 +315,7 @@ protected override void HandleIdle()
         float shortDistance = characterData.shortDistance;
         float longDistance = characterData.longDistance;
 
-        CharacterBehaviour newTarget = this;
+        CharacterBehaviour newTarget = default;
         float bestWeight = float.MinValue;
          
         foreach (var enemy in EntityContainer.Instance.CharacterList)
@@ -281,347 +372,10 @@ protected override void HandleIdle()
         return combinedWeight;
     }
 
-    /// AI관련
-    private void HandleAI()
-    {
-        switch (aiType)
-        {
-            case AIType.Aggressive:
-                HandleAggressiveAI();
-                break;
-            case AIType.Cooperative:
-                HandleCooperativeAI();
-                break;
-            case AIType.Supportive:
-                HandleSupportiveAI();
-                break;
-            //case AIType.Vanguard:
-            //    HandleVanguardAI();
-            //    break;
-        }
 
-        // 상태에 따른 행동 처리
-        switch (currentAIState)
-        {
-            case AIState.Follow:
-                FollowLeader();
-                break;
-            case AIState.ForceFollow:
-                FollowLeader(isForce: true);
-                break;
-            case AIState.MoveToward:
-                MoveTowardsTarget();
-                break;
-            case AIState.Attack:
-                ExecuteAttack();
-                break;
-        }
-    }
-
-    private float moveTowardTimer = 0f; // MoveToward 상태에서의 시간을 추적하는 타이머
-    private const float moveTowardDuration = 2f; // MoveToward 상태에서 유지되는 시간 (2초)
-
-    private void HandleAggressiveAI()
-    {
-        var forceFollowDistance = 2.5f;
-        var followDistance = 0.4f;
-        float leaderRadius = EntityContainer.Instance.LeaderPlayer.characterData.colliderRadius;
-        float thisRadius = this.characterData.colliderRadius;
-
-        // 리더와의 거리 체크
-        if (currentAIState == AIState.MoveToward && Vector3.Distance(transform.position, EntityContainer.Instance.LeaderPlayer.transform.position) > forceFollowDistance + leaderRadius + thisRadius)
-        {
-            if (moveTowardTimer < moveTowardDuration)
-            {
-                moveTowardTimer += Time.deltaTime; // MoveToward 상태에서 시간을 추가
-            }
-            else
-            {
-                currentAIState = AIState.ForceFollow; // 타이머가 만료되면 ForceFollow로 전환
-                moveTowardTimer = 0f; // 타이머 초기화
-                return;
-            }
-        }
-        else if (currentAIState == AIState.ForceFollow && Vector3.Distance(transform.position, EntityContainer.Instance.LeaderPlayer.transform.position) <= (followDistance + leaderRadius + thisRadius))
-        {
-            currentAIState = AIState.Follow; // 플레이어와 충분히 가까워졌으면 Follow로 전환
-            moveTowardTimer = 0f; // 타이머 초기화
-            return;
-        }
-        else if (currentAIState == AIState.MoveToward)
-        {
-            // 리더와의 거리가 다시 가까워지면 타이머 초기화
-            if (Vector3.Distance(transform.position, EntityContainer.Instance.LeaderPlayer.transform.position) <= forceFollowDistance)
-            {
-                moveTowardTimer = 0f;
-            }
-        }
-
-        if (target == null || currentAIState == AIState.Follow)
-        {
-            HandleTargeting(); // 새로운 타겟을 찾음
-            if (target == null)
-            {
-                currentAIState = AIState.Follow; // 타겟이 없으면 리더를 따름
-                return;
-            }
-        }
-
-        // 타겟이 있을 때만 MoveToward 또는 Attack 상태로 전환
-        if (currentAIState != AIState.ForceFollow)
-        {
-            Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
-            float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
-
-            if (distanceToTarget <= characterData.attackRange || distanceToTarget <= (characterData.colliderRadius + target.characterData.colliderRadius))
-            {
-                currentAIState = AIState.Attack; // 공격 범위 내에 타겟이 있으면 공격
-            }
-            else if (currentAIState == AIState.MoveToward || currentAIState == AIState.Attack)
-            {
-                currentAIState = AIState.MoveToward; // 타겟이 멀리 있으면 접근 (타이머 유지)
-            }
-            else
-            {
-                currentAIState = AIState.MoveToward; // 타겟이 멀리 있으면 접근 (타이머 새로 시작)
-                moveTowardTimer = 0f; // 새로운 MoveToward 상태 시작 시 타이머 초기화
-            }
-        }
-    }
-
-    private void MoveTowardsTarget()
-    {
-        Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
-        Vector3 finalMoveVector = HandleCollisionAndSliding(directionToTarget, characterData.moveSpeed);
-        transform.position += finalMoveVector;
-
-        float movementSpeed = finalMoveVector.magnitude / Time.deltaTime;
-        float normalizedSpeed = movementSpeed / characterData.moveSpeed;
-        animator.Play("Idle");
-        animator.SetFloat("speed", normalizedSpeed, 0.035f, Time.deltaTime);
-
-        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-
-        // 애니메이션 및 상태 전환 처리
-        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
-        if (distanceToTarget <= characterData.attackRange || distanceToTarget <= (characterData.colliderRadius + target.characterData.colliderRadius))
-        {
-            currentAIState = AIState.Attack;
-        }
-    }
-
-    private void ExecuteAttack()
-    {
-        ProcessInputMessage(InputMessage.A); // 공격 실행
-                                             // 공격 후 다시 상태를 판단하여 전환할 수 있음
-    }
-
-
-    private void HandleCooperativeAI()
-    {
-        var leader = EntityContainer.Instance.LeaderPlayer;
-
-        var forceFollowDistance = 1.5f;
-        var followDistance = 0.4f;
-        float leaderRadius = leader.characterData.colliderRadius;
-        float thisRadius = this.characterData.colliderRadius;
-
-        // 리더와의 거리 체크
-        if (currentAIState == AIState.MoveToward && Vector3.Distance(transform.position, leader.transform.position) > forceFollowDistance + leaderRadius + thisRadius)
-        {
-            if (moveTowardTimer >= moveTowardDuration)
-            {
-                currentAIState = AIState.ForceFollow; // 타이머가 만료되면 ForceFollow로 전환
-                return;
-            }
-        }
-        else if (currentAIState == AIState.ForceFollow && Vector3.Distance(transform.position, leader.transform.position) <= (followDistance + leaderRadius + thisRadius))
-        {
-            currentAIState = AIState.Follow; // 플레이어와 충분히 가까워졌으면 Follow로 전환
-            return;
-        }
-        if (leader != null && leader.hit)
-        {
-            target = leader.currentHitTarget;
-            if (target != null)
-                currentAIState = AIState.MoveToward; // 타겟이 설정되었으면 MoveToward 상태로 전환
-
-        }
-        else if (leader != null && leader.attacked)
-        {
-            target = leader.currentAttacker;
-            if (target != null)
-                currentAIState = AIState.MoveToward; // 타겟이 설정되었으면 MoveToward 상태로 전환
-
-        }
-        else if (lastAttacker != null)
-        {
-            target = lastAttacker;
-            if (target != null)
-                currentAIState = AIState.MoveToward; // 타겟이 설정되었으면 MoveToward 상태로 전환
-        }
-
-        if (target == null)
-        {
-            if (leader.lastAttacker != null)
-            {
-                target = leader.lastAttacker;
-            }
-            else if (leader.lastHitTarget != null)
-            {
-                target = leader.lastHitTarget;
-            }
-            else
-            {
-                currentAIState = AIState.Follow;
-            }
-        }
-        else if (currentAIState != AIState.ForceFollow)
-        {
-            
-            Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
-            float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
-
-            if (distanceToTarget <= characterData.attackRange || distanceToTarget <= (characterData.colliderRadius + target.characterData.colliderRadius))
-            {
-                currentAIState = AIState.Attack; // 공격 범위 내에 타겟이 있으면 공격
-            }
-            else if (currentAIState == AIState.MoveToward || currentAIState == AIState.Attack)
-            {
-                currentAIState = AIState.MoveToward; // 타겟이 멀리 있으면 접근 (타이머 유지)
-            }
-            else
-            {
-                currentAIState = AIState.MoveToward; // 타겟이 멀리 있으면 접근 (타이머 새로 시작)
-            }
-            
-        }
-    }
-
-    private void HandleSupportiveAI()
-    {
-        // 플레이어를 따라다니기만 함
-        currentAIState = AIState.ForceFollow;
-        
-    }
-
-    private void HandleVanguardAI()
-    {
-        // 플레이어보다 앞서 몬스터를 탐색
-        if (target == null)
-        {
-            Vector3 forwardPosition = EntityContainer.Instance.LeaderPlayer.transform.position + EntityContainer.Instance.LeaderPlayer.transform.forward * 5f;
-            transform.position = Vector3.Lerp(transform.position, forwardPosition, Time.deltaTime * 2f);
-
-            // 리더나 자신이 피격된 경우 공격
-            if (EntityContainer.Instance.LeaderPlayer.target != null)
-            {
-                target = EntityContainer.Instance.LeaderPlayer.target;
-                ProcessInputMessage(InputMessage.A);
-            }
-        }
-    }
-
-    private void FollowLeader(bool isForce = false)
-    {
-        var leader = EntityContainer.Instance.LeaderPlayer;
-
-        if (leader != null)
-        {
-            // 기본 설정값
-            float baseFollowDistance = 0.4f;
-            float angleOffset = 60f;
-
-            // Leader와 AI의 크기를 고려한 followDistance 계산
-            float leaderRadius = leader.characterData.colliderRadius;
-            float thisRadius = this.characterData.colliderRadius;
-
-            float followDistance = baseFollowDistance + leaderRadius + thisRadius;
-
-            // Leader와 AI의 크기를 고려한 각 포인트 계산
-            Vector3 leaderPosition = leader.transform.position;
-            Vector3 leaderDirection = leader.transform.forward;
-
-            Vector3 targetPosition1 = leaderPosition - Quaternion.Euler(0, angleOffset, 0) * leaderDirection * followDistance;
-            Vector3 targetPosition2 = leaderPosition - Quaternion.Euler(0, -angleOffset, 0) * leaderDirection * followDistance;
-
-            // 다른 AI 캐릭터의 위치 확인
-            var otherAI = EntityContainer.Instance.PlayerList.FirstOrDefault(ai => ai != this && !ai.isLeader);
-
-            Vector3 selectedTarget;
-
-            if (otherAI != null)
-            {
-                float otherAIRadius = otherAI.characterData.colliderRadius;
-
-                float distanceToTarget1 = Vector3.Distance(transform.position, targetPosition1);
-                float distanceToTarget2 = Vector3.Distance(transform.position, targetPosition2);
-
-                float otherAIDistanceToTarget1 = Vector3.Distance(otherAI.transform.position, targetPosition1);
-                float otherAIDistanceToTarget2 = Vector3.Distance(otherAI.transform.position, targetPosition2);
-
-                if (otherAIDistanceToTarget1 < followDistance)
-                {
-                    selectedTarget = targetPosition2;
-                }
-                else if (otherAIDistanceToTarget2 < followDistance)
-                {
-                    selectedTarget = targetPosition1;
-                }
-                else
-                {
-                    selectedTarget = distanceToTarget1 < distanceToTarget2 ? targetPosition1 : targetPosition2;
-                }
-
-                // 두 AI의 colliderRadius를 더하여 combinedRadius 계산
-                float combinedRadius = thisRadius + otherAIRadius;
-
-                // 다른 AI와의 충돌을 피하기 위해 반대 방향으로 이동 (회피 로직)
-                float otherAIDistance = Vector3.Distance(transform.position, otherAI.transform.position);
-
-                if (otherAIDistance < combinedRadius)
-                {
-                    Vector3 avoidanceDirection = (transform.position - otherAI.transform.position).normalized;
-                    selectedTarget += avoidanceDirection * (combinedRadius - otherAIDistance);
-                }
-            }
-            else
-            {
-                // 다른 AI가 없는 경우, 가까운 목표 포인트 선택
-                selectedTarget = Vector3.Distance(transform.position, targetPosition1) < Vector3.Distance(transform.position, targetPosition2) ? targetPosition1 : targetPosition2;
-            }
-
-            Vector3 directionToTarget = (selectedTarget - transform.position).normalized;
-            float distanceToSelectedTarget = Vector3.Distance(transform.position, selectedTarget);
-
-            // 강제 이동 또는 일반 이동 처리
-            if (isForce || distanceToSelectedTarget > followDistance || (otherAI != null && Vector3.Distance(transform.position, otherAI.transform.position) < thisRadius + otherAI.characterData.colliderRadius))
-            {
-                Vector3 finalMoveVector = HandleCollisionAndSliding(directionToTarget, characterData.moveSpeed);
-                transform.position += finalMoveVector;
-
-                Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-
-                // 애니메이션 속도 반영
-                float movementSpeed = finalMoveVector.magnitude / Time.deltaTime;
-                float normalizedSpeed = movementSpeed / characterData.moveSpeed;
-                animator.Play("Idle");
-                animator.SetFloat("speed", normalizedSpeed, 0.035f, Time.deltaTime);
-            }
-            else
-            {
-                // Follow 상태에서 가까워지면 속도를 줄이고 자유롭게 상태 전환
-                Vector3 finalMoveVector = directionToTarget * currentSpeed * Time.deltaTime;
-                transform.position += finalMoveVector;
-
-                // 애니메이션 속도를 감속시키며 0으로 변경
-                animator.Play("Idle");
-                animator.SetFloat("speed", 0f, 0.15f, Time.deltaTime);
-            }
-        }
-    }
+    ///
+    /// 서버
+    ///
 
 
 
