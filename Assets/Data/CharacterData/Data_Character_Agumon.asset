@@ -22,13 +22,13 @@ MonoBehaviour:
   baseHP: 10
   baseATK: 5
   moveSpeed: 5
-  defaultBasicAttackCycle: 5
+  defaultBasicAttackCycle: 1.25
   hpPerLevel: 2
   atkPerLevel: 1
   colliderRadius: 0.45
   mass: 10
   drag: 10
-  attackRange: 10
+  attackRange: 7
   Hurtboxes:
   - Offset: {x: 0, y: 0}
     Radius: 0.5

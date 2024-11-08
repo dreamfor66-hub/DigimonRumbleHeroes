@@ -80,6 +80,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         isDie = false;
         hitStopTimer = 0f;
         isHitStopped = false;
+
+        if (this is PlayerController)animator.SetLayerWeight(1, 0);
     }
 
     protected void InitializeHurtboxes()
@@ -149,6 +151,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 CmdHandleKnockbackSmash();
                 break;
         }
+
+
+        if (this is PlayerController)
+        {
+             animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+        }
     }
 
     public void ChangeStatePrev(CharacterState newState)
@@ -214,6 +223,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (currentFrame >= specialMovement.StartFrame && currentFrame <= specialMovement.EndFrame)
                 {
                     ApplySpecialMovement(specialMovement);
+                }
+                else
+                {
+                    if (this is PlayerController)
+                        animator.SetLayerWeight(1, 0);
                 }
             }
 
@@ -515,7 +529,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (inputDirection != Vector3.zero)
                 {
                     currentSpeed = characterData.moveSpeed * inputDirection.magnitude;
-                    moveVector = HandleCollisionAndSliding(inputDirection.normalized, currentSpeed);
+                    moveVector = HandleCollisionAndSliding(inputDirection.normalized, currentSpeed) * specialMovementData.Value;
                     transform.position += moveVector;
 
                     // 회전 처리
@@ -524,14 +538,28 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                         targetRotation = Quaternion.LookRotation(inputDirection);
                         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
                     }
+
+                    // 애니메이터에 방향 인풋 신호 전달
+                    Vector3 localInputDirection = transform.InverseTransformDirection(inputDirection);
+                    localInputDirection = localInputDirection.normalized;
+
+                    animator.SetFloat("X", localInputDirection.x);
+                    animator.SetFloat("Z", localInputDirection.z);
                 }
                 else
                 {
                     // 인풋이 없는 경우 속도를 줄임
-                    currentSpeed = Mathf.Lerp(currentSpeed, 0, Time.deltaTime); // 감속 속도 조절 가능
-                    moveVector = HandleCollisionAndSliding(Vector3.zero, currentSpeed);
+                    currentSpeed = Mathf.Lerp(currentSpeed, 0, Time.deltaTime);
+                    moveVector = HandleCollisionAndSliding(Vector3.zero, currentSpeed) * specialMovementData.Value;
                     transform.position += moveVector;
+
+                    // 애니메이터 속도 감소
+                    animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+                    animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
                 }
+
+                if (this is PlayerController)
+                    animator.SetLayerWeight(1, 1);
                 break;
 
             case SpecialMovementType.LookRotateTarget:

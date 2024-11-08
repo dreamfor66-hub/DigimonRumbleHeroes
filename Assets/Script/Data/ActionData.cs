@@ -144,7 +144,6 @@ public class SpecialMovementData
     public SpecialMovementType MoveType;
     [ShowIf("MoveType", SpecialMovementType.AddInput)]
     public bool CanRotate;
-    [ShowIf("MoveType", SpecialMovementType.LookRotateTarget)]
     public float Value;
 }
 
