@@ -45,7 +45,12 @@ public class ActionData : ScriptableObject
     [Title("SpawnBullet")]
     [PropertyOrder(2)]
     [TableList(AlwaysExpanded = true)]
-    public List<BulletSpawnData> ActionSpawnBulletList = new List<BulletSpawnData>();
+    public List<ActionSpawnBulletData> ActionSpawnBulletList = new List<ActionSpawnBulletData>();
+    
+    [Title("SpawnVfx")]
+    [PropertyOrder(2)]
+    [TableList(AlwaysExpanded = true)]
+    public List<ActionSpawnVfxData> ActionSpawnVfxList = new List<ActionSpawnVfxData>();
 
     [Title("Auto Correction")]
     [PropertyOrder(10)]
@@ -177,13 +182,26 @@ public class HitData
 }
 
 [System.Serializable]
-public class BulletSpawnData
+public class ActionSpawnBulletData
 {
     public int SpawnFrame;
     public BulletBehaviour BulletPrefab;
     public Vector2 Offset;
     public ActionSpawnBulletAnglePivot Pivot;
     public float Angle;
+    [HideInInspector]
+    public bool HasSpawned = false; // 발사 여부를 추적하는 변수
+}
+
+[System.Serializable]
+public class ActionSpawnVfxData
+{
+    public int SpawnFrame;
+    public VfxObject VfxPrefab;
+    public Vector2 Offset;
+    public float Angle;
+    [HideInInspector]
+    public bool HasSpawned = false; // 발사 여부를 추적하는 변수
 }
 
 public enum ActionSpawnBulletAnglePivot

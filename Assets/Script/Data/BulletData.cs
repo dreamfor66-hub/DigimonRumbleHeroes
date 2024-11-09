@@ -14,6 +14,10 @@ public class BulletData : ScriptableObject
     public float LiftTime = 0.5f;
     [PropertyOrder(0)]
     public BulletTrigger DespawnBy = BulletTrigger.LifeTime;
+    [PropertyOrder(0)]
+    public float BulletRadius = 0.3f;
+    [PropertyOrder(0)]
+    public bool ReflectOnWall = false;
 
     [Title("Move")]
     [PropertyOrder(1)]
@@ -30,6 +34,15 @@ public class BulletData : ScriptableObject
     [PropertyOrder(1)]
     public List<HitData> HitIdList = new List<HitData>();
 
+    [Title("SpawnBullet")]
+    [PropertyOrder(2)]
+    [TableList(AlwaysExpanded = true)]
+    public List<BulletSpawnBulletData> BulletSpawnBulletList = new List<BulletSpawnBulletData>();
+    
+    [Title("SpawnVfx")]
+    [PropertyOrder(3)]
+    [TableList(AlwaysExpanded = true)]
+    public List<BulletSpawnVfxData> BulletSpawnVfxList = new List<BulletSpawnVfxData>();
 }
 
 [Flags]
@@ -40,8 +53,13 @@ public enum BulletTrigger
     Hit = 1 << 1,
     Despawn = 1 << 2,
     LifeTime = 1 <<3,
+    CollideMap = 1 << 4,
 
-    All = 1-3,
+    Custom1 = 1<<11,
+    Custom2 = 1<<12,
+    Custom3 = 1<<13,
+
+    All = 1-4,
 }
 
 public enum BulletMoveType
@@ -49,3 +67,20 @@ public enum BulletMoveType
     ConstantSpeed = 0,
 }
 
+[System.Serializable]
+public class BulletSpawnBulletData
+{
+    public BulletTrigger SpawnTrigger;
+    public BulletBehaviour BulletPrefab;
+    public Vector2 Offset;
+    public float Angle;
+}
+
+[System.Serializable]
+public class BulletSpawnVfxData
+{
+    public BulletTrigger SpawnTrigger;
+    public VfxObject VfxPrefab;
+    public Vector2 Offset;
+    public float Angle;
+}

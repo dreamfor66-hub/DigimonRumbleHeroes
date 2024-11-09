@@ -372,6 +372,18 @@ public class PlayerController : CharacterBehaviour
         return combinedWeight;
     }
 
+    protected override void EndAction()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            isTouching = true;
+            touchStartTime = Time.time;
+            isTapConfirmed = false;
+        }
+        animator.SetLayerWeight(1, 0);
+        base.EndAction();
+    }
+
 
     ///
     /// ¼­¹ö

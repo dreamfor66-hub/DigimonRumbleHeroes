@@ -65,7 +65,16 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public float touchElapsedTime;
     public Vector3 inputDirection;
     public float speedMultiplier;
-    public float touchStartTime; 
+    public float touchStartTime;
+
+
+    //vfx 관련 변수
+    // Manual Vfx 관리용 리스트
+    private List<VfxObject> activeManualVfxList = new List<VfxObject>();
+    private HashSet<ActionSpawnVfxData> spawnedVfxData = new HashSet<ActionSpawnVfxData>();
+    
+    private HashSet<ActionSpawnBulletData> spawnedBulletData = new HashSet<ActionSpawnBulletData>();
+
 
 
     protected virtual void Start()
@@ -79,7 +88,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         EntityContainer.Instance.RegisterCharacter(this);
         isDie = false;
         hitStopTimer = 0f;
-        isHitStopped = false;
+        IsHitStopped = false;
 
         if (this is PlayerController)animator.SetLayerWeight(1, 0);
     }
@@ -120,12 +129,18 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (!isServer && !isLocalPlayer)
             return; // 클라이언트에서만 동작이 실행되지 않도록 설정
 
-        if (isHitStopped)
+        if (IsHitStopped)
         {
             hitStopTimer -= Time.deltaTime;
             if (hitStopTimer <= 0f)
             {
                 ResumeAfterHitStop();
+            }
+
+            // HitStop 중인 상태에서 Manual VFX를 멈추도록 설정
+            foreach (var vfx in activeManualVfxList)
+            {
+                vfx.particle.Pause(); // 모든 Manual Vfx 정지
             }
             return;
         }
@@ -193,6 +208,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
     }
 
+
     protected virtual void HandleIdle() { }
 
     protected virtual void HandleMovement() { } 
@@ -251,7 +267,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
             foreach (var spawnData in currentActionData.ActionSpawnBulletList)
             {
-                if (Mathf.RoundToInt(currentFrame) == spawnData.SpawnFrame)
+                // 중복된 소환을 방지: HashSet에 포함되지 않은 경우에만 소환
+                if (currentFrame >= spawnData.SpawnFrame && !spawnedBulletData.Contains(spawnData))
                 {
                     Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
 
@@ -281,9 +298,30 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
                     // Bullet 인스턴스 생성 및 초기화
                     BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
-                    bullet.Initialize(this, spawnDirection); // Bullet의 초기 방향 설정
+                    bullet.Initialize(this, spawnDirection);
+
+                    // 중복 방지용 HashSet에 추가
+                    spawnedBulletData.Add(spawnData);
                 }
             }
+
+
+            foreach (var vfxData in currentActionData.ActionSpawnVfxList)
+            {
+                if (currentFrame >= vfxData.SpawnFrame && !spawnedVfxData.Contains(vfxData))
+                {
+                    SpawnVfx(vfxData);
+                    spawnedVfxData.Add(vfxData); // 중복 소환 방지용 추가
+                }
+            }
+
+            // Manual VfxObject들의 시간 갱신
+            foreach (var vfx in activeManualVfxList)
+            {
+                float vfxTime = (currentFrame - vfx.spawnFrame) / 60f;
+                vfx.SetTime(vfxTime);
+            }
+
             // Hitbox Cast
             foreach (var hitbox in currentActionData.HitboxList)
             {
@@ -472,13 +510,19 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         float durationInSeconds = durationInFrames / 60f;
 
-        isHitStopped = true;
+        IsHitStopped = true;
         hitStopTimer = durationInSeconds;
 
         // 애니메이션 정지
         if (animator != null)
         {
             animator.speed = 0f;
+        }
+
+        // Manual VFX도 멈춤
+        foreach (var vfx in activeManualVfxList)
+        {
+            vfx.Stop();
         }
     }
 
@@ -500,12 +544,20 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected void ResumeAfterHitStop()
     {
-        isHitStopped = false;
+        IsHitStopped = false;
 
         // 애니메이션 재개
         if (animator != null)
         {
             animator.speed = 1f;
+        }
+
+        // Manual VFX 재개
+        foreach (var vfx in activeManualVfxList)
+        {
+            float vfxTime = (currentFrame - vfx.spawnFrame) / 60f;
+            vfx.SetTime(vfxTime); // 시간 재설정
+            vfx.particle.Play();
         }
     }
 
@@ -516,6 +568,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         hitTargets.Clear();
         ChangeStatePrev(CharacterState.Idle);
         currentFrame = 0;
+        foreach(var vfx in activeManualVfxList)
+        {
+            vfx.OnDespawn();
+        }
+        activeManualVfxList.Clear();
     }
 
 
@@ -543,8 +600,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     Vector3 localInputDirection = transform.InverseTransformDirection(inputDirection);
                     localInputDirection = localInputDirection.normalized;
 
-                    animator.SetFloat("X", localInputDirection.x);
-                    animator.SetFloat("Z", localInputDirection.z);
+                    animator.SetFloat("X", localInputDirection.x, 0.05f, Time.deltaTime);
+                    animator.SetFloat("Z", localInputDirection.z, 0.05f, Time.deltaTime);
                 }
                 else
                 {
@@ -882,6 +939,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private float decelerationDuration = 0.3f;  // 감속 시간
     private float totalDuration => initialBurstDuration + flightDuration + decelerationDuration; // 총 넉백 지속 시간
 
+    public bool IsHitStopped { get => isHitStopped; set => isHitStopped = value; }
+
     protected virtual void HandleKnockback()
     {
         knockBackTimer += Time.deltaTime;
@@ -1015,13 +1074,22 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     public void StartAction(ActionKey actionKey)
     {
-
         Debug.Log($"Starting action: {actionKey}");
         currentActionKey = actionKey;
         ChangeStatePrev(CharacterState.Action);
         currentFrame = 0;
+        spawnedVfxData.Clear();
+        spawnedBulletData.Clear();
 
         hitTargets.Clear();
+        // Action이 시작될 때 모든 불릿의 HasSpawned 플래그를 false로 초기화
+        if (characterData.TryGetActionData(actionKey, out ActionData actionData))
+        {
+            foreach (var spawnData in actionData.ActionSpawnBulletList)
+            {
+                spawnData.HasSpawned = false;
+            }
+        }
 
     }
 
@@ -1242,5 +1310,39 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             Gizmos.color = this is PlayerController ? Color.red : Color.blue;
             Gizmos.DrawSphere(target.transform.position + Vector3.up * 2f, 0.25f);
         }
+    }
+    ///vfx 관련 시각 처리 manual
+    ///
+    private struct ManualVfxInfo
+    {
+        public VfxObject Obj;
+        public float StartFrame;
+        public float EndFrame;
+    }
+    // VfxObject 소환 메서드
+    private void SpawnVfx(ActionSpawnVfxData vfxData)
+    {
+        Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
+        Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0);
+
+        VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
+        vfx.SetTransform(transform, vfxData.Offset, Quaternion.Euler(0, vfxData.Angle, 0), Vector3.one);
+        vfx.OnSpawn(currentFrame);
+
+        if (vfx.PlayType == VfxPlayType.Manual)
+        {
+            activeManualVfxList.Add(vfx); // Manual 타입만 관리 리스트에 추가하여 Hitstop에 영향 받게 설정
+        }
+    }
+
+
+    private void EndManualVfx()
+    {
+        foreach (var vfx in activeManualVfxList)
+        {
+            vfx.OnDespawn(); // VFX 해제
+            Destroy(vfx.gameObject); // VFX 오브젝트 삭제
+        }
+        activeManualVfxList.Clear();
     }
 }
