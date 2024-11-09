@@ -4935,6 +4935,7 @@ MonoBehaviour:
   PlayType: 1
   StartPivot: 2
   FollowType: 2
+  spawnFrame: 0
   DespawnTime: 1
   UseGameTime: 0
   UseAutoRandomSeed: 1
@@ -4991,7 +4992,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 198621738504137070, guid: 2b2844f70cdc117499cbac5446906321,
+        type: 3}
+      propertyPath: simulationSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 198648895018696138, guid: 2b2844f70cdc117499cbac5446906321,
+        type: 3}
+      propertyPath: simulationSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114691026348213020, guid: 2b2844f70cdc117499cbac5446906321, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

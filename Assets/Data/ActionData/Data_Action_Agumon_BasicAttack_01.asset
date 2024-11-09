@@ -66,7 +66,7 @@ MonoBehaviour:
   HitboxList:
   - StartFrame: 10
     EndFrame: 20
-    Offset: {x: 0, y: 0}
+    Offset: {x: 0, y: 1}
     Radius: 1
     HitId: 0
     HitGroup: 0
@@ -75,18 +75,18 @@ MonoBehaviour:
     HitDamage: 0
     HitStopFrame: 30
     HitStunFrame: 0
-    KnockbackPower: 0
+    KnockbackPower: 2
     hitType: 1
   ActionSpawnBulletList:
-  - SpawnFrame: 10
+  - SpawnFrame: 7
     BulletPrefab: {fileID: 5111934926271759165, guid: 5b18152df67d72a4094fa79b5d43f108,
       type: 3}
-    Offset: {x: 0, y: 1}
+    Offset: {x: 0, y: 1010}
     Pivot: 1
     Angle: 0
     HasSpawned: 0
   ActionSpawnVfxList:
-  - SpawnFrame: 10
+  - SpawnFrame: 4
     VfxPrefab: {fileID: -5731697141335408088, guid: 7656d3fd19be3ab4089c8b57fd5b1383,
       type: 3}
     Offset: {x: 0, y: 0}

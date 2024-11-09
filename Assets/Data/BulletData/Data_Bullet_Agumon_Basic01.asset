@@ -20,7 +20,7 @@ MonoBehaviour:
   Speed: 15
   HitboxList:
   - StartFrame: 0
-    EndFrame: 700
+    EndFrame: 42
     Offset: {x: 0, y: 0}
     Radius: 0.5
     HitId: 0

@@ -140,7 +140,8 @@ private void Update()
 
                     if (isValidTarget)
                     {
-                        HandleHit(hitbox.HitId, target);
+                        var currentHit = bulletData.HitIdList.Find(hit => hit.HitId == hitbox.HitId);
+                        HandleHit(hitbox.HitId, target, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower);
 
                         if (!hitTargets.ContainsKey(target))
                             hitTargets[target] = new List<int>();
@@ -155,8 +156,8 @@ private void Update()
 
         
     }
-
-    private void HandleHit(int hitId, CharacterBehaviour target)
+    //HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
+    private void HandleHit(int hitId, CharacterBehaviour target, float hitStopFrame, float hitStunFrame, HitType hitType, float knockbackPower)
     {
         HitData hitData = bulletData.HitIdList.Find(hit => hit.HitId == hitId);
         if (hitData == null) return;
@@ -165,11 +166,14 @@ private void Update()
 
         //if (isServer)
         {
-            target.TakeDamage(hitData.HitDamage, hitDirection, hitData, owner);
-            //target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitData, owner);
+            target.TakeDamage(hitData.HitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, owner);
+            target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, owner);
+
             target.ApplyHitStop(hitData.HitStopFrame);
+            target.RpcApplyHitStop(hitData.HitStopFrame);
+
             OnHit(target);
-            //RpcOnHit(target);
+            RpcOnHit(target);
             ApplyHitStop(hitData.HitStopFrame);
         }
     }

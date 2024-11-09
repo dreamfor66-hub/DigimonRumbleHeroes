@@ -115,7 +115,7 @@ public class VfxObject : NetworkBehaviour
 
     public void Stop()
     {
-        particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        particle.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
     private void FollowTransform()
