@@ -63,35 +63,19 @@ MonoBehaviour:
     MoveType: 0
     CanRotate: 0
     Value: 0.5
-  HitboxList:
-  - StartFrame: 10
-    EndFrame: 20
-    Offset: {x: 0, y: 1}
-    Radius: 1
-    HitId: 0
-    HitGroup: 0
-  HitIdList:
-  - HitId: 0
-    HitDamage: 0
-    HitStopFrame: 30
-    HitStunFrame: 0
-    KnockbackPower: 2
-    hitType: 1
+  HitboxList: []
+  HitIdList: []
   ActionSpawnBulletList:
   - SpawnFrame: 7
     BulletPrefab: {fileID: 5111934926271759165, guid: 5b18152df67d72a4094fa79b5d43f108,
       type: 3}
-    Offset: {x: 0, y: 1010}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
     Pivot: 1
     Angle: 0
-    HasSpawned: 0
-  ActionSpawnVfxList:
-  - SpawnFrame: 4
-    VfxPrefab: {fileID: -5731697141335408088, guid: 7656d3fd19be3ab4089c8b57fd5b1383,
-      type: 3}
-    Offset: {x: 0, y: 0}
-    Angle: 0
-    HasSpawned: 1
+  ActionSpawnVfxList: []
+  Conditions: []
+  Resources: []
   AutoCorrection:
     correctionType: 1
     entityName: Kiwi

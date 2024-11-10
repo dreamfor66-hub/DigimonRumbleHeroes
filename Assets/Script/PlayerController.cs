@@ -380,7 +380,10 @@ public class PlayerController : CharacterBehaviour
             touchStartTime = Time.time;
             isTapConfirmed = false;
         }
-        animator.SetLayerWeight(1, 0);
+        if (AnimatorHasLayer(animator, 1))
+        {
+            animator.SetLayerWeight(1, 0);
+        }
         base.EndAction();
     }
 

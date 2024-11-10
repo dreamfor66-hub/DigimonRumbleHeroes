@@ -22,6 +22,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public CharacterState currentState = CharacterState.Idle; // SyncVar로 변경하여 동기화
     [SyncVar]
     protected ActionKey currentActionKey;
+    protected ActionData currentActionData;
 
     [SyncVar]
     protected float currentFrame;
@@ -55,6 +56,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [SyncVar]
     public CharacterBehaviour target;
     private GameObject targetIndicator;
+    private RigController rigController;
 
     // ActionMove에 관한, player에서 주로 사용할 변수목록
     public Vector3 moveVector;
@@ -72,10 +74,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     // Manual Vfx 관리용 리스트
     private List<VfxObject> activeManualVfxList = new List<VfxObject>();
     private HashSet<ActionSpawnVfxData> spawnedVfxData = new HashSet<ActionSpawnVfxData>();
-    
     private HashSet<ActionSpawnBulletData> spawnedBulletData = new HashSet<ActionSpawnBulletData>();
+    private HashSet<int> addedResourceFrames = new HashSet<int>();
 
-
+    //resource 관련 변수
+    private CharacterResourceTable resourceTable;
 
     protected virtual void Start()
     {
@@ -85,12 +88,27 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         InitializeHurtboxes();
         InitializeCollisionCollider();
         InitializeHealth();
+        resourceTable = new CharacterResourceTable(characterData.Resources);
+        foreach (var resource in characterData.Resources)
+        {
+            resourceTable.AddResource(resource.Key, resource.Init);
+        }
+
+        if (GetComponentInChildren<RigController>() != null)
+        {
+            rigController = GetComponentInChildren<RigController>();
+            rigController.SetUp(characterData.rigOffset, characterData.weightChangeSpeed);
+        }
+
         EntityContainer.Instance.RegisterCharacter(this);
         isDie = false;
         hitStopTimer = 0f;
         IsHitStopped = false;
 
-        if (this is PlayerController)animator.SetLayerWeight(1, 0);
+        if (AnimatorHasLayer(animator, 1))
+        {
+            animator.SetLayerWeight(1, 0);
+        }
     }
 
     protected void InitializeHurtboxes()
@@ -168,10 +186,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
 
 
-        if (this is PlayerController)
+        if (AnimatorHasParameter(animator, "X"))
         {
-             animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
-             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+            animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+        }
+        if (AnimatorHasParameter(animator, "Z"))
+        {
+            animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
         }
     }
 
@@ -215,7 +236,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected void HandleAction()
     {
-        if (characterData.TryGetActionData(currentActionKey, out ActionData currentActionData))
+        if (currentActionData != null)
         {
             currentFrame += Time.deltaTime * 60f;
 
@@ -231,6 +252,18 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
                 CmdPlayAnimation(currentActionData.AnimationKey, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
+            }
+
+            // 특정 프레임에서 리소스를 소모
+            foreach (var resourceUsage in currentActionData.Resources)
+            {
+                int resourceFrame = resourceUsage.Frame;
+                if (Mathf.FloorToInt(currentFrame) == resourceFrame && !addedResourceFrames.Contains(resourceFrame))
+                {
+                    resourceTable.AddResource(resourceUsage.ResourceKey, resourceUsage.Count);
+                    addedResourceFrames.Add(resourceFrame); // 처리된 프레임을 추가하여 중복 소모 방지
+                    Debug.Log($"소모된 리소스: {resourceUsage.ResourceKey}, 남은 수량: {resourceTable.GetResourceValue(resourceUsage.ResourceKey)}");
+                }
             }
 
             //SpecialMove
@@ -270,7 +303,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 // 중복된 소환을 방지: HashSet에 포함되지 않은 경우에만 소환
                 if (currentFrame >= spawnData.SpawnFrame && !spawnedBulletData.Contains(spawnData))
                 {
-                    Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
+                    Vector3 anchorPosition = GetAnchor(spawnData.Anchor);
+                    Vector3 spawnPosition = anchorPosition + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
 
                     Vector3 spawnDirection;
                     switch (spawnData.Pivot)
@@ -282,7 +316,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                         case ActionSpawnBulletAnglePivot.ToTarget:
                             if (target != null)
                             {
-                                Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
+                                Vector3 directionToTarget = (target.transform.position - spawnPosition).normalized;
                                 spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * directionToTarget;
                             }
                             else
@@ -544,7 +578,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         hitTargets.Clear();
         ChangeStatePrev(CharacterState.Idle);
-        currentFrame = 0;
+        //currentFrame = 0;
         foreach(var vfx in activeManualVfxList)
         {
             vfx.OnDespawn();
@@ -576,9 +610,16 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     // 애니메이터에 방향 인풋 신호 전달
                     Vector3 localInputDirection = transform.InverseTransformDirection(inputDirection);
                     localInputDirection = localInputDirection.normalized;
-
-                    animator.SetFloat("X", localInputDirection.x, 0.05f, Time.deltaTime);
-                    animator.SetFloat("Z", localInputDirection.z, 0.05f, Time.deltaTime);
+                    if (AnimatorHasParameter(animator, "X"))
+                    {
+                        animator.SetFloat("X", localInputDirection.x, 0.05f, Time.deltaTime);
+                    }
+                    if (AnimatorHasParameter(animator, "Z"))
+                    {
+                        animator.SetFloat("Z", localInputDirection.z, 0.05f, Time.deltaTime);
+                    }
+                    
+                    
                 }
                 else
                 {
@@ -588,12 +629,20 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     transform.position += moveVector;
 
                     // 애니메이터 속도 감소
-                    animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
-                    animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+                    if (AnimatorHasParameter(animator, "X"))
+                    {
+                        animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
+                    }
+                    if (AnimatorHasParameter(animator, "Z"))
+                    {
+                        animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
+                    }
                 }
 
-                if (this is PlayerController)
+                if (AnimatorHasLayer(animator, 1))
+                {
                     animator.SetLayerWeight(1, 1);
+                }
                 break;
 
             case SpecialMovementType.LookRotateTarget:
@@ -853,14 +902,14 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private void StartKnockBack(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
     {
         ChangeStatePrev(CharacterState.KnockBack);
-        knockBackDirection = hitDirection.normalized;
+        knockBackDirection = hitDirection;
         knockBackSpeed = knockbackPower;
 
         // HitStun을 프레임 단위로 계산
         knockBackDuration = Mathf.Max(hitStunFrame / 60f, knockBackSpeed / 10f);
         knockBackTimer = 0f;
 
-        animator.Play("Knockback");
+        animator.Play("Knockback", 0, 0f);
     }
 
     [Command]
@@ -890,7 +939,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         knockBackDuration = Mathf.Max(hitStunFrame / 60f, knockBackSpeed / 10f);
         knockBackTimer = 0f;
 
-        animator.Play("Knockback");
+        animator.Play("Knockback", 0, 0f);
     }
 
     [Command]
@@ -1048,25 +1097,69 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         Destroy(gameObject, 2f);
     }
 
+    private bool CheckActionConditions(ActionConditionData condition)
+    {
+        switch (condition.Type)
+        {
+            case ActionConditionType.HasResource:
+                return resourceTable.HasResource(condition.ResourceKey, condition.Count);
+
+            // 추후 추가할 조건 유형에 대한 로직을 여기에 추가합니다.
+
+            default:
+                Debug.LogWarning($"알 수 없는 조건 타입: {condition.Type}");
+                return false;
+        }
+    }
+
     public void StartAction(ActionKey actionKey)
     {
-        Debug.Log($"Starting action: {actionKey}");
-        currentActionKey = actionKey;
-        ChangeStatePrev(CharacterState.Action);
-        currentFrame = 0;
-        spawnedVfxData.Clear();
-        spawnedBulletData.Clear();
+        var actionsForKey = characterData.ActionTable
+        .Where(entry => entry.ActionKey == actionKey)
+        .Select(entry => entry.ActionData)
+        .ToList();
 
-        hitTargets.Clear();
-        // Action이 시작될 때 모든 불릿의 HasSpawned 플래그를 false로 초기화
-        if (characterData.TryGetActionData(actionKey, out ActionData actionData))
+        foreach (var actionData in actionsForKey)
         {
-            foreach (var spawnData in actionData.ActionSpawnBulletList)
+            // 조건을 체크하여 실행할 수 있는지 확인
+            bool canExecute = true;
+            foreach (var condition in actionData.Conditions)
             {
-                spawnData.HasSpawned = false;
+                if (!CheckActionConditions(condition))
+                {
+                    int currentResourceCount = resourceTable.GetResourceValue(condition.ResourceKey);
+                    Debug.Log($"조건 미충족으로 액션 실행 불가: {actionKey}. 요구 리소스: {condition.ResourceKey}, 요구 수량: {condition.Count}, 현재 수량: {currentResourceCount}");
+                    canExecute = false;
+                    break;
+                }
+            }
+
+            // 실행 가능 여부에 따라 액션 실행 또는 다음 액션으로 이동
+            if (canExecute)
+            {
+                Debug.Log($"Starting action: {actionKey}");
+
+                // 조건을 만족하는 ActionData를 실행하도록 설정
+                currentActionKey = actionKey;
+                currentActionData = actionData;
+                ChangeStatePrev(CharacterState.Action);
+                currentFrame = 0;
+                addedResourceFrames.Clear();
+                spawnedVfxData.Clear();
+                spawnedBulletData.Clear();
+                if (AnimatorHasLayer(animator, 1))
+                {
+                    animator.SetLayerWeight(1, 0);
+                }
+                hitTargets.Clear();
+
+                // 루프를 종료하여 첫 번째로 조건을 만족하는 액션만 실행
+                return;
             }
         }
 
+        // 모든 액션을 검사했지만 실행 가능한 액션이 없는 경우
+        Debug.Log($"No valid action found for {actionKey} after checking all conditions.");
     }
 
     [ClientRpc]
@@ -1186,7 +1279,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         HandleInputMessage(message);
     }
 
-    protected virtual void HandleInputMessage(InputMessage message)
+    public virtual void HandleInputMessage(InputMessage message)
     {
 
         switch (currentState)
@@ -1295,7 +1388,25 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         public float StartFrame;
         public float EndFrame;
     }
-    // VfxObject 소환 메서드
+
+    //animator 패러미터 검사
+    public bool AnimatorHasParameter(Animator animator, string paramName)
+    {
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            if (param.name == paramName)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public bool AnimatorHasLayer(Animator animator, int layerIndex)
+    {
+        return layerIndex >= 0 && layerIndex < animator.layerCount;
+    }
+
+    // Action에서 무언가를 소환하는 메서드
     private void SpawnVfx(ActionSpawnVfxData vfxData)
     {
         Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
@@ -1311,15 +1422,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             activeManualVfxList.Add(vfx); // Manual 타입만 관리 리스트에 추가하여 Hitstop에 영향 받게 설정
         }
     }
-
-
-    private void EndManualVfx()
+    private Vector3 GetAnchor(SpawnAnchor anchorType)
     {
-        foreach (var vfx in activeManualVfxList)
+        switch (anchorType)
         {
-            vfx.OnDespawn(); // VFX 해제
-            Destroy(vfx.gameObject); // VFX 오브젝트 삭제
+            case SpawnAnchor.ThisCharacter:
+                return transform.position;
+            case SpawnAnchor.Target:
+                return target != null ? target.transform.position : transform.position;
+            default:
+                return Vector3.zero;
         }
-        activeManualVfxList.Clear();
     }
+
 }

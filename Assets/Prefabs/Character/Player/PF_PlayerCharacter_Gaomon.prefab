@@ -56,8 +56,18 @@ MonoBehaviour:
   currentSpeed: 0
   currentState: 1
   isDie: 0
+  currentHealth: 0
   collisionCollider: {fileID: 0}
   target: {fileID: 0}
+  moveVector: {x: 0, y: 0, z: 0}
+  targetRotation: {x: 0, y: 0, z: 0, w: 0}
+  initialTouchPosition: {x: 0, y: 0, z: 0}
+  touchDelta: {x: 0, y: 0, z: 0}
+  touchDeltaDistance: 0
+  touchElapsedTime: 0
+  inputDirection: {x: 0, y: 0, z: 0}
+  speedMultiplier: 0
+  touchStartTime: 0
   hit: 0
   currentHitTarget: {fileID: 0}
   lastHitTarget: {fileID: 0}
@@ -65,6 +75,8 @@ MonoBehaviour:
   currentAttacker: {fileID: 0}
   lastAttacker: {fileID: 0}
   playerNumber: 0
+  basicAttackCycle: 0
+  basicReady: 0
 --- !u!114 &1364712523616598095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -236,6 +248,12 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6648773064679842986}
   m_SourcePrefab: {fileID: 100100000, guid: 4efb20177c9229f4aa9f773eda069ad0, type: 3}
+--- !u!4 &85635616301757442 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -4439579435631388624, guid: 4efb20177c9229f4aa9f773eda069ad0,
+    type: 3}
+  m_PrefabInstance: {fileID: 4851308247610977330}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &245066241183119092 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4596511282794947898, guid: 4efb20177c9229f4aa9f773eda069ad0,
@@ -656,9 +674,9 @@ MonoBehaviour:
   _gizmosEditorEndPreview: {fileID: 0}
   _gizmospeep: {fileID: 0}
   _editor_Title: Tail Animator 2
-  _editor_IsInspectorViewingColliders: 1
+  _editor_IsInspectorViewingColliders: 0
   _editor_IsInspectorViewingIncludedColliders: 0
-  _editor_animatorViewedCounter: -1
+  _editor_animatorViewedCounter: 0
   TailSegments: []
   GhostParent:
     ProceduralPosition: {x: 0, y: 0, z: 0}
@@ -765,11 +783,14 @@ MonoBehaviour:
   _Editor_Category: 0
   _Editor_FeaturesCategory: 0
   DrawGizmos: 1
-  StartBone: {fileID: 0}
+  StartBone: {fileID: 881285058051800819}
   EndBone: {fileID: 0}
   EndBoneJointOffset: {x: 0, y: 0, z: 0}
-  _TransformsGhostChain: []
-  _GhostChainInitCount: -1
+  _TransformsGhostChain:
+  - {fileID: 881285058051800819}
+  - {fileID: 85635616301757442}
+  - {fileID: 5275102615458732445}
+  _GhostChainInitCount: 3
   UpdateRate: 0
   AnimatePhysics: 0
   InterpolateRate: 0
@@ -803,6 +824,12 @@ MonoBehaviour:
   Tangle: 0
   AnimateRoll: 0
   OverrideKeyframeAnimation: 0
+--- !u!4 &881285058051800819 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5722310627487060673, guid: 4efb20177c9229f4aa9f773eda069ad0,
+    type: 3}
+  m_PrefabInstance: {fileID: 4851308247610977330}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &1313321061739581859 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 4efb20177c9229f4aa9f773eda069ad0,
@@ -1388,6 +1415,12 @@ Transform:
 --- !u!4 &4961267325102394329 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4efb20177c9229f4aa9f773eda069ad0,
+    type: 3}
+  m_PrefabInstance: {fileID: 4851308247610977330}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5275102615458732445 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8473625208645700177, guid: 4efb20177c9229f4aa9f773eda069ad0,
     type: 3}
   m_PrefabInstance: {fileID: 4851308247610977330}
   m_PrefabAsset: {fileID: 0}

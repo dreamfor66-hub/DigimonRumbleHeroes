@@ -52,6 +52,15 @@ public class ActionData : ScriptableObject
     [TableList(AlwaysExpanded = true)]
     public List<ActionSpawnVfxData> ActionSpawnVfxList = new List<ActionSpawnVfxData>();
 
+    [Title("Condition")]
+    [Tooltip("액션 진입 조건. And 연산")]
+    [PropertyOrder(3)]
+    [TableList] public List<ActionConditionData> Conditions = new();
+
+    [Title("Resource")]
+    [PropertyOrder(3)]
+    [TableList] public List<ActionUseResourceData> Resources = new();
+
     [Title("Auto Correction")]
     [PropertyOrder(10)]
     [HideLabel]
@@ -187,10 +196,9 @@ public class ActionSpawnBulletData
     public int SpawnFrame;
     public BulletBehaviour BulletPrefab;
     public Vector2 Offset;
+    public SpawnAnchor Anchor;
     public ActionSpawnBulletAnglePivot Pivot;
     public float Angle;
-    [HideInInspector]
-    public bool HasSpawned = false; // 발사 여부를 추적하는 변수
 }
 
 [System.Serializable]
@@ -204,10 +212,46 @@ public class ActionSpawnVfxData
     public bool HasSpawned = false; // 발사 여부를 추적하는 변수
 }
 
+public enum SpawnAnchor
+{
+    ThisCharacter = 0,
+    Target = 1,
+}
 public enum ActionSpawnBulletAnglePivot
 {
     Forward = 0,
     ToTarget = 1,
+}
+public enum ActionConditionType
+{
+    HasResource,
+    //BulletExist,
+    //BulletNotExist,
+    //PropLessThan,
+}
+
+[System.Serializable]
+public class ActionConditionData
+{
+    public ActionConditionType Type;
+
+    [ShowIf(nameof(Type), ActionConditionType.HasResource)]
+    public CharacterResourceKey ResourceKey;
+
+    [ShowIf(nameof(Type), ActionConditionType.HasResource)]
+    public int Count;
+
+    //[ShowIf("@Type == ActionConditionType.BulletExist || Type == ActionConditionType.BulletNotExist || Type == ActionConditionType.PropLessThan ")]
+    //[FormerlySerializedAs("BulletKey")]
+    //public string EntityKey;
+}
+
+[System.Serializable]
+public class ActionUseResourceData
+{
+    public int Frame;
+    public CharacterResourceKey ResourceKey;
+    public int Count;
 }
 
 [System.Serializable]

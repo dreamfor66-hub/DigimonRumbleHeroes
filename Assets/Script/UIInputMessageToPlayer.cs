@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mirror;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEngine;
@@ -34,12 +35,17 @@ public class UIInputMessageToPlayer : MonoBehaviour
 
     private void SendInputToPlayer(InputMessage message)
     {
-        //if (EntityContainer.Instance.LeaderPlayer != null)
-        //    EntityContainer.Instance.LeaderPlayer.ProcessInputMessage(message);
-        
-        //else
-            Debug.LogWarning("PlayerCharacter가 존재하지 않습니다.");
-        
+        var localPlayer = NetworkClient.localPlayer?.GetComponent<PlayerController>();
+
+        if (localPlayer != null)
+        {
+            localPlayer.HandleInputMessage(message);
+        }
+        else
+        {
+            Debug.LogWarning("LocalPlayer가 존재하지 않습니다.");
+        }
+
     }
 
     // 특정 버튼을 활성화 또는 비활성화하는 메서드
