@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public abstract class CharacterBehaviour : NetworkBehaviour
 {
@@ -30,7 +31,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public bool isDie;
 
     [SerializeField,Sirenix.OdinInspector.ReadOnly, SyncVar]
-    protected float currentHealth;
+    public float currentHealth;
 
     protected Dictionary<CharacterBehaviour, List<int>> hitTargets;
 
@@ -77,6 +78,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private HashSet<ActionSpawnBulletData> spawnedBulletData = new HashSet<ActionSpawnBulletData>();
     private HashSet<int> addedResourceFrames = new HashSet<int>();
 
+
+    // hpBar UI
+    private GameObject hpStaminaBarInstance; // 생성된 HP Bar 인스턴스
+    protected HpStaminaBarController hpStaminaBarController;
+
     //resource 관련 변수
     private CharacterResourceTable resourceTable;
 
@@ -109,6 +115,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             animator.SetLayerWeight(1, 0);
         }
+
+        // HP 및 Stamina 바 생성
+        InitializeHPStaminaBar();
     }
 
     protected void InitializeHurtboxes()
@@ -165,6 +174,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (isDie)
             return;
+
 
         switch (currentState)
         {
@@ -1094,6 +1104,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             EntityContainer.Instance.UnregisterCharacter(this);
         }
+
+        if (hpStaminaBarController != null)
+            hpStaminaBarController.Despawn();
         Destroy(gameObject, 2f);
     }
 
@@ -1435,4 +1448,16 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
     }
 
+    private void InitializeHPStaminaBar()
+    {
+        if (ResourceHolder.Instance.gameVariables.HPStaminaBarPrefab != null)
+        {
+            hpStaminaBarInstance = Instantiate(ResourceHolder.Instance.gameVariables.HPStaminaBarPrefab, transform.position, Quaternion.identity);
+            hpStaminaBarInstance.transform.SetParent(EntityContainer.Instance.transform);
+        }
+        // 초기 위치 설정 (캐릭터 머리 위)
+        hpStaminaBarController = hpStaminaBarInstance.GetComponentInChildren<HpStaminaBarController>();
+        hpStaminaBarController.target = this;
+        hpStaminaBarController.resourceTable = resourceTable;
+    }
 }

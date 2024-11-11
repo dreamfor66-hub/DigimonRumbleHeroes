@@ -161,7 +161,7 @@ private void Update()
     {
         HitData hitData = bulletData.HitIdList.Find(hit => hit.HitId == hitId);
         if (hitData == null) return;
-
+        if (target == null) return;
         Vector3 hitDirection = (target.transform.position + direction.normalized - transform.position).normalized;
 
         //if (isServer)

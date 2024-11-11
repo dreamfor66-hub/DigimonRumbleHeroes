@@ -19,9 +19,12 @@ MonoBehaviour:
   characterItemTrait1: 5
   characterItemTrait2: 0
   characterItemTrait3: 0
-  maxHealth: 10
+  baseHP: 10
+  baseATK: 5
   moveSpeed: 2
-  attackPower: 1.5
+  defaultBasicAttackCycle: 1.5
+  hpPerLevel: 1
+  atkPerLevel: 1
   colliderRadius: 0.5
   mass: 10
   drag: 10
@@ -29,9 +32,17 @@ MonoBehaviour:
   Hurtboxes:
   - Offset: {x: 0, y: 0}
     Radius: 0.5
+  rigOffset: {x: 0, y: 0.5, z: 0}
+  weightChangeSpeed: 1
   ActionTable:
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: c6ee7dd7219bb764c845936db0e97f7d, type: 2}
+  Resources:
+  - Key: 1
+    Min: 0
+    Max: 10
+    Init: 0
+    ResetBy: 0
   targetingWeightThreshold: 0.5
   shortDistance: 5
   wideAngle: 90

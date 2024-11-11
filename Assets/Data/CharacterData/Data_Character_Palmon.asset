@@ -51,6 +51,11 @@ MonoBehaviour:
     Max: 1
     Init: 1
     ResetBy: 0
+  - Key: 1
+    Min: 0
+    Max: 10
+    Init: 0
+    ResetBy: 0
   targetingWeightThreshold: 0.273
   shortDistance: 7
   wideAngle: 160

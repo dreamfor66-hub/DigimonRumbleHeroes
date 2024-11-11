@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6eb4bdb3e781b74c9eb33f2def3e10a, type: 3}
   m_Name: Data_GameVariables
   m_EditorClassIdentifier: 
+  HPStaminaBarPrefab: {fileID: 7840219643611680230, guid: f3a8610aa5a09364dae4b5899239324a,
+    type: 3}
   dragThreshold: 12
   tapThreshold: 0.2
   maxDistance: 100

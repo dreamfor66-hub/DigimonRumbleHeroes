@@ -179,4 +179,10 @@ public class CharacterResourceTable
         var resource = resources.Find(x => x.Data.Key == key);
         return resource?.Count ?? 0; // 리소스를 찾지 못하면 기본값 0 반환
     }
+    
+    public int GetResourceMaxValue(CharacterResourceKey key)
+    {
+        var resource = resources.Find(x => x.Data.Key == key);
+        return resource?.Data.Max ?? 0; // 리소스를 찾지 못하면 기본값 0 반환
+    }
 }

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29910191e345ee74787ade4657b13eb0, type: 3}
+  m_Name: Data_Buff_New
+  m_EditorClassIdentifier: 
+  BuffConditionData:
+  - Type: 1
+    ResourceKey: 1
+    ActionKey: 10
+  Trigger: 0

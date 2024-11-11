@@ -6,6 +6,7 @@ public enum CharacterResourceKey
 {
     None,
         
+    Skill_Cooldown = 1,
     Character_Basic_01 = 10,
 }
 
