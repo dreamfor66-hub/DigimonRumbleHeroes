@@ -32,6 +32,9 @@ MonoBehaviour:
     HitStunFrame: 0
     KnockbackPower: 1
     hitType: 1
+    HitApplyOwnerResource: 1
+    ResourceKey: 1
+    Value: 1
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
   - SpawnTrigger: 4

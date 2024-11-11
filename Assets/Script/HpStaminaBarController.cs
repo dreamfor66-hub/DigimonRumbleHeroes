@@ -6,7 +6,6 @@ public class HpStaminaBarController : MonoBehaviour
     public Slider hpSlider;
     public Slider staminaSlider;
     public CharacterBehaviour target; // 캐릭터의 Transform
-    public CharacterResourceTable resourceTable;
 
     Vector3 offset;
 
@@ -32,8 +31,8 @@ public class HpStaminaBarController : MonoBehaviour
 
         UpdateHP(target.currentHealth, target.characterData.baseHP);
 
-        float currentStamina = resourceTable.GetResourceValue(CharacterResourceKey.Skill_Cooldown);
-        float maxStamina = resourceTable.GetResourceMaxValue(CharacterResourceKey.Skill_Cooldown);
+        float currentStamina = target.resourceTable.GetResourceValue(CharacterResourceKey.Skill_Cooldown);
+        float maxStamina = target.resourceTable.GetResourceMaxValue(CharacterResourceKey.Skill_Cooldown);
         UpdateStamina(currentStamina, maxStamina);
     }
 

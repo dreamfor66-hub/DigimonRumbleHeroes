@@ -141,7 +141,7 @@ private void Update()
                     if (isValidTarget)
                     {
                         var currentHit = bulletData.HitIdList.Find(hit => hit.HitId == hitbox.HitId);
-                        HandleHit(hitbox.HitId, target, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower);
+                        HandleHit(hitbox.HitId, target, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
 
                         if (!hitTargets.ContainsKey(target))
                             hitTargets[target] = new List<int>();
@@ -157,7 +157,7 @@ private void Update()
         
     }
     //HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
-    private void HandleHit(int hitId, CharacterBehaviour target, float hitStopFrame, float hitStunFrame, HitType hitType, float knockbackPower)
+    private void HandleHit(int hitId, CharacterBehaviour target, float hitStopFrame, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         HitData hitData = bulletData.HitIdList.Find(hit => hit.HitId == hitId);
         if (hitData == null) return;
@@ -172,8 +172,8 @@ private void Update()
             target.ApplyHitStop(hitData.HitStopFrame);
             target.RpcApplyHitStop(hitData.HitStopFrame);
 
-            OnHit(target);
-            RpcOnHit(target);
+            OnHit(target, hitApplyOwnerResource, key, value);
+            RpcOnHit(target, hitApplyOwnerResource, key, value);
             ApplyHitStop(hitData.HitStopFrame);
         }
     }
@@ -191,17 +191,18 @@ private void Update()
     }
 
     [ClientRpc]
-    private void RpcOnHit(CharacterBehaviour target)
+    private void RpcOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         if (!isServer)
         {
-            OnHit(target);
+            OnHit(target, hitApplyOwnerResource, key, value);
         }
     }
 
-    private void OnHit(CharacterBehaviour target)
+    private void OnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
-        Debug.Log($"Bullet hit {target.name} for damage with HitStop");
+        if (hitApplyOwnerResource)
+            owner.resourceTable.AddResource(key, value);
     }
 
     private void CheckCollisionWithMap()

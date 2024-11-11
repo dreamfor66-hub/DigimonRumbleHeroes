@@ -188,6 +188,11 @@ public class HitData
     public float HitStunFrame;
     public float KnockbackPower;
     public HitType hitType;
+    public bool HitApplyOwnerResource;
+    [ShowIf(nameof(HitApplyOwnerResource), true)]
+    public CharacterResourceKey ResourceKey;
+    [ShowIf(nameof(HitApplyOwnerResource), true)]
+    public int Value;
 }
 
 [System.Serializable]

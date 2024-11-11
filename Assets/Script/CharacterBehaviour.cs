@@ -84,7 +84,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     protected HpStaminaBarController hpStaminaBarController;
 
     //resource 관련 변수
-    private CharacterResourceTable resourceTable;
+    public CharacterResourceTable resourceTable;
 
     protected virtual void Start()
     {
@@ -401,8 +401,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             if (isServer)
                             {
                                 var currentHit = currentActionData.HitIdList.Find(hit => hit.HitId == hitbox.HitId);
-                                HandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower);
-                                RpcHandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower);
+                                HandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
+                                RpcHandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
                             }
                             //else if (isLocalPlayer)
                             //{
@@ -471,7 +471,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
-    protected void HandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower)
+    protected void HandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         if (target == null) return;
 
@@ -482,8 +482,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             target.TakeDamage(hitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, this);
             target.RpcTakeDamage(hitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, this);
 
-            OnHit(target);
-            RpcOnHit(target);
+            OnHit(target, hitApplyOwnerResource, key, value);
+            RpcOnHit(target, hitApplyOwnerResource, key, value);
 
             ApplyHitStop(hitStopFrames);
             RpcApplyHitStop(hitStopFrames);
@@ -499,20 +499,20 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
     [Command]
-    private void CmdHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower)
+    private void CmdHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         if (target != null)
         {
-            RpcHandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
-            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
+            RpcHandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
+            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
         }
     }
     [ClientRpc]
-    private void RpcHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower)
+    private void RpcHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         if (!isServer && !isLocalPlayer && target != null)
         {
-            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
+            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
         }
     }
 
@@ -832,29 +832,33 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [HideInInspector] public bool attacked;
     [HideInInspector] public CharacterBehaviour currentAttacker;
     [HideInInspector] public CharacterBehaviour lastAttacker;
-    public void OnHit(CharacterBehaviour target)
+    public void OnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         hit = true;
         currentHitTarget = target;
         lastHitTarget = target;
+
+        if (hitApplyOwnerResource)
+            resourceTable.AddResource(key, value);
+
         StartCoroutine(ResetHitRecentlyFlag());
     }
 
     [Command]
-    private void CmdOnHit(CharacterBehaviour target)
+    private void CmdOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         // 서버에서 처리 후 클라이언트에 동기화
-        OnHit(target); // 서버에서 로컬 처리
-        RpcOnHit(target);
+        OnHit(target, hitApplyOwnerResource, key, value);
+        RpcOnHit(target, hitApplyOwnerResource, key, value);
     }
 
     [ClientRpc]
-    private void RpcOnHit(CharacterBehaviour target)
+    private void RpcOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
     {
         if (!isServer)
         {
             // 다른 클라이언트에서 처리
-            OnHit(target);
+            OnHit(target, hitApplyOwnerResource, key, value);
         }
     }
 
@@ -1463,6 +1467,5 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         // 초기 위치 설정 (캐릭터 머리 위)
         hpStaminaBarController = hpStaminaBarInstance.GetComponentInChildren<HpStaminaBarController>();
         hpStaminaBarController.target = this;
-        hpStaminaBarController.resourceTable = resourceTable;
     }
 }

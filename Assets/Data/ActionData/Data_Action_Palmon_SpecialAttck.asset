@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Palmon_SpecialAttck
+  m_EditorClassIdentifier: 
+  ActionFrame: 85
+  AnimationKey: Basic01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.36666667
+      outSlope: 0.23755237
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 9.98
+      value: 2.3707726
+      inSlope: 0.23755237
+      outSlope: 1632.1953
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 10
+      value: 35.015427
+      inSlope: 1632.1953
+      outSlope: 0.7231641
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 19.834063
+      value: 42.127068
+      inSlope: 0.7231641
+      outSlope: 0.26229668
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 32.009617
+      value: 45.320675
+      inSlope: 0.26229668
+      outSlope: 0.56383544
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 41.80098
+      value: 50.841393
+      inSlope: 0.56383544
+      outSlope: 0.4897937
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 85
+      value: 72
+      inSlope: 0.4897937
+      outSlope: 0.36666667
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList:
+  - StartFrame: 0
+    EndFrame: 10
+    StartValue: {x: 0, y: 10}
+    EndValue: {x: 0, y: 0}
+  SpecialMovementList:
+  - StartFrame: 15
+    EndFrame: 100
+    MoveType: 1
+    CanRotate: 0
+    Value: 10
+  - StartFrame: 0
+    EndFrame: 100
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.5
+  HitboxList: []
+  HitIdList: []
+  ActionSpawnBulletList:
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
+      type: 3}
+    Offset: {x: -1, y: 0}
+    Anchor: 0
+    Pivot: 1
+    Angle: 0
+  - SpawnFrame: 33
+    BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 1
+    Angle: 0
+  - SpawnFrame: 35
+    BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
+      type: 3}
+    Offset: {x: 1, y: 0}
+    Anchor: 0
+    Pivot: 1
+    Angle: 0
+  ActionSpawnVfxList: []
+  Conditions: []
+  Resources:
+  - Frame: 1
+    ResourceKey: 10
+    Count: 1
+  AutoCorrection:
+    correctionType: 1
+    entityName: Kiwi
+    characterName: Kiwi
