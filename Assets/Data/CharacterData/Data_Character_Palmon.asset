@@ -39,10 +39,8 @@ MonoBehaviour:
     ActionData: {fileID: 11400000, guid: e6aca6ab51ecabf4cb2dbc6d7c3250cf, type: 2}
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: 1ac97ad3c4d24cd4db791b8e374a3ee2, type: 2}
-  - ActionKey: 11
-    ActionData: {fileID: 11400000, guid: 4a4f15d3d4719a14d9f5fa2c523f9b53, type: 2}
   - ActionKey: 20
-    ActionData: {fileID: 11400000, guid: 6995d946a2b8a13428230d2ae5a5f0c3, type: 2}
+    ActionData: {fileID: 11400000, guid: afd8bd872a9f31b4798dbbb2e509ffcb, type: 2}
   - ActionKey: 100
     ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
   Resources:
