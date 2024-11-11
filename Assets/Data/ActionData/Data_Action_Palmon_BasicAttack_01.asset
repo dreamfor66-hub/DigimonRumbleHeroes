@@ -72,11 +72,6 @@ MonoBehaviour:
     EndValue: {x: 0, y: 0}
   SpecialMovementList:
   - StartFrame: 0
-    EndFrame: 50
-    MoveType: 1
-    CanRotate: 0
-    Value: 5
-  - StartFrame: 51
     EndFrame: 100
     MoveType: 1
     CanRotate: 0

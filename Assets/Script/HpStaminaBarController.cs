@@ -37,8 +37,8 @@ public class HpStaminaBarController : MonoBehaviour
         UpdateStamina(currentStamina, maxStamina);
     }
 
-    public void Despawn()
+    public void Despawn(float despawnDelay)
     {
-        Destroy(gameObject);
+        Destroy(gameObject, despawnDelay);
     }
 }

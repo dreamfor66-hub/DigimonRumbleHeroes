@@ -282,11 +282,14 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (currentFrame >= specialMovement.StartFrame && currentFrame <= specialMovement.EndFrame)
                 {
                     ApplySpecialMovement(specialMovement);
+                    
                 }
                 else
                 {
-                    if (this is PlayerController)
+                    if (AnimatorHasLayer(animator, 1))
+                    {
                         animator.SetLayerWeight(1, 0);
+                    }
                 }
             }
 
@@ -1105,9 +1108,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             EntityContainer.Instance.UnregisterCharacter(this);
         }
 
+        var despawnDelay = 2f;
+
         if (hpStaminaBarController != null)
-            hpStaminaBarController.Despawn();
-        Destroy(gameObject, 2f);
+            hpStaminaBarController.Despawn(despawnDelay);
+        Destroy(gameObject, despawnDelay);
     }
 
     private bool CheckActionConditions(ActionConditionData condition)

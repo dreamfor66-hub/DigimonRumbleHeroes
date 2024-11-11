@@ -89,7 +89,7 @@ MonoBehaviour:
     StartValue: {x: 0, y: 10}
     EndValue: {x: 0, y: 0}
   SpecialMovementList:
-  - StartFrame: 0
+  - StartFrame: 15
     EndFrame: 100
     MoveType: 1
     CanRotate: 0
