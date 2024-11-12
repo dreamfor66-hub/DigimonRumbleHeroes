@@ -1,6 +1,9 @@
+using UnityEngine;
+
 public enum HitType
 {
     DamageOnly,
     Weak,
-    Strong
+    Strong,
+    [HideInInspector] All = 0-10,
 }

@@ -40,6 +40,17 @@ public class RigController : MonoBehaviour
                     break;
                 }
             case CharacterState.Action:
+                {
+                    if (behaviour.target == null)
+                    {
+                        targetTracking = false;
+                    }
+                    else
+                    {
+                        targetTracking = true;
+                    }
+                    break;
+                }
             case CharacterState.KnockBack:
             case CharacterState.KnockBackSmash:
                 {

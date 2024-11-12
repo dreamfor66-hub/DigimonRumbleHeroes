@@ -300,12 +300,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 {
                     float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
                     Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
-                    Vector3 moveVector = new Vector3(interpolatedSpeed.x, 0, interpolatedSpeed.y);
+                    Vector3 moveVector = transform.forward * interpolatedSpeed.y + transform.right * interpolatedSpeed.x;
                     Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
                     // 로컬 플레이어의 이동을 서버에 동기화
                     if (isLocalPlayer)
                     {
+                        transform.position += finalMoveVector;
                         CmdSyncMovement(finalMoveVector);
                     }
                 }
@@ -696,6 +697,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             touchDeltaDistance = touchDelta.magnitude;
             touchElapsedTime = Time.time - touchStartTime;
         }
+        else
+        {
+            touchDelta = Vector3.zero;
+            touchDeltaDistance = touchDelta.magnitude;
+            touchElapsedTime = Time.time - touchStartTime;
+        }
         return GetDirectionalInput(touchDelta);
 #endif
 
@@ -716,6 +723,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 touchElapsedTime = Time.time - touchStartTime;
             }
             else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                touchDelta = Vector3.zero;
+                touchDeltaDistance = touchDelta.magnitude;
+                touchElapsedTime = Time.time - touchStartTime;
+            }
+            else
             {
                 touchDelta = Vector3.zero;
                 touchDeltaDistance = touchDelta.magnitude;
