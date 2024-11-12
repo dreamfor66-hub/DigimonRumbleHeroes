@@ -47,7 +47,12 @@ public class RigController : MonoBehaviour
                     }
                     else
                     {
-                        targetTracking = true;
+                        if (behaviour.currentActionData.canLookInAction)
+                            targetTracking = true;
+                        else
+                        {
+                            targetTracking = false;
+                        }
                     }
                     break;
                 }

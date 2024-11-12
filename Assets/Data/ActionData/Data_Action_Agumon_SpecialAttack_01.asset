@@ -43,6 +43,7 @@ MonoBehaviour:
     EndFrame: 62
     StartValue: {x: 0, y: 10}
     EndValue: {x: 0, y: 0}
+  SpecialMovementList: []
   HitboxList:
   - StartFrame: 0
     EndFrame: 0
@@ -53,4 +54,24 @@ MonoBehaviour:
   HitIdList:
   - HitId: 0
     HitDamage: 0
-    HitstopTime: 0
+    HitStopFrame: 0
+    HitStunFrame: 0
+    KnockbackPower: 0
+    hitType: 0
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+  ActionSpawnBulletList: []
+  ActionSpawnVfxList: []
+  Conditions:
+  - Type: 0
+    ResourceKey: 1
+    Count: 10
+  Resources:
+  - Frame: 0
+    ResourceKey: 1
+    Count: -10
+  AutoCorrection:
+    correctionType: 0
+    entityName: 
+    characterName: 

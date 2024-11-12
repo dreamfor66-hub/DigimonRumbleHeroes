@@ -63,6 +63,8 @@ public class ActionData : ScriptableObject
 
     [Title("Auto Correction")]
     [PropertyOrder(10)]
+    public bool canLookInAction;
+    [PropertyOrder(10)]
     [HideLabel]
     public AutoCorrectionData AutoCorrection;
 

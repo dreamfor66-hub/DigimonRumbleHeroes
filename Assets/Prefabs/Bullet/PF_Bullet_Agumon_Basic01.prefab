@@ -30,7 +30,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3837661057112859068}
-  - {fileID: 1458693979384107458}
   m_Father: {fileID: 1773710020870454455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3678699042631848217
@@ -134,69 +133,6 @@ MonoBehaviour:
   positionSensitivity: 0.01
   rotationSensitivity: 0.01
   scaleSensitivity: 0.01
---- !u!1001 &1454488566584491812
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2511944142204517407}
-    m_Modifications:
-    - target: {fileID: 1314051614399548, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_Name
-      value: FireballSoftMissileFire
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d7c4f1a918ad21244a3ebdacbf454af5, type: 3}
---- !u!4 &1458693979384107458 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4842074055798502, guid: d7c4f1a918ad21244a3ebdacbf454af5,
-    type: 3}
-  m_PrefabInstance: {fileID: 1454488566584491812}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3842659264780142706
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -249,6 +185,31 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 198201273990035790, guid: b5ff8f15f2b8279429d253373f165984,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.b
+      value: 0.654902
+      objectReference: {fileID: 0}
+    - target: {fileID: 198201273990035790, guid: b5ff8f15f2b8279429d253373f165984,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.g
+      value: 0.7029659
+      objectReference: {fileID: 0}
+    - target: {fileID: 198201273990035790, guid: b5ff8f15f2b8279429d253373f165984,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 198201273990035790, guid: b5ff8f15f2b8279429d253373f165984,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.g
+      value: 0.082383364
+      objectReference: {fileID: 0}
+    - target: {fileID: 198201273990035790, guid: b5ff8f15f2b8279429d253373f165984,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.m_ColorSpace
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 198451224083106328, guid: b5ff8f15f2b8279429d253373f165984,
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -257,17 +218,17 @@ PrefabInstance:
     - target: {fileID: 198451224083106328, guid: b5ff8f15f2b8279429d253373f165984,
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.4508985
+      value: 0.61627716
       objectReference: {fileID: 0}
     - target: {fileID: 198467817149936168, guid: b5ff8f15f2b8279429d253373f165984,
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0.6084906
+      value: 0.60784316
       objectReference: {fileID: 0}
     - target: {fileID: 198467817149936168, guid: b5ff8f15f2b8279429d253373f165984,
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.639098
+      value: 0.7216138
       objectReference: {fileID: 0}
     - target: {fileID: 198467817149936168, guid: b5ff8f15f2b8279429d253373f165984,
         type: 3}
@@ -275,7 +236,8 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1141177743816366, guid: b5ff8f15f2b8279429d253373f165984, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b5ff8f15f2b8279429d253373f165984, type: 3}

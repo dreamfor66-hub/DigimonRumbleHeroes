@@ -32,8 +32,16 @@ MonoBehaviour:
     HitStunFrame: 0
     KnockbackPower: 2
     hitType: 1
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
+  - SpawnTrigger: 1
+    VfxPrefab: {fileID: -1134785986197523482, guid: a9b82af3e92016b4dbbfb75c2d86ff6c,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Angle: 0
   - SpawnTrigger: 4
     VfxPrefab: {fileID: -5731697141335408088, guid: d3923114db8f1414ea3e6faafef08846,
       type: 3}

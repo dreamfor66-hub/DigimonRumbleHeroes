@@ -12,8 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29910191e345ee74787ade4657b13eb0, type: 3}
   m_Name: Data_Buff_New
   m_EditorClassIdentifier: 
-  BuffConditionData:
-  - Type: 1
-    ResourceKey: 1
-    ActionKey: 10
-  Trigger: 0
+  Units:
+  - Conditions:
+    - Type: 11
+      ResourceKey: 0
+      Distance: 0
+      Comparator: 0
+      ComparativeValueInt: 0
+      ComparativeValueFixed: 0
+      State: 0
+    Trigger:
+      Type: 13
+      FValue: 0
+      NValue: 0
+      MoveFilter: -1
+      HitFilter:
+        units: []
+      EveryNTimes: 1
+    Target:
+      Type: 10
+    Effects:
+    - Type: 305
+      Value: 0
+      ValueVariables: []
+      BuffData: {fileID: 11400000}
+      BulletPrefab: {fileID: 0}
+      Position: {x: 0, y: 0}
+      Angle: 0
+      teamSelector: 0
+      CharacterResourceKey: 0
+      ResourceChangeType: 0
+  ReleaseData:
+    Type: 0
+    Time: 0
+    Count: 0
+  DuplicationData:
+    Type: 0
+    MaxStackCount: 0

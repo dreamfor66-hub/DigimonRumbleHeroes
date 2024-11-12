@@ -37,6 +37,10 @@ public class VfxObject : NetworkBehaviour
     [ShowIf(nameof(PlayType), VfxPlayType.Time)]
     public float DespawnTime = 1f;
 
+    public bool DespawnOnTargetDespawn;
+    [ShowIf(nameof(DespawnOnTargetDespawn), true)]
+    public float DespawnAfterTime;
+
     [HideIf(nameof(PlayType), VfxPlayType.Manual)]
     [Tooltip("Vfx의 재생 및 Despawn 시간계산이 실제 시간이 아닌 게임상 시간으로 제어됩니다.")]
     public bool UseGameTime;
@@ -49,42 +53,36 @@ public class VfxObject : NetworkBehaviour
     public float elapsedTime = 0f;
     private float elapsedGameTime;
 
-    //private void OnEnable()
-    //{
-    //    if (PlayType != VfxPlayType.Manual)
-    //        UpdateManager.Register(this);
-    //}
-
-    //private void OnDisable()
-    //{
-    //    if (PlayType != VfxPlayType.Manual)
-    //        UpdateManager.Release(this);
-    //}
 
     private void Update()
+    {
+        if (DespawnOnTargetDespawn && followTm == null)
+            Destroy(gameObject,DespawnAfterTime);
+
+        if (PlayType == VfxPlayType.Time && !UseGameTime)
         {
-            if (PlayType == VfxPlayType.Time && !UseGameTime)
-            {
                 elapsedTime += Time.deltaTime;
                 if (elapsedTime >= DespawnTime)
                     Destroy(gameObject);
-            }
         }
+    }
 
-        private void LateUpdate()
-        {
-            FollowTransform();
-        }
+    private void LateUpdate()
+    {
 
-        public void UpdateState(float deltaTime)
+
+        FollowTransform();
+    }
+
+    public void UpdateState(float deltaTime)
+    {
+        if (PlayType != VfxPlayType.Manual && UseGameTime)
         {
-            if (PlayType != VfxPlayType.Manual && UseGameTime)
-            {
-                elapsedGameTime += deltaTime;
-                if (elapsedGameTime >= DespawnTime && PlayType != VfxPlayType.Loop)
-                    Destroy(gameObject);
-        }
-        }
+            elapsedGameTime += deltaTime;
+            if (elapsedGameTime >= DespawnTime && PlayType != VfxPlayType.Loop)
+                Destroy(gameObject);
+    }
+    }
 
         public void UpdateVisual(float deltaTime)
         {

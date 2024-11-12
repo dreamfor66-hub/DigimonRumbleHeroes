@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Data_Action_Palmon_BasicAttack_01
   m_EditorClassIdentifier: 
   ActionFrame: 85
-  AnimationKey: Basic01
+  AnimationKey: Basic01_A
   AnimationCurve:
     serializedVersion: 2
     m_Curve:
@@ -21,7 +21,25 @@ MonoBehaviour:
       time: 0
       value: 0
       inSlope: 0.36666667
-      outSlope: 0.24398765
+      outSlope: 0.111378595
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.2414068
+      value: 0.13826615
+      inSlope: 0.111378595
+      outSlope: 0.076453745
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 4.4844174
+      value: 0.38620645
+      inSlope: 0.076453745
+      outSlope: 0.60711443
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
@@ -29,34 +47,43 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 6.433974
       value: 1.5698102
-      inSlope: 0.24398765
-      outSlope: 0.05857086
+      inSlope: 0.60711443
+      outSlope: 0.028379062
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 16.053421
+      time: 26.28732
       value: 2.1332295
-      inSlope: 0.05857086
-      outSlope: 0.28931198
+      inSlope: 0.028379062
+      outSlope: 0.7709657
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 55.405533
+      time: 41.05456
       value: 13.518267
-      inSlope: 0.28931198
-      outSlope: 0.734471
+      inSlope: 0.7709657
+      outSlope: 0.4292892
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 71.12424
+      value: 26.426853
+      inSlope: 0.4292892
+      outSlope: 1.0556216
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 84.92951
-      value: 35.202774
-      inSlope: 0.734471
+      value: 41
+      inSlope: 1.0556216
       outSlope: 522.0355
       tangentMode: 69
       weightedMode: 0
@@ -67,15 +94,20 @@ MonoBehaviour:
     m_RotationOrder: 4
   MovementList:
   - StartFrame: 0
-    EndFrame: 10
-    StartValue: {x: 0, y: 10}
+    EndFrame: 30
+    StartValue: {x: 0, y: -2}
     EndValue: {x: 0, y: 0}
   SpecialMovementList:
   - StartFrame: 0
+    EndFrame: 10
+    MoveType: 1
+    CanRotate: 0
+    Value: 3
+  - StartFrame: 10
     EndFrame: 100
     MoveType: 1
     CanRotate: 0
-    Value: 10
+    Value: 7
   - StartFrame: 0
     EndFrame: 100
     MoveType: 0
@@ -84,21 +116,21 @@ MonoBehaviour:
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:
-  - SpawnFrame: 20
+  - SpawnFrame: 10
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: -1, y: 0}
     Anchor: 0
     Pivot: 1
     Angle: 0
-  - SpawnFrame: 22
+  - SpawnFrame: 11
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: 0, y: 0}
     Anchor: 0
     Pivot: 1
     Angle: 0
-  - SpawnFrame: 26
+  - SpawnFrame: 12
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: 0.8, y: 0}

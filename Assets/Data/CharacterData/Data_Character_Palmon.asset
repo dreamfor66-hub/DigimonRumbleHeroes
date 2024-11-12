@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterSprite: {fileID: 21300000, guid: d14f6aefdb1673c4a85ed81dfdce1817, type: 3}
   characterName: "\uC544\uAD6C\uBAAC"
-  characterItemColor: 0
+  characterItemColor: 2
   characterItemForm: 2
   characterItemTrait1: 5
   characterItemTrait2: 10

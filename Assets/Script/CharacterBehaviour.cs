@@ -23,7 +23,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public CharacterState currentState = CharacterState.Idle; // SyncVar로 변경하여 동기화
     [SyncVar]
     protected ActionKey currentActionKey;
-    protected ActionData currentActionData;
+    public ActionData currentActionData;
 
     [SyncVar]
     protected float currentFrame;

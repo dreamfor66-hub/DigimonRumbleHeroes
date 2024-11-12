@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Data_Action_Palmon_BasicAttack_02
   m_EditorClassIdentifier: 
   ActionFrame: 85
-  AnimationKey: Basic01
+  AnimationKey: Basic01_B
   AnimationCurve:
     serializedVersion: 2
     m_Curve:
@@ -21,22 +21,22 @@ MonoBehaviour:
       time: 0
       value: 0
       inSlope: 0.36666667
-      outSlope: 0.23755237
+      outSlope: 0.48209235
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 9.98
+      time: 4.917673
       value: 2.3707726
-      inSlope: 0.23755237
+      inSlope: 0.48209235
       outSlope: 1632.1953
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 10
+      time: 4.9376736
       value: 35.015427
       inSlope: 1632.1953
       outSlope: 0.7231641
@@ -45,7 +45,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 19.834063
+      time: 14.771736
       value: 42.127068
       inSlope: 0.7231641
       outSlope: 0.26229668
@@ -54,27 +54,27 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 32.009617
+      time: 26.94729
       value: 45.320675
       inSlope: 0.26229668
-      outSlope: 0.56383544
+      outSlope: 0.5638354
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 41.80098
+      time: 36.738655
       value: 50.841393
-      inSlope: 0.56383544
-      outSlope: 0.4897937
+      inSlope: 0.5638354
+      outSlope: 0.43948936
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 85
+      time: 84.88227
       value: 72
-      inSlope: 0.4897937
+      inSlope: 0.43948936
       outSlope: 0.36666667
       tangentMode: 69
       weightedMode: 0
@@ -83,12 +83,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MovementList:
-  - StartFrame: 0
-    EndFrame: 10
-    StartValue: {x: 0, y: 10}
-    EndValue: {x: 0, y: 0}
+  MovementList: []
   SpecialMovementList:
+  - StartFrame: 0
+    EndFrame: 15
+    MoveType: 1
+    CanRotate: 0
+    Value: 5
   - StartFrame: 15
     EndFrame: 100
     MoveType: 1
@@ -102,21 +103,21 @@ MonoBehaviour:
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:
-  - SpawnFrame: 30
+  - SpawnFrame: 25
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: -1, y: 0}
     Anchor: 0
     Pivot: 1
     Angle: 0
-  - SpawnFrame: 33
+  - SpawnFrame: 28
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: 0, y: 0}
     Anchor: 0
     Pivot: 1
     Angle: 0
-  - SpawnFrame: 35
+  - SpawnFrame: 30
     BulletPrefab: {fileID: 5111934926271759165, guid: 5e6ba8da64bf07b4bb4c741a33782ef0,
       type: 3}
     Offset: {x: 1, y: 0}
@@ -130,6 +131,6 @@ MonoBehaviour:
     ResourceKey: 10
     Count: 1
   AutoCorrection:
-    correctionType: 1
+    correctionType: 0
     entityName: Kiwi
     characterName: Kiwi
