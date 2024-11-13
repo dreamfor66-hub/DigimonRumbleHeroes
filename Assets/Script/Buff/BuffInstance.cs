@@ -126,9 +126,17 @@ public class BuffInstance
             _ => false,
         };
     }
-    public void TriggerEffect(BuffTriggerType triggerType)
+
+    public void TriggerEffect(BuffTriggerType triggerType, object parameter = null)
     {
-        // 트리거 호출 횟수 증가
+        if (triggerType == BuffTriggerType.OwnerHit && parameter is HitData hitData)
+        {
+            if (hitData.Attacker != owner)
+            {
+                return; // Attacker가 Owner가 아니므로 실행 종료
+            }
+        }
+
         if (!triggerCounts.ContainsKey(triggerType))
         {
             triggerCounts[triggerType] = 0;
@@ -139,19 +147,17 @@ public class BuffInstance
         {
             if (unit.Trigger.Type == triggerType && CheckConditions(unit.Conditions))
             {
-                if (triggerCounts[triggerType] >= unit.Trigger.EveryNTimes)
-                {
-                    // BuffUnit에 정의된 target을 기준으로 효과를 실행
-                    triggerCounts[triggerType] = 0; // 트리거 횟수 초기화
-                    var target = DetermineTarget(unit.Target);
-                    ExecuteEffect(unit.Effects, target);
-                }
+                triggerCounts[triggerType] = 0; // 트리거 횟수 초기화
+                var target = DetermineTarget(unit.Target, parameter);
+                // 필요한 매개변수를 `parameters` 배열에서 추출하여 사용
+                ExecuteEffect(unit.Effects, target);
             }
         }
     }
 
-    private object DetermineTarget(BuffTargetData targetData)
+    private object DetermineTarget(BuffTargetData targetData, object parameter)
     {
+        HitData hit = parameter as HitData;
         // BuffTargetType에 따라 적절한 오브젝트를 찾는 로직을 추가
         switch (targetData.Type)
         {
@@ -165,10 +171,18 @@ public class BuffInstance
                 return GetRecentBullet(); // 가장 최근에 발생한 BulletBehaviour 객체 반환
 
             case BuffTargetType.Victim:
-                return GetRecentVictim(); // 가장 최근에 피해를 입은 캐릭터 반환...이딴식으로하는게 맞나?
+                if (hit.Victim != null)
+                    return hit.Victim; // HitData에서 Victim 반환
+                else
+                    return null;
+                break;
 
             case BuffTargetType.Attacker:
-                return GetRecentAttacker(); // 가장 최근 공격한 캐릭터 반환
+                if (hit.Attacker != null)
+                    return hit.Attacker; // HitData에서 Attacker 반환
+                else
+                    return null;
+                break;
 
             // 필요한 다른 BuffTargetType에 대한 로직 추가
             default:
@@ -230,7 +244,14 @@ public class BuffInstance
                     break;
 
                 case BuffEffectType.Character_InstantDamage:
-                    targetCharacter.TakeDamage(effect.Value, Vector3.zero, HitType.DamageOnly, 0f, 0f, owner);
+                    HitData hit = new();
+                    hit.HitDamage = effect.Value;
+                    hit.hitType = HitType.DamageOnly;
+                    hit.Attacker = owner;
+                    hit.Victim = targetCharacter;
+                    hit.HitApplyOwnerResource = false;
+                    hit.Direction = Vector3.zero;
+                    targetCharacter.TakeDamage(hit);
                     break;
 
                 case BuffEffectType.Character_AddResource:

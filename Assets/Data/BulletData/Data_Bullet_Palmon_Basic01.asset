@@ -35,6 +35,9 @@ MonoBehaviour:
     HitApplyOwnerResource: 1
     ResourceKey: 1
     Value: 1
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: -0.78608525, y: 0, z: 0.61811805}
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
   - SpawnTrigger: 4

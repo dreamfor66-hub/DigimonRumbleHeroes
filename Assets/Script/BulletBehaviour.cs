@@ -15,6 +15,18 @@ public class BulletBehaviour : NetworkBehaviour
     private bool isHitStopped;
     private float hitStopTimer;
 
+    public bool IsValidTarget(CharacterBehaviour target)
+    {
+        if (target == null || owner == null) return false;
+
+        // Validate target based on TeamType conditions
+        return (owner.teamType == TeamType.Player && target.teamType == TeamType.Enemy) ||
+               (owner.teamType == TeamType.Enemy && target.teamType == TeamType.Player) ||
+               (owner.teamType == TeamType.Player && target.teamType == TeamType.Neutral) ||
+               (owner.teamType == TeamType.Enemy && target.teamType == TeamType.Neutral) ||
+               (owner.teamType == TeamType.Neutral && (target.teamType == TeamType.Player || target.teamType == TeamType.Enemy));
+    }
+
     private Dictionary<CharacterBehaviour, List<int>> hitTargets = new Dictionary<CharacterBehaviour, List<int>>();
 
     public void Initialize(CharacterBehaviour owner, Vector3 direction)
@@ -135,13 +147,14 @@ private void Update()
                     if (target == null || target == owner || (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup)))
                         continue;
 
-                    bool isValidTarget = (owner is PlayerController && target is EnemyController) ||
-                                         (owner is EnemyController && target is PlayerController);
 
-                    if (isValidTarget)
+                    if (IsValidTarget(target))
                     {
-                        var currentHit = bulletData.HitIdList.Find(hit => hit.HitId == hitbox.HitId);
-                        HandleHit(hitbox.HitId, target, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
+                        var hit = bulletData.HitIdList.Find(x => x.HitId == hitbox.HitId);
+                        hit.Victim = target;
+                        hit.Attacker = owner;
+                        hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;
+                        HandleHit(hit);
 
                         if (!hitTargets.ContainsKey(target))
                             hitTargets[target] = new List<int>();
@@ -156,25 +169,22 @@ private void Update()
 
         
     }
-    //HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower);
-    private void HandleHit(int hitId, CharacterBehaviour target, float hitStopFrame, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    private void HandleHit(HitData hit)
     {
-        HitData hitData = bulletData.HitIdList.Find(hit => hit.HitId == hitId);
-        if (hitData == null) return;
-        if (target == null) return;
-        Vector3 hitDirection = (target.transform.position + direction.normalized - transform.position).normalized;
+        if (hit == null) return;
+        if (hit.Victim == null) return;
 
         //if (isServer)
         {
-            target.TakeDamage(hitData.HitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, owner);
-            target.RpcTakeDamage(hitData.HitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, owner);
+            hit.Victim.TakeDamage(hit);
+            hit.Victim.RpcTakeDamage(hit);
 
-            target.ApplyHitStop(hitData.HitStopFrame);
-            target.RpcApplyHitStop(hitData.HitStopFrame);
+            hit.Victim.ApplyHitStop(hit.HitStopFrame);
+            hit.Victim.RpcApplyHitStop(hit.HitStopFrame);
 
-            OnHit(target, hitApplyOwnerResource, key, value);
-            RpcOnHit(target, hitApplyOwnerResource, key, value);
-            ApplyHitStop(hitData.HitStopFrame);
+            owner.OnHit(hit);
+            owner.RpcOnHit(hit);
+            ApplyHitStop(hit.HitStopFrame);
         }
     }
 
@@ -188,21 +198,6 @@ private void Update()
     private void ResumeAfterHitStop()
     {
         isHitStopped = false;
-    }
-
-    [ClientRpc]
-    private void RpcOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
-    {
-        if (!isServer)
-        {
-            OnHit(target, hitApplyOwnerResource, key, value);
-        }
-    }
-
-    private void OnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
-    {
-        if (hitApplyOwnerResource)
-            owner.resourceTable.AddResource(key, value);
     }
 
     private void CheckCollisionWithMap()

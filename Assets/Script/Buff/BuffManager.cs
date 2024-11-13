@@ -72,12 +72,12 @@ public class BuffManager : SingletonBehaviour<BuffManager>
     }
 
     // Buff 트리거: 특정 이벤트가 발생했을 때 트리거 조건을 만족하는 Buff 효과 발동
-    public void TriggerBuffEffect(BuffTriggerType triggerType)
+    public void TriggerBuffEffect(BuffTriggerType triggerType, object parameter = null)
     {
         foreach (var buffInstance in activeBuffs.Values)
         {
-            // Trigger 조건이 만족되면 BuffInstance에서 처리하도록 위임
-            buffInstance.TriggerEffect(triggerType);
+            // triggerType에 맞는 매개변수를 사용하여 BuffInstance에서 처리하도록 위임
+            buffInstance.TriggerEffect(triggerType, parameter);
         }
     }
 

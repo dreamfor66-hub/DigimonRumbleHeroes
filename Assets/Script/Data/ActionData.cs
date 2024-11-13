@@ -195,6 +195,10 @@ public class HitData
     public CharacterResourceKey ResourceKey;
     [ShowIf(nameof(HitApplyOwnerResource), true)]
     public int Value;
+
+    [HideInInspector] public CharacterBehaviour Attacker; // 공격자를 추적하기 위한 필드 추가
+    [HideInInspector] public CharacterBehaviour Victim;   // 피격자를 추적하기 위한 필드 추가
+    [HideInInspector] public Vector3 Direction;   // 피격자를 추적하기 위한 필드 추가
 }
 
 [System.Serializable]

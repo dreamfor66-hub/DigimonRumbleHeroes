@@ -17,6 +17,7 @@ public class EnemyController : CharacterBehaviour
     protected override void Start()
     {
         base.Start();
+        teamType = TeamType.Enemy;
         ChangeStatePrev(CharacterState.Init);
         FindClosestPlayer();
         UpdateCurrentAIState();

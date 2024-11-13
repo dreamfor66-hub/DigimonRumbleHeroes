@@ -20,6 +20,20 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     protected float stopTimer;
 
     [SyncVar]
+    public TeamType teamType;
+    public bool IsValidTarget(CharacterBehaviour target)
+    {
+        if (target == null) return false;
+
+        // Validate target based on TeamType conditions
+        return (this.teamType == TeamType.Player && target.teamType == TeamType.Enemy) ||
+               (this.teamType == TeamType.Enemy && target.teamType == TeamType.Player) ||
+               (this.teamType == TeamType.Player && target.teamType == TeamType.Neutral) ||
+               (this.teamType == TeamType.Enemy && target.teamType == TeamType.Neutral) ||
+               (this.teamType == TeamType.Neutral && (target.teamType == TeamType.Player || target.teamType == TeamType.Enemy));
+    }
+
+    [SyncVar]
     public CharacterState currentState = CharacterState.Idle; // SyncVar로 변경하여 동기화
     [SyncVar]
     protected ActionKey currentActionKey;
@@ -394,10 +408,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             continue;
                         }
 
-                        bool isValidTarget = (this is PlayerController && target is EnemyController) ||
-                                             (this is EnemyController && target is PlayerController);
-
-                        if (isValidTarget)
+                        if (IsValidTarget(target))
                         {
                             if (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup))
                             {
@@ -407,9 +418,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             // 히트를 로컬 플레이어에서 서버에 요청
                             if (isServer)
                             {
-                                var currentHit = currentActionData.HitIdList.Find(hit => hit.HitId == hitbox.HitId);
-                                HandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
-                                RpcHandleHit(hitbox.HitId, target, currentHit.HitDamage, currentHit.HitStopFrame, currentHit.HitStunFrame, currentHit.hitType, currentHit.KnockbackPower, currentHit.HitApplyOwnerResource, currentHit.ResourceKey, currentHit.Value);
+                                var hit = currentActionData.HitIdList.Find(x => x.HitId == hitbox.HitId);
+                                hit.Attacker = this;
+                                hit.Victim = target;
+                                HandleHit(hit);
+                                RpcHandleHit(hit);
                             }
                             //else if (isLocalPlayer)
                             //{
@@ -478,48 +491,47 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
-    protected void HandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    protected void HandleHit(HitData hit)
     {
-        if (target == null) return;
+        if (hit.Victim == null) return;
 
-        Vector3 hitDirection = (target.transform.position - transform.position).normalized;
         // 서버에서 피해 적용 요청
         if (isServer)
         {
-            target.TakeDamage(hitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, this);
-            target.RpcTakeDamage(hitDamage, hitDirection, hitType, knockbackPower, hitStunFrame, this);
+            hit.Victim.TakeDamage(hit);
+            hit.Victim.RpcTakeDamage(hit); ;
 
-            OnHit(target, hitApplyOwnerResource, key, value);
-            RpcOnHit(target, hitApplyOwnerResource, key, value);
+            OnHit(hit);
+            RpcOnHit(hit);
 
-            ApplyHitStop(hitStopFrames);
-            RpcApplyHitStop(hitStopFrames);
-            target.ApplyHitStop(hitStopFrames);
-            target.RpcApplyHitStop(hitStopFrames);
+            ApplyHitStop(hit.HitStopFrame);
+            RpcApplyHitStop(hit.HitStopFrame);
+            target.ApplyHitStop(hit.HitStopFrame);
+            target.RpcApplyHitStop(hit.HitStopFrame);
         }
         else
         {
-            CmdApplyHitStop(hitStopFrames);
+            CmdApplyHitStop(hit.HitStopFrame);
         }
 
-        Debug.Log($"Hit {target.name} for {hitDamage} damage with {hitStopFrames} frames of hitstop.");
+        Debug.Log($"Hit {target.name} for {hit.HitDamage} damage with {hit.HitStopFrame} frames of hitstop.");
     }
 
     [Command]
-    private void CmdHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    private void CmdHandleHit(HitData hit)
     {
-        if (target != null)
+        if (hit.Victim != null)
         {
-            RpcHandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
-            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
+            RpcHandleHit(hit);
+            HandleHit(hit);
         }
     }
     [ClientRpc]
-    private void RpcHandleHit(int hitId, CharacterBehaviour target, float hitDamage, float hitStopFrames, float hitStunFrame, HitType hitType, float knockbackPower, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    private void RpcHandleHit(HitData hit)
     {
-        if (!isServer && !isLocalPlayer && target != null)
+        if (!isServer && !isLocalPlayer && hit.Victim != null)
         {
-            HandleHit(hitId, target, hitDamage, hitStopFrames, hitStunFrame, hitType, knockbackPower, hitApplyOwnerResource, key, value);
+            HandleHit(hit);
         }
     }
 
@@ -766,14 +778,14 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
-    public virtual void TakeDamage(float damage, Vector3 hitDirection, HitType hitType, float knockbackPower, float hitStunFrame, CharacterBehaviour attacker)
+    public virtual void TakeDamage(HitData hit)
     {
-        currentHealth -= damage;
+        currentHealth -= hit.HitDamage;
 
         // 공격자가 있다면 그 방향을 바라보게 함
-        if (attacker != null)
+        if (hit.Attacker != null)
         {
-            Vector3 directionToAttacker = (attacker.transform.position - transform.position).normalized;
+            Vector3 directionToAttacker = (hit.Attacker.transform.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(directionToAttacker);
             transform.rotation = lookRotation; // 즉시 회전
         }
@@ -785,51 +797,51 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
         else
         {
-            if (hitType == HitType.DamageOnly)
+            if (hit.hitType == HitType.DamageOnly)
             {
                 return;
             }
 
-            switch (hitType)
+            switch (hit.hitType)
             {
                 case HitType.Weak:
                     if (isServer)
                     {
-                        StartKnockBack(hitDirection, knockbackPower, hitStunFrame);
-                        RpcStartKnockBack(hitDirection, knockbackPower, hitStunFrame);
+                        StartKnockBack(hit);
+                        RpcStartKnockBack(hit);
                     }
                     else
                     {
-                        CmdStartKnockBack(hitDirection, knockbackPower, hitStunFrame);
+                        CmdStartKnockBack(hit);
                     }
                     break;
 
                 case HitType.Strong:
                     if (isServer)
                     {
-                        StartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame);
-                        RpcStartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame);
+                        StartKnockBackSmash(hit);
+                        RpcStartKnockBackSmash(hit);
                     }
                     else
                     {
-                        CmdStartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame);
+                        CmdStartKnockBackSmash(hit);
                     }
                     break;
             }
         }
 
-        OnAttacked(attacker);
+        OnAttacked(hit.Attacker);
     }
 
     [Command]
-    public void CmdTakeDamage(float damage, Vector3 hitDirection, HitType hitType, float knockbackPower, float hitStunFrame, CharacterBehaviour attacker)
+    public void CmdTakeDamage(Vector3 hitDirection, HitData hit)
     {
-        TakeDamage(damage, hitDirection, hitType, knockbackPower, hitStunFrame, attacker);
-        RpcTakeDamage(damage, hitDirection, hitType, knockbackPower, hitStunFrame, attacker);
+        TakeDamage(hit);
+        RpcTakeDamage(hit);
     }
 
     [ClientRpc]
-    public void RpcTakeDamage(float damage, Vector3 hitDirection, HitType hitType, float knockbackPower, float hitStunFrame, CharacterBehaviour attacker)
+    public void RpcTakeDamage(HitData hit)
     {
         if (!isServer)
         {
@@ -838,9 +850,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 return;
             }
 
-            if (attacker != null)
+            if (hit.Attacker != null)
             {
-                TakeDamage(damage, hitDirection, hitType, knockbackPower, hitStunFrame, attacker);
+                TakeDamage(hit);
             }
         }
     }
@@ -851,33 +863,35 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [HideInInspector] public bool attacked;
     [HideInInspector] public CharacterBehaviour currentAttacker;
     [HideInInspector] public CharacterBehaviour lastAttacker;
-    public void OnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    public void OnHit(HitData hit)
     {
-        hit = true;
         currentHitTarget = target;
         lastHitTarget = target;
 
-        if (hitApplyOwnerResource)
-            resourceTable.AddResource(key, value);
+        if (hit.HitApplyOwnerResource)
+            resourceTable.AddResource(hit.ResourceKey, hit.Value);
+
+        BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerHit, hit);
+        BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.EveryHit, hit);
 
         StartCoroutine(ResetHitRecentlyFlag());
     }
 
     [Command]
-    private void CmdOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    public void CmdOnHit(HitData hit)
     {
         // 서버에서 처리 후 클라이언트에 동기화
-        OnHit(target, hitApplyOwnerResource, key, value);
-        RpcOnHit(target, hitApplyOwnerResource, key, value);
+        OnHit(hit);
+        RpcOnHit(hit);
     }
 
     [ClientRpc]
-    private void RpcOnHit(CharacterBehaviour target, bool hitApplyOwnerResource, CharacterResourceKey key, int value)
+    public void RpcOnHit(HitData hit)
     {
         if (!isServer)
         {
             // 다른 클라이언트에서 처리
-            OnHit(target, hitApplyOwnerResource, key, value);
+            OnHit(hit);
         }
     }
 
@@ -935,62 +949,62 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         currentAttacker = null;
     }
 
-    private void StartKnockBack(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    private void StartKnockBack(HitData hit)
     {
         ChangeStatePrev(CharacterState.KnockBack);
-        knockBackDirection = hitDirection;
-        knockBackSpeed = knockbackPower;
+        knockBackDirection = hit.Direction;
+        knockBackSpeed = hit.KnockbackPower;
 
         // HitStun을 프레임 단위로 계산
-        knockBackDuration = Mathf.Max(hitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, knockBackSpeed / 10f);
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
     }
 
     [Command]
-    public void CmdStartKnockBack(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    public void CmdStartKnockBack(HitData hit)
     {
-        StartKnockBack(hitDirection, knockbackPower, hitStunFrame); // 서버에서 로직 실행
-        RpcStartKnockBack(hitDirection, knockbackPower, hitStunFrame); // 클라이언트에 동기화
+        StartKnockBack(hit); // 서버에서 로직 실행
+        RpcStartKnockBack(hit); // 클라이언트에 동기화
     }
 
     [ClientRpc]
-    private void RpcStartKnockBack(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    private void RpcStartKnockBack(HitData hit)
     {
         if (!isServer)
         {
-            StartKnockBack(hitDirection, knockbackPower, hitStunFrame); // 클라이언트에서 로컬 동작 실행
+            StartKnockBack(hit); // 클라이언트에서 로컬 동작 실행
         }
     }
 
-    private void StartKnockBackSmash(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    private void StartKnockBackSmash(HitData hit)
     {
         ChangeStatePrev(CharacterState.KnockBackSmash);
         currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
-        knockBackDirection = hitDirection.normalized;
-        knockBackSpeed = knockbackPower;
+        knockBackDirection = hit.Direction.normalized;
+        knockBackSpeed = hit.KnockbackPower;
 
         // HitStun을 프레임 단위로 계산
-        knockBackDuration = Mathf.Max(hitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, knockBackSpeed / 10f);
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
     }
 
     [Command]
-    public void CmdStartKnockBackSmash(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    public void CmdStartKnockBackSmash(HitData hit)
     {
-        StartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame); // 서버에서 로직 실행
-        RpcStartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame); // 클라이언트에 동기화
+        StartKnockBackSmash(hit); // 서버에서 로직 실행
+        RpcStartKnockBackSmash(hit); // 클라이언트에 동기화
     }
 
     [ClientRpc]
-    private void RpcStartKnockBackSmash(Vector3 hitDirection, float knockbackPower, float hitStunFrame)
+    private void RpcStartKnockBackSmash(HitData hit)
     {
         if (!isServer)
         {
-            StartKnockBackSmash(hitDirection, knockbackPower, hitStunFrame);
+            StartKnockBackSmash(hit);
         }
 
     }

@@ -28,6 +28,8 @@ public class PlayerController : CharacterBehaviour
     protected override void Start()
     {
         base.Start();
+
+        teamType = TeamType.Player;
         lastPosition = transform.position;
         basicAttackCycle = characterData.defaultBasicAttackCycle;
         EntityContainer.Instance.RegisterPlayer(this);
