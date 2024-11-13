@@ -91,8 +91,11 @@ public class CharacterData : ScriptableObject
     }
 
     [Title("Resource")]
-    [TableList]
+    [TableList(AlwaysExpanded =true)]
     public List<CharacterResourceData> Resources = new();
+
+    [Title("StartBuff")]
+    public List<BuffData> Buffs = new();
 
     [Title("Targeting")]
     [Range(0f, 1f)]
@@ -173,6 +176,13 @@ public class CharacterResourceTable
         var resource = resources.Find(x => x.Data.Key == key);
         if (resource != null)
             resource.Count = Mathf.Clamp(resource.Count + count, resource.Data.Min, resource.Data.Max);
+    }
+    
+    public void SetResource(CharacterResourceKey key, int count)
+    {
+        var resource = resources.Find(x => x.Data.Key == key);
+        if (resource != null)
+            resource.Count = Mathf.Clamp(count, resource.Data.Min, resource.Data.Max);
     }
     public int GetResourceValue(CharacterResourceKey key)
     {

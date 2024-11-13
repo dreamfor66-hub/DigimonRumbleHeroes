@@ -131,14 +131,8 @@ public enum HitFilterType
 
     HitType = 10,
 
-    ResultType = 20,
-
     TriggerTeam = 30,
 
-    IsSmash = 100,
-    IsNotSmash = 101,
-
-    OwnerToVictimDistance = 110,
     IncludeOwner = 120,
 }
 
@@ -146,16 +140,18 @@ public enum HitFilterType
 [Serializable]
 public class HitFilter
 {
-    public List<HitFilterUnit> units = new();
-}
-
-[Serializable]
-public class HitFilterUnit
-{
     public HitFilterType Type;
     public HitType HitType = HitType.All;
-    //public TeamType TriggerTeam = TeamType.All;
+    //public List<HitFilterUnit> units = new();
 }
+
+//[Serializable]
+//public class HitFilterUnit
+//{
+//    public HitFilterType Type;
+//    public HitType HitType = HitType.All;
+//    //public TeamType TriggerTeam = TeamType.All;
+//}
 
 
 [Serializable]
@@ -180,10 +176,10 @@ public class BuffTriggerData
 
 public enum BuffReleaseType
 {
-    Permanent = 0,
-    Instant = 1,
-    Time = 10,
-    TriggerCount = 20,
+    [LabelText("영구 지속")] Permanent = 0,
+    [LabelText("즉시")] Instant = 1,
+    [LabelText("제한 시간")] Time = 10,
+    [LabelText("발동 횟수")] TriggerCount = 20,
 }
 
 [Serializable]
@@ -273,11 +269,9 @@ public enum BuffEffectType
         None,
         StackCount = 10,
         BuffTagStackCount = 11,
-        BuffTagStack_X_PlayerATK = 12,
         OwnerHpPercent = 20,
         OwnerHpPercentReverse = 21,
         OwnerAttackPower = 30,
-        PlayerAttackPower = 31,
     }
 
     public enum ResourceChangeType
@@ -298,14 +292,23 @@ public enum BuffEffectType
 public class BuffEffectData
 {
     public BuffEffectType Type;
+    [ShowIf("@Type != BuffEffectType.Character_AddBuff || Type != BuffEffectType.Character_RemoveBuff  || Type != BuffEffectType.Character_SpawnBullet")]
     public float Value;
+    [ShowIf("@Type == BuffEffectType.Character_AddBuff || Type == BuffEffectType.Character_RemoveBuff")]
     public List<BuffValueVariable> ValueVariables = new();
+    [ShowIf("@Type == BuffEffectType.Character_AddBuff || Type == BuffEffectType.Character_RemoveBuff")]
     public BuffData BuffData;
+    [ShowIf("@Type == BuffEffectType.Character_SpawnBullet")]
     public BulletBehaviour BulletPrefab;
+    [ShowIf("@Type == BuffEffectType.Character_SpawnBullet")]
     public Vector2 Position;
+    [ShowIf("@Type == BuffEffectType.Character_SpawnBullet")]
     public float Angle;
+    [ShowIf("@Type == BuffEffectType.Character_SpawnBullet")]
     public TeamSelector teamSelector;
+    [ShowIf("@Type == BuffEffectType.Character_AddResource || Type == BuffEffectType.Character_SetResource")]
     public CharacterResourceKey CharacterResourceKey;
+    [ShowIf("@Type == BuffEffectType.Character_AddResource || Type == BuffEffectType.Character_SetResource")]
     public ResourceChangeType ResourceChangeType;
 
 

@@ -111,6 +111,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         hitStopTimer = 0f;
         IsHitStopped = false;
 
+        foreach (var buffData in characterData.Buffs)
+        {
+            // 이 캐릭터를 Owner로 설정하여 BuffManager에 버프를 추가
+            BuffManager.Instance.AddBuff(buffData, this);
+        }
+
         if (AnimatorHasLayer(animator, 1))
         {
             animator.SetLayerWeight(1, 0);
@@ -1449,7 +1455,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
         NetworkServer.Spawn(vfx.gameObject);
-        vfx.SetTransform(transform, vfxData.Offset, Quaternion.Euler(0, vfxData.Angle, 0), Vector3.one);
+        vfx.SetTransform(transform, spawnPosition, Quaternion.Euler(0, vfxData.Angle, 0), Vector3.one);
         vfx.OnSpawn(currentFrame);
 
         if (vfx.PlayType == VfxPlayType.Manual)

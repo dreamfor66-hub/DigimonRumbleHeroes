@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29910191e345ee74787ade4657b13eb0, type: 3}
-  m_Name: Data_Buff_New
+  m_Name: Data_Buff_Test_SpawnBullet
   m_EditorClassIdentifier: 
   Units:
   - Conditions:
-    - Type: 11
+    - Type: 0
       ResourceKey: 0
       Distance: 0
       Comparator: 0
@@ -22,29 +22,31 @@ MonoBehaviour:
       ComparativeValueFixed: 0
       State: 0
     Trigger:
-      Type: 13
+      Type: 0
       FValue: 0
-      NValue: 0
+      NValue: 2
       MoveFilter: -1
       HitFilter:
-        units: []
+        Type: 0
+        HitType: -10
       EveryNTimes: 1
     Target:
-      Type: 10
+      Type: 5
     Effects:
-    - Type: 305
+    - Type: 320
       Value: 0
       ValueVariables: []
       BuffData: {fileID: 11400000}
-      BulletPrefab: {fileID: 0}
-      Position: {x: 0, y: 0}
+      BulletPrefab: {fileID: 5111934926271759165, guid: d11fee069ea93314bb86597fae69718a,
+        type: 3}
+      Position: {x: 0, y: 1}
       Angle: 0
       teamSelector: 0
       CharacterResourceKey: 0
       ResourceChangeType: 0
   ReleaseData:
     Type: 0
-    Time: 0
+    Time: 1
     Count: 0
   DuplicationData:
     Type: 0

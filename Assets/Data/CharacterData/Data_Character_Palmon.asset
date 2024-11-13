@@ -54,6 +54,8 @@ MonoBehaviour:
     Max: 10
     Init: 0
     ResetBy: 0
+  Buffs:
+  - {fileID: 11400000, guid: 38e2a0ea6efb44b44a7c0a325e491b92, type: 2}
   targetingWeightThreshold: 0.273
   shortDistance: 7
   wideAngle: 160

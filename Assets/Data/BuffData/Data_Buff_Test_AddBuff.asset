@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29910191e345ee74787ade4657b13eb0, type: 3}
+  m_Name: Data_Buff_Test_AddBuff
+  m_EditorClassIdentifier: 
+  Units:
+  - Conditions:
+    - Type: 0
+      ResourceKey: 0
+      Distance: 0
+      Comparator: 0
+      ComparativeValueInt: 0
+      ComparativeValueFixed: 0
+      State: 0
+    Trigger:
+      Type: 30
+      FValue: 0.5
+      NValue: 2
+      MoveFilter: -1
+      HitFilter:
+        Type: 0
+        HitType: -10
+      EveryNTimes: 4
+    Target:
+      Type: 6
+    Effects:
+    - Type: 710
+      Value: 1
+      ValueVariables: []
+      BuffData: {fileID: 11400000}
+      BulletPrefab: {fileID: 5111934926271759165, guid: d11fee069ea93314bb86597fae69718a,
+        type: 3}
+      Position: {x: 0, y: 1}
+      Angle: 0
+      teamSelector: 0
+      CharacterResourceKey: 0
+      ResourceChangeType: 0
+  ReleaseData:
+    Type: 0
+    Time: 1
+    Count: 0
+  DuplicationData:
+    Type: 3
+    MaxStackCount: 100
