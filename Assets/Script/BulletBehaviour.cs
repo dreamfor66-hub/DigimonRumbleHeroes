@@ -117,7 +117,7 @@ private void Update()
         Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0) * transform.rotation;
 
         VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
-        vfx.SetTransform(transform, vfxData.Offset, spawnRotation, Vector3.one);
+        vfx.SetTransform(null, spawnPosition, spawnRotation, Vector3.one);
     }
     private void HitCast()
     {

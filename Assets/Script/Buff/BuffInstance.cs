@@ -142,7 +142,6 @@ public class BuffInstance
                 if (triggerCounts[triggerType] >= unit.Trigger.EveryNTimes)
                 {
                     // BuffUnit에 정의된 target을 기준으로 효과를 실행
-                    Debug.Log("나여깃어 살려줘ㅓㅓㅓㅓ");
                     triggerCounts[triggerType] = 0; // 트리거 횟수 초기화
                     var target = DetermineTarget(unit.Target);
                     ExecuteEffect(unit.Effects, target);
@@ -210,7 +209,7 @@ public class BuffInstance
             {
                 case BuffEffectType.Character_SpawnBullet:
 
-                    Vector3 spawnPosition = targetCharacter.transform.position + new Vector3(effect.Position.x, effect.Position.y, 0);
+                    Vector3 spawnPosition = targetCharacter.transform.position + targetCharacter.transform.right * effect.Position.x + targetCharacter.transform.forward * effect.Position.y;
                     Vector3 spawnDirection = Quaternion.Euler(0, effect.Angle, 0) * targetCharacter.transform.forward;
                     BuffManager.Instance.SpawnBullet(effect.BulletPrefab, spawnPosition, spawnDirection, owner);
                     
@@ -234,8 +233,11 @@ public class BuffInstance
                     targetCharacter.TakeDamage(effect.Value, Vector3.zero, HitType.DamageOnly, 0f, 0f, owner);
                     break;
 
+                case BuffEffectType.Character_AddResource:
+                    targetCharacter.resourceTable.AddResource(effect.CharacterResourceKey, (int)effect.Value);
+                    break;
                 case BuffEffectType.Character_SetResource:
-                    // victim.resourceTable.SetResource(effect.CharacterResourceKey, effect.Value, effect.ResourceChangeType);
+                    targetCharacter.resourceTable.SetResource(effect.CharacterResourceKey, (int)effect.Value);
                     break;
                 case BuffEffectType.Buff_ChangeStack:
                     targetBuff.AddStack((int)effect.Value);

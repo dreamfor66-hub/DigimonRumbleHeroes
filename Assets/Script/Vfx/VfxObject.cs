@@ -92,18 +92,17 @@ public class VfxObject : NetworkBehaviour
             }
         }
 
-        public void SetTransform(Transform parent, Vector3 localPos, Quaternion localRot, Vector3 localScale)
-        {
-            followTm = parent;
-            this.localPosition = localPos;
-            this.localRotation = localRot;
+    public void SetTransform(Transform target, Vector3 offset, Quaternion rotation, Vector3 localScale)
+    {
+        followTm = target;
+        localPosition = offset;
+        localRotation = rotation;
 
-            var position = StartPivot != VfxFollowType.None ? parent.rotation * localPos + parent.position : localPos;
-            var rotation = StartPivot == VfxFollowType.PositionAndRotation ? parent.rotation * localRot : localRot;
+        // 초기 위치와 회전 설정
+        FollowTransform();
 
-            transform.SetPositionAndRotation(position, rotation);
-            transform.localScale = localScale;
-        }
+        transform.localScale = localScale;
+    }
 
     public void SetTime(float time)
     {
