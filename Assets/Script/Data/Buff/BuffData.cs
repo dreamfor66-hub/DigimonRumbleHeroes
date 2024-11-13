@@ -216,6 +216,7 @@ public class BuffTargetData
 
 public enum BuffEffectType
     {
+    //하 똑같이 쓸라고 일단 타입들 다 긁어오긴 했는데 언제 다 만들고앉았냐~
         CharacterStat = 200,
 
         Character_Heal = 300,
@@ -235,13 +236,10 @@ public enum BuffEffectType
         Action_MoveAmountPercent,
 
         Hit_AttackPowerPercent = 500,
-        Hit_DamageZero,
-        Hit_CriticalDamagePercent = 520,
+        Hit_DamageZero = 501,
 
-        Hit_KnockBackGrade = 540,
+        Hit_KnockBackPower = 540,
         Hit_KnockBackIgnore = 541,
-        Hit_KnockBackGradeFixed = 542,
-        Hit_KnockBackCorrection = 550,
 
 
         Bullet_AttackPowerPercent = 600,
