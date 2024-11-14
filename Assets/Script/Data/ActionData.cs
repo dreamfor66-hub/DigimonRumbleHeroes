@@ -199,7 +199,13 @@ public class HitData
     [HideInInspector] public CharacterBehaviour Attacker; // 공격자를 추적하기 위한 필드 추가
     [HideInInspector] public CharacterBehaviour Victim;   // 피격자를 추적하기 위한 필드 추가
     [HideInInspector] public Vector3 Direction;   // 피격자를 추적하기 위한 필드 추가
+    [HideInInspector]
+    public HitData Clone()
+    {
+        return (HitData)MemberwiseClone();
+    }
 }
+
 
 [System.Serializable]
 public class ActionSpawnBulletData

@@ -150,7 +150,8 @@ private void Update()
 
                     if (IsValidTarget(target))
                     {
-                        var hit = bulletData.HitIdList.Find(x => x.HitId == hitbox.HitId);
+                        var hit = bulletData.HitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
+
                         hit.Victim = target;
                         hit.Attacker = owner;
                         hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;

@@ -8,13 +8,11 @@
 //    {
 //        foreach (var effect in effects)
 //        {
-//            // Hit 타입 조건을 체크하여 필터 조건에 맞는지 확인
 //            if (effect.FilterType == HitFilterType.HitType && effect.RequiredHitType != hitData.HitType)
 //            {
 //                continue;
 //            }
 
-//            // 버프 효과 적용
 //            switch (effect.Type)
 //            {
 //                case BuffEffectType.Hit_AttackPowerPercent:

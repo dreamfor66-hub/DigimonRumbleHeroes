@@ -27,17 +27,17 @@ MonoBehaviour:
     HitGroup: 0
   HitIdList:
   - HitId: 0
-    HitDamage: 1
+    HitDamage: 0.3
     HitStopFrame: 7
     HitStunFrame: 0
-    KnockbackPower: 1
-    hitType: 1
+    KnockbackPower: 10
+    hitType: 2
     HitApplyOwnerResource: 1
     ResourceKey: 1
     Value: 1
     Attacker: {fileID: 0}
     Victim: {fileID: 0}
-    Direction: {x: 0.6729303, y: 0, z: 0.73970586}
+    Direction: {x: 0.17482257, y: 0, z: 0.98459995}
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
   - SpawnTrigger: 4

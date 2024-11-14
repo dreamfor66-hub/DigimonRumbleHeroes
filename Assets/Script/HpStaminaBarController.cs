@@ -29,7 +29,7 @@ public class HpStaminaBarController : MonoBehaviour
         // 체력바가 항상 카메라를 바라보도록 설정
         transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
 
-        UpdateHP(target.currentHealth, target.characterData.baseHP);
+        UpdateHP(target.currentHealth, target.maxHealth);
 
         float currentStamina = target.resourceTable.GetResourceValue(CharacterResourceKey.Skill_Cooldown);
         float maxStamina = target.resourceTable.GetResourceMaxValue(CharacterResourceKey.Skill_Cooldown);

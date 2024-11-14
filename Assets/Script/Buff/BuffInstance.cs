@@ -191,14 +191,12 @@ public class BuffInstance
                     return hit.Victim; // HitData에서 Victim 반환
                 else
                     return null;
-                break;
 
             case BuffTargetType.Attacker:
                 if (hit.Attacker != null)
                     return hit.Attacker; // HitData에서 Attacker 반환
                 else
                     return null;
-                break;
 
             case BuffTargetType.Hit:
                 return hit;
@@ -233,6 +231,7 @@ public class BuffInstance
         BulletBehaviour targetBullet = target as BulletBehaviour;
         BuffInstance targetBuff = target as BuffInstance;
         HitData targetHit = target as HitData;
+        ActionData targetAction = target as ActionData;
         
         foreach (var effect in effects)
         {
@@ -247,8 +246,11 @@ public class BuffInstance
                     break;
 
                 case BuffEffectType.Character_Heal:
-                    float healAmount = effect.Value;
-                    // Heal 메서드를 통해 대상의 HP 회복
+                    targetCharacter.Heal(effect.Value);
+                    break;
+
+                case BuffEffectType.Character_HealPercent:
+                    targetCharacter.HealPercent(effect.Value);
                     break;
 
                 case BuffEffectType.Character_AddBuff:
@@ -257,7 +259,7 @@ public class BuffInstance
                     break;
 
                 case BuffEffectType.Character_SetHp:
-                    // victim.SetHealth(effect.Value);
+                    targetCharacter.SetHp(effect.Value);
                     break;
 
                 case BuffEffectType.Character_InstantDamage:
@@ -277,13 +279,25 @@ public class BuffInstance
                 case BuffEffectType.Character_SetResource:
                     targetCharacter.resourceTable.SetResource(effect.CharacterResourceKey, (int)effect.Value);
                     break;
-                case BuffEffectType.Buff_ChangeStack:
+                case BuffEffectType.Buff_AddStack:
                     targetBuff.AddStack((int)effect.Value);
                     break;
 
                 case BuffEffectType.Hit_AttackPowerPercent:
-                    //BuffEffectProcessor.ApplyEffectToHit(targetHit, activeEffects);
-                    if (targetHit != null) targetHit.HitDamage += effect.Value;
+                    targetHit.HitDamage *= ( 1 + (effect.Value) / 100);
+                    break;
+                case BuffEffectType.Hit_DamageZero:
+                    targetHit.HitDamage = 0f;
+                    break;
+                case BuffEffectType.Hit_KnockBackPower:
+                    targetHit.KnockbackPower *= (1 + (effect.Value) / 100);
+                    break;
+                case BuffEffectType.Hit_KnockBackIgnore:
+                    targetHit.KnockbackPower = 0f;
+                    break;
+                
+                case BuffEffectType.Action_AttackPowerPercent:
+                    //음 액션의 hitDamage를 증가시키려면 데이터로 들어갈수밖에 없는데 흠...
                     break;
                 default:
                     Debug.LogWarning($"Unknown BuffEffectType: {effect.Type}");

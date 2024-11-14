@@ -217,15 +217,15 @@ public enum BuffEffectType
 
         Character_Heal = 300,
         Character_HealPercent = 301,
-        Character_AddBuff = 305,
-        Character_RemoveBuff = 310,
-        Character_SpawnBullet = 320,
+        Character_AddBuff = 305, 
+        Character_RemoveBuff = 310, //미구현
+        Character_SpawnBullet = 320, 
         Character_InstantDamage = 325,
         Character_SetHp = 335,
         Character_AddResource = 360,
-        Character_SetResource = 361,
+        Character_SetResource = 361, 
 
-        Action_AttackPowerPercent = 400,
+        Action_AttackPowerPercent = 400, //Action 전부 미구현
         Action_AttackScalePercent,
         Action_KnockBackPowerPercent,
         Action_ActionSpeedPercent,
@@ -238,7 +238,7 @@ public enum BuffEffectType
         Hit_KnockBackIgnore = 541,
 
 
-        Bullet_AttackPowerPercent = 600,
+        Bullet_AttackPowerPercent = 600, //Bullet 전부 미구현
         Bullet_FinalDamagePercent = 601,
         Bullet_PierceCount = 611,
         Bullet_SpeedPercent = 620,
@@ -246,8 +246,7 @@ public enum BuffEffectType
         Bullet_HitApplyBuff = 650,
         Bullet_ScalePercent = 660,
 
-        Buff_RemoveBuff = 700,
-        Buff_ChangeStack = 710,
+        Buff_AddStack = 700,
 
         Common_TriggerVfx = 800,
     }

@@ -46,6 +46,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     [SerializeField,Sirenix.OdinInspector.ReadOnly, SyncVar]
     public float currentHealth;
+    [SerializeField,Sirenix.OdinInspector.ReadOnly, SyncVar]
+    public float maxHealth;
 
     protected Dictionary<CharacterBehaviour, List<int>> hitTargets;
 
@@ -169,7 +171,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     protected void InitializeHealth()
     {
         currentHealth = characterData.baseHP;
+        maxHealth = characterData.baseHP;
     }
+
+
 
     protected virtual void Update()
     {
@@ -418,7 +423,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             // 히트를 로컬 플레이어에서 서버에 요청
                             if (isServer)
                             {
-                                var hit = currentActionData.HitIdList.Find(x => x.HitId == hitbox.HitId);
+                                var hit = currentActionData.HitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
+
                                 hit.Attacker = this;
                                 hit.Victim = target;
                                 HandleHit(hit);
@@ -498,11 +504,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         // 서버에서 피해 적용 요청
         if (isServer)
         {
+            OnHit(hit);
+            RpcOnHit(hit);
+
             hit.Victim.TakeDamage(hit);
             hit.Victim.RpcTakeDamage(hit); ;
 
-            OnHit(hit);
-            RpcOnHit(hit);
 
             ApplyHitStop(hit.HitStopFrame);
             RpcApplyHitStop(hit.HitStopFrame);
@@ -780,7 +787,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     public virtual void TakeDamage(HitData hit)
     {
-        currentHealth -= hit.HitDamage;
+        currentHealth -= Mathf.Clamp(hit.HitDamage,0, hit.HitDamage);
 
         // 공격자가 있다면 그 방향을 바라보게 함
         if (hit.Attacker != null)
@@ -855,6 +862,21 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 TakeDamage(hit);
             }
         }
+    }
+
+    public void Heal(float value)
+    {
+        currentHealth += Mathf.Clamp(value, currentHealth, maxHealth); //FixMe
+    }
+
+    public void HealPercent(float value)
+    {
+        currentHealth += Mathf.Clamp(currentHealth*(1 + (value) / 100), currentHealth, maxHealth); //FixMe
+    }
+    
+    public void SetHp(float value)
+    {
+        currentHealth += Mathf.Clamp(value, 0, maxHealth);
     }
 
     [HideInInspector] public bool hit;
