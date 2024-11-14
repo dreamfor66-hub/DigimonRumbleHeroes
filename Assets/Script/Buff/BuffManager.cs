@@ -106,39 +106,4 @@ public class BuffManager : SingletonBehaviour<BuffManager>
         bullet.Initialize(owner, direction);
         NetworkServer.Spawn(bullet.gameObject);
     }
-
-
-
-
-    // Inspector에서 확인용 리스트
-    [SerializeField, ReadOnly]
-    private List<BuffDisplay> activeBuffsDisplay = new List<BuffDisplay>();
-
-    private void OnValidate()
-    {
-        UpdateBuffDisplay();
-    }
-    private void UpdateBuffDisplay()
-    {
-        activeBuffsDisplay.Clear();
-        foreach (var kvp in activeBuffs)
-        {
-            activeBuffsDisplay.Add(new BuffDisplay
-            {
-                BuffId = kvp.Key,
-                OwnerName = kvp.Value.owner.name,
-                BuffName = kvp.Value.buffData.name
-            });
-        }
-    }
-
-    [System.Serializable]
-    private class BuffDisplay
-    {
-        public int BuffId;
-        public string OwnerName;
-        public string BuffName;
-    }
 }
-
-// BuffInstance 클래스 (내부에서 관리하는 형태로 작성)

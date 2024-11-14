@@ -176,14 +176,15 @@ private void Update()
 
         //if (isServer)
         {
+            owner.OnHit(hit);
+            owner.RpcOnHit(hit);
+
             hit.Victim.TakeDamage(hit);
             hit.Victim.RpcTakeDamage(hit);
 
             hit.Victim.ApplyHitStop(hit.HitStopFrame);
             hit.Victim.RpcApplyHitStop(hit.HitStopFrame);
 
-            owner.OnHit(hit);
-            owner.RpcOnHit(hit);
             ApplyHitStop(hit.HitStopFrame);
         }
     }

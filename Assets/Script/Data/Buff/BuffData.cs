@@ -130,28 +130,24 @@ public enum HitFilterType
     Always,
 
     HitType = 10,
-
-    TriggerTeam = 30,
-
-    IncludeOwner = 120,
 }
 
 [HideLabel]
 [Serializable]
 public class HitFilter
 {
-    public HitFilterType Type;
-    public HitType HitType = HitType.All;
     //public List<HitFilterUnit> units = new();
+    //public HitFilterType Type;
+    public HitType HitType = HitType.All;
 }
 
-//[Serializable]
-//public class HitFilterUnit
-//{
-//    public HitFilterType Type;
-//    public HitType HitType = HitType.All;
-//    //public TeamType TriggerTeam = TeamType.All;
-//}
+[Serializable]
+public class HitFilterUnit
+{
+    public HitFilterType Type;
+    public HitType HitType = HitType.All;
+    public TeamType TriggerTeam = TeamType.All;
+}
 
 
 [Serializable]

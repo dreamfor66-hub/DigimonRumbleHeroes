@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BuffInstance
@@ -15,15 +16,25 @@ public class BuffInstance
 
     public bool IsExpired => duration <= 0;
 
+    private List<BuffEffectData> activeEffects;
+
+
     public BuffInstance(int id, BuffData data, CharacterBehaviour owner)
     {
         BuffId = id;
-        buffData = data;
+        this.buffData = data;
         this.owner = owner;
         duration = data.ReleaseData.Type == BuffReleaseType.Time ? data.ReleaseData.Time : float.MaxValue;
         
         stackCount = 1; // 기본 스택 수는 1
         maxStackCount = data.DuplicationData.MaxStackCount; // 설정된 최대 스택 수를 가져옴
+
+        activeEffects = new List<BuffEffectData>();
+        // BuffData의 모든 BuffUnitData에서 효과를 수집하여 activeEffects에 추가
+        foreach (var unit in buffData.Units)
+        {
+            activeEffects.AddRange(unit.Effects);
+        }
     }
 
     public void Activate()
@@ -81,7 +92,7 @@ public class BuffInstance
     {
         foreach (var unit in buffData.Units)
         {
-            if (unit.Trigger.Type == triggerType && (unit.Trigger.HitFilter.HitType == hitType || hitType == HitType.All))
+            if (unit.Trigger.Type == triggerType)
                 return true;
         }
         return false;
@@ -135,6 +146,11 @@ public class BuffInstance
             {
                 return; // Attacker가 Owner가 아니므로 실행 종료
             }
+
+            if (!IsValidHit(hitData))
+            {
+                return; // HitType이 일치하지 않으면 종료
+            }
         }
 
         if (!triggerCounts.ContainsKey(triggerType))
@@ -168,7 +184,7 @@ public class BuffInstance
                 return this; // 현재 BuffInstance 자신을 반환
 
             case BuffTargetType.Bullet:
-                return GetRecentBullet(); // 가장 최근에 발생한 BulletBehaviour 객체 반환
+                return null; // 가장 최근에 발생한 BulletBehaviour 객체 반환
 
             case BuffTargetType.Victim:
                 if (hit.Victim != null)
@@ -184,31 +200,31 @@ public class BuffInstance
                     return null;
                 break;
 
+            case BuffTargetType.Hit:
+                return hit;
+
             // 필요한 다른 BuffTargetType에 대한 로직 추가
             default:
                 return null;
         }
     }
 
-    // Bullet과 Victim 등 최근 발생한 오브젝트를 가져오는 예시 메서드
-    private BulletBehaviour GetRecentBullet()
+    // HitData가 BuffData의 HitFilter 조건에 맞는지 확인하는 메서드
+    private bool IsValidHit(HitData hitData)
     {
-        // 최근에 생성된 Bullet을 관리하는 로직을 BuffManager 또는 BuffInstance에 구현
-        //return BuffManager.Instance.GetLastSpawnedBulletForOwner(owner);
-        return null;
+        // BuffData의 HitFilter를 참조하여 유효한지 확인
+        var hitFilter = buffData.Units.FirstOrDefault()?.Trigger.HitFilter; // 첫 번째 BuffUnitData의 HitFilter 사용
+        if (hitFilter != null)
+        {
+            // HitFilterType이 All이 아니고, HitFilter의 HitType과 일치하지 않으면 false 반환
+            if (hitFilter.HitType != HitType.All && hitFilter.HitType != hitData.hitType)
+            {
+                return false;
+            }
+        }
+        return true; // 조건에 맞는 Hit
     }
 
-    private CharacterBehaviour GetRecentVictim()
-    {
-        //return BuffManager.Instance.GetLastVictimForOwner(owner);
-        return null;
-    }
-
-    private CharacterBehaviour GetRecentAttacker()
-    {
-        //return BuffManager.Instance.GetLastAttackerForOwner(owner);
-        return null;
-    }
 
     // Buff 효과 발동
     public void ExecuteEffect(List<BuffEffectData> effects, object target)
@@ -216,6 +232,7 @@ public class BuffInstance
         CharacterBehaviour targetCharacter = target as CharacterBehaviour;
         BulletBehaviour targetBullet = target as BulletBehaviour;
         BuffInstance targetBuff = target as BuffInstance;
+        HitData targetHit = target as HitData;
         
         foreach (var effect in effects)
         {
@@ -226,7 +243,7 @@ public class BuffInstance
                     Vector3 spawnPosition = targetCharacter.transform.position + targetCharacter.transform.right * effect.Position.x + targetCharacter.transform.forward * effect.Position.y;
                     Vector3 spawnDirection = Quaternion.Euler(0, effect.Angle, 0) * targetCharacter.transform.forward;
                     BuffManager.Instance.SpawnBullet(effect.BulletPrefab, spawnPosition, spawnDirection, owner);
-                    
+
                     break;
 
                 case BuffEffectType.Character_Heal:
@@ -264,10 +281,15 @@ public class BuffInstance
                     targetBuff.AddStack((int)effect.Value);
                     break;
 
+                case BuffEffectType.Hit_AttackPowerPercent:
+                    //BuffEffectProcessor.ApplyEffectToHit(targetHit, activeEffects);
+                    if (targetHit != null) targetHit.HitDamage += effect.Value;
+                    break;
                 default:
                     Debug.LogWarning($"Unknown BuffEffectType: {effect.Type}");
                     break;
             }
         }
     }
+
 }
