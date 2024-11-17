@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8594f28f69c30ed4ca7e086ece36b9d4, type: 3}
+  m_Name: Data_Evolution_Agumon
+  m_EditorClassIdentifier: 
+  PrevData: {fileID: 11400000, guid: 0cdadc69ac8a28842a2de92b46faa0c6, type: 2}
+  EvolutionTree:
+  - PrevData: {fileID: 11400000, guid: 0cdadc69ac8a28842a2de92b46faa0c6, type: 2}
+    NextData: {fileID: 11400000, guid: 37ece68613516134aa37719950c81f9b, type: 2}
+    Condition: []
+  - PrevData: {fileID: 11400000, guid: 0cdadc69ac8a28842a2de92b46faa0c6, type: 2}
+    NextData: {fileID: 11400000, guid: aadc94c6efb20d84b9bff90ce8bd8ce3, type: 2}
+    Condition: []

@@ -20,11 +20,6 @@ public class ResourceHolder : ScriptableObject
             return instance;
         }
     }
-
-    public PlayerInventoryData playerInventoryData;
-    public CharacterVisualMap characterVisualMap;
-    public PlayerOutgameData playerOutgameData;
-    public PlayerPartySetUpData playerPartySetUpData;
     public GameVariables gameVariables;
     public EvolutionTable evolutionTable;
 }
