@@ -56,8 +56,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     // Knockback 관련 변수들
     [SyncVar]
     private Vector3 knockBackDirection;
-    [SyncVar]
-    private float knockBackSpeed;
+    [SyncVar] [SerializeField]
+    private float initialKnockBackSpeed; //시작 속도
+    [SyncVar] [SerializeField]
+    private float currentknockBackSpeed; //현재 속도
     [SyncVar]
     private float knockBackDuration;
     [SyncVar]
@@ -993,10 +995,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         ChangeStatePrev(CharacterState.KnockBack);
         knockBackDirection = hit.Direction;
-        knockBackSpeed = hit.KnockbackPower;
+        initialKnockBackSpeed = hit.KnockbackPower;
 
         // HitStun을 프레임 단위로 계산
-        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, initialKnockBackSpeed / 10f);
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
@@ -1023,10 +1025,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         ChangeStatePrev(CharacterState.KnockBackSmash);
         //currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
         knockBackDirection = hit.Direction.normalized;
-        knockBackSpeed = hit.KnockbackPower;
+        initialKnockBackSpeed = hit.KnockbackPower;
 
         // HitStun을 프레임 단위로 계산
-        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, knockBackSpeed / 10f);
+        knockBackDuration = Mathf.Max(hit.HitStunFrame / 60f, initialKnockBackSpeed / 10f);
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
@@ -1065,26 +1067,29 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (knockBackTimer <= initialBurstDuration)
         {
             float t = knockBackTimer / initialBurstDuration;
-            speedModifier = Mathf.Lerp(2f, 1f, t);
+            speedModifier = Mathf.Lerp(1f, 0.5f, t);
         }
         else if (knockBackTimer <= initialBurstDuration + flightDuration)
         {
             float t = (knockBackTimer - initialBurstDuration) / flightDuration;
-            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+            speedModifier = Mathf.Lerp(0.5f, 0.3f, t);
         }
         else
         {
             float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
-            speedModifier = Mathf.Lerp(0.5f, 0f, t);
+            speedModifier = Mathf.Lerp(0.3f, 0f, t);
         }
 
-        Vector3 knockBackMovement = HandleCollisionAndSliding(knockBackDirection, knockBackSpeed * speedModifier);
+        currentknockBackSpeed = initialKnockBackSpeed * speedModifier;
+
+        Vector3 knockBackMovement = HandleCollisionAndSliding(knockBackDirection, currentknockBackSpeed);
         transform.position += knockBackMovement;
 
-        if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
+        if (knockBackTimer >= totalDuration || currentknockBackSpeed < 0.01f)
         {
             ChangeStatePrev(CharacterState.Idle);
-            knockBackSpeed = 0f;
+            initialKnockBackSpeed = 0f;
+            currentknockBackSpeed = 0f;
         }
     }
 
@@ -1113,33 +1118,34 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (knockBackTimer <= initialBurstDuration)
         {
             float t = knockBackTimer / initialBurstDuration;
-            speedModifier = Mathf.Lerp(2f, 1f, t);
+            speedModifier = Mathf.Lerp(1f, 0.5f, t);
         }
         else if (knockBackTimer <= initialBurstDuration + flightDuration)
         {
             float t = (knockBackTimer - initialBurstDuration) / flightDuration;
-            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+            speedModifier = Mathf.Lerp(0.5f, 0.3f, t);
         }
         else
         {
             float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
-            speedModifier = Mathf.Lerp(0.5f, 0f, t);
+            speedModifier = Mathf.Lerp(0.3f, 0f, t);
         }
+        currentknockBackSpeed = initialKnockBackSpeed * speedModifier;
+        Vector3 knockBackMovement = knockBackDirection * currentknockBackSpeed * Time.deltaTime;
 
-        Vector3 knockBackMovement = knockBackDirection * knockBackSpeed * speedModifier * Time.deltaTime;
 
-
-        if (knockBackSpeed < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
+        if (currentknockBackSpeed < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
         {
             ChangeStatePrev(CharacterState.KnockBack);
-            knockBackDuration = Mathf.Max(knockBackTimer, knockBackSpeed / 10f);
+            knockBackDuration = Mathf.Max(knockBackTimer, currentknockBackSpeed / 10f);
             return;
         }
 
-        if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
+        if (knockBackTimer >= totalDuration || currentknockBackSpeed < 0.001f)
         {
             ChangeStatePrev(CharacterState.Idle);
-            knockBackSpeed = 0f;
+            initialKnockBackSpeed = 0f;
+            currentknockBackSpeed = 0f;
             return;
         }
 
@@ -1148,7 +1154,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         RaycastHit hit;
         var radius = characterData.colliderRadius;
         LayerMask wallLayer = LayerMask.GetMask("WallCollider");
-
+        float knockbackPowerForWallCollide = Mathf.Max(initialKnockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, 5f);
         if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
         {
             HitData wallHitData = new HitData
@@ -1156,10 +1162,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 Attacker = null, // 벽은 attacker가 아님
                 Victim = this, // 
                 Direction = Vector3.Reflect(knockBackDirection, hit.normal).normalized,
-                KnockbackPower = knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, // 속도 감소
+                KnockbackPower = currentknockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, // 속도 감소
                 HitType = HitType.Strong, // 속도 감소
                 HitDamage = 0f, // 벽 충돌은 대미지 없음
-                HitStopFrame = ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
+                HitStopFrame = knockbackPowerForWallCollide,
             };
 
             if (isServer)
@@ -1167,25 +1173,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 HandleHit(wallHitData);
                 RpcHandleHit(wallHitData);
             }
-
-            //if (wallHitData.KnockbackPower < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
-            //{
-            //    StartKnockBack(wallHitData);
-            //    RpcStartKnockBack(wallHitData);
-            //}
-            //else
-            //{
-            //    StartKnockBackSmash(wallHitData);
-            //    RpcStartKnockBackSmash(wallHitData);
-            //}
-
-            //ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide); // 벽 충돌 후 HitStop
-            //RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
         }
         else
         {
             transform.position += knockBackMovement;
         }
+
 
         // 다른 CharacterBehaviour와의 충돌 처리
         Collider[] colliders = Physics.OverlapSphere(transform.position, radius);
@@ -1194,25 +1187,34 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             CharacterBehaviour otherCharacter = collider.GetComponentInParent<CharacterBehaviour>();
 
             // 자신이 아니고, 상대가 KnockBackSmash 상태가 아닐 경우만 처리
-            if (otherCharacter != null && otherCharacter != this && (otherCharacter.currentState != CharacterState.KnockBackSmash || otherCharacter.currentState != CharacterState.KnockBack) && knockBackTimer > 0.015f)
+            if (otherCharacter != null && otherCharacter != this &&
+                (otherCharacter.currentState != CharacterState.KnockBackSmash || otherCharacter.currentState != CharacterState.KnockBack) &&
+                knockBackTimer > ResourceHolder.Instance.gameVariables.collideAvoidTime)
             {
-                Vector3 collisionNormal = (otherCharacter.transform.position - transform.position).normalized;
+                // 진행 방향과의 각도 확인
+                Vector3 toOtherCharacter = (otherCharacter.transform.position - transform.position).normalized;
+                float angleToOther = Vector3.Angle(knockBackDirection, toOtherCharacter);
 
-                // **위치 보정**: 두 캐릭터를 강제로 분리
+                if (angleToOther > ResourceHolder.Instance.gameVariables.maxCollisionAngle) // 설정된 각도를 초과하면 무시
+                    continue;
+
+                Vector3 collisionNormal = toOtherCharacter;
+
+                // 위치 보정
                 float overlapDistance = radius * 2f - Vector3.Distance(transform.position, otherCharacter.transform.position);
                 transform.position -= collisionNormal * (overlapDistance / 2f);
                 otherCharacter.transform.position += collisionNormal * (overlapDistance / 2f);
 
-                // **충돌에 따른 새로운 HitData 생성**
-                float knockbackPowerForThis = Mathf.Max(knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, 5f);
-                float knockbackPowerForOther = Mathf.Max(otherCharacter.knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, 5f);
+                // 충돌에 따른 새로운 HitData 생성
+                float knockbackPowerForThis = currentknockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier;
+                float knockbackPowerForOther = currentknockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier;
 
                 HitData newHitDataForThis = new HitData
                 {
                     Attacker = otherCharacter,
                     Victim = this,
-                    HitDamage = 0f, // 운동량에 따라 계산 가능
-                    Direction = -collisionNormal, // 반대 방향으로 넉백
+                    HitDamage = 0f,
+                    Direction = -collisionNormal,
                     HitStopFrame = ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
                     HitType = HitType.Strong,
                     KnockbackPower = knockbackPowerForThis
@@ -1229,32 +1231,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     KnockbackPower = knockbackPowerForOther
                 };
 
-                // **넉백 및 HitStop 처리**
+                // 넉백 및 HitStop 처리
                 if (isServer)
                 {
                     HandleHit(newHitDataForThis);
                     HandleHit(newHitDataForOther);
                     RpcHandleHit(newHitDataForThis);
                     RpcHandleHit(newHitDataForOther);
-
-                    //// 양쪽 캐릭터에 HitStop 적용
-                    //ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
-                    //RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
-                    //otherCharacter.ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
-                    //otherCharacter.RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
-                    //}
-                    //else
-                    //{
-                    //    if (newHitDataForThis.KnockbackPower < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
-                    //    {
-                    //        CmdStartKnockBack(newHitDataForThis);
-                    //    }
-                    //    else
-                    //    {
-                    //        CmdStartKnockBackSmash(newHitDataForThis);
-                    //    }
-                    //    CmdApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
-                    //}
                 }
             }
         }
@@ -1394,17 +1377,21 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         RaycastHit hit;
         var radius = characterData.colliderRadius;
         LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+        LayerMask characterLayer = LayerMask.GetMask("Character");
 
-        // 첫 번째 충돌을 감지하는 SphereCast
-        if (Physics.SphereCast(transform.position, radius, moveDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
+        Vector3 finalDirection = moveDirection;
+        float finalSpeedAdjustment = 1f;
+
+        // 벽 충돌 처리
+        if (Physics.SphereCast(transform.position, radius, finalDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
         {
             Vector3 normal = hit.normal;
-            Vector3 slideDirection = Vector3.ProjectOnPlane(moveDirection, normal).normalized;
+            Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, normal).normalized;
 
-            float firstAngle = Vector3.Angle(moveDirection, normal);
+            float firstAngle = Vector3.Angle(finalDirection, normal);
             float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
 
-            // 수정된 방향으로 두 번째 충돌을 검사하는 SphereCast
+            // 두 번째 벽 충돌 검사
             if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
             {
                 Vector3 secondNormal = hit.normal;
@@ -1416,12 +1403,42 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 firstSpeedAdjustment *= secondSpeedAdjustment;
             }
 
-            return slideDirection * moveSpeed * firstSpeedAdjustment * Time.deltaTime;
+            finalDirection = slideDirection;
+            finalSpeedAdjustment *= firstSpeedAdjustment;
         }
-        else
+
+        // 캐릭터 충돌 처리 (이동 방향에 따라 판단)
+        Collider[] characterColliders = Physics.OverlapSphere(transform.position, radius, characterLayer);
+        foreach (var collider in characterColliders)
         {
-            return moveDirection * moveSpeed * Time.deltaTime;
+            CharacterBehaviour otherCharacter = collider.GetComponentInParent<CharacterBehaviour>();
+
+            // 자신이 아니고 KnockBack 상태가 아닌 캐릭터만 처리
+            if (otherCharacter != null && otherCharacter != this &&
+                otherCharacter.currentState != CharacterState.KnockBack &&
+                otherCharacter.currentState != CharacterState.KnockBackSmash)
+            {
+                Vector3 toOtherCharacter = (otherCharacter.transform.position - transform.position).normalized;
+
+                // 이동 방향과 충돌 방향이 일정 각도 이내일 경우만 충돌 처리
+                float angleToOther = Vector3.Angle(finalDirection, toOtherCharacter);
+                if (angleToOther > 90f) // 이동 방향과 반대면 충돌 무시
+                    continue;
+
+                Vector3 characterNormal = toOtherCharacter;
+                Vector3 characterSlideDirection = Vector3.ProjectOnPlane(finalDirection, characterNormal).normalized;
+
+                float characterAngle = Vector3.Angle(finalDirection, characterNormal);
+                float characterSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(characterAngle - 90) / 90f);
+
+                // 충돌 결과 반영
+                finalDirection = characterSlideDirection;
+                finalSpeedAdjustment *= characterSpeedAdjustment;
+            }
         }
+
+        // 최종 이동 방향 및 속도 계산
+        return finalDirection * moveSpeed * finalSpeedAdjustment * Time.deltaTime;
     }
 
     /// <summary>

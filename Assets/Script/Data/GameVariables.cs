@@ -14,6 +14,7 @@ public class GameVariables : ScriptableObject
     public float collideReduceMultiplier = 0.5f;
     public float hitstopWhenCollide = 5.5f;
     public float collideAvoidTime = 0.015f;
+    public float maxCollisionAngle = 90f;
 
     // 레벨 당 필요 경험치 스톡량을 설정할 수 있는 리스트
     public List<int> expStockRequiredPerLevel = new List<int>();
