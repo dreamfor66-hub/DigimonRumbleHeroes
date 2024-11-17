@@ -41,7 +41,14 @@ MonoBehaviour:
     ActionData: {fileID: 11400000, guid: 6995d946a2b8a13428230d2ae5a5f0c3, type: 2}
   - ActionKey: 100
     ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
-  Resources: []
+  Resources:
+  - Key: 1
+    Min: 0
+    Max: 20
+    Init: 10
+    ResetBy: 0
+  Buffs:
+  - {fileID: 11400000, guid: 38e2a0ea6efb44b44a7c0a325e491b92, type: 2}
   targetingWeightThreshold: 0.273
   shortDistance: 7
   wideAngle: 150

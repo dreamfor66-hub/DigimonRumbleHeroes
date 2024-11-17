@@ -103,6 +103,7 @@ public class BuffManager : SingletonBehaviour<BuffManager>
     public void SpawnBullet(BulletBehaviour bulletPrefab, Vector3 position, Vector3 direction, CharacterBehaviour owner)
     {
         BulletBehaviour bullet = Instantiate(bulletPrefab, position, Quaternion.LookRotation(direction));
+
         bullet.Initialize(owner, direction);
         NetworkServer.Spawn(bullet.gameObject);
     }

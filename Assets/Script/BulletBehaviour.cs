@@ -120,17 +120,24 @@ private void Update()
         Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
         Quaternion spawnRotation = Quaternion.Euler(0, spawnData.Angle, 0) * transform.rotation;
 
+        var originBulletData = spawnData.BulletPrefab.bulletData;
+        var clonedData = originBulletData.Clone();
+
+        BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
+
         BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, spawnRotation);
         bullet.Initialize(owner, spawnRotation * Vector3.forward);
     }
+
     private void SpawnVfx(BulletSpawnVfxData vfxData)
     {
         Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
         Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0) * transform.rotation;
 
         VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
-        vfx.SetTransform(null, spawnPosition, spawnRotation, Vector3.one);
+        vfx.SetTransform(transform, spawnPosition, spawnRotation, Vector3.one);
     }
+
     private void HitCast()
     {
         foreach (var hitbox in bulletData.HitboxList)

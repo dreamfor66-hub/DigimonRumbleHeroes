@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEditor.Animations;
+using System;
 
 [CreateAssetMenu(fileName = "Data_Action_New", menuName = "Data/Action Data", order = 1)]
 public class ActionData : ScriptableObject
@@ -139,6 +140,39 @@ public class ActionData : ScriptableObject
 
         Debug.Log("AnimationCurve가 초기화되었습니다.");
     }
+
+    //[HideInInspector]
+    public ActionData Clone()
+    {
+        // 얕은 복사 수행
+        ActionData clonedAction = (ActionData)MemberwiseClone();
+
+        // 깊은 복사 수행: 각 리스트를 새로 생성하고 원소들을 개별 복사
+        clonedAction.MovementList = new List<MovementData>();
+        foreach (var move in MovementList)
+        {
+            clonedAction.MovementList.Add(move.Clone());
+        }
+        // HitIdList 복사
+        clonedAction.HitIdList = new List<HitData>();
+        foreach (var hit in HitIdList)
+        {
+            clonedAction.HitIdList.Add(hit.Clone()); // HitData에 Clone() 메서드가 있다고 가정
+        }
+
+        clonedAction.SpecialMovementList = new List<SpecialMovementData>(SpecialMovementList);
+        clonedAction.HitboxList = new List<HitboxData>(HitboxList);
+        clonedAction.ActionSpawnBulletList = new List<ActionSpawnBulletData>();
+        foreach(var bullet in ActionSpawnBulletList)
+        {
+            clonedAction.ActionSpawnBulletList.Add(bullet.Clone());
+        }
+        clonedAction.ActionSpawnVfxList = new List<ActionSpawnVfxData>(ActionSpawnVfxList);
+        clonedAction.Conditions = new List<ActionConditionData>(Conditions);
+        clonedAction.Resources = new List<ActionUseResourceData>(Resources);
+
+        return clonedAction;
+    }
 }
 
 // Inner Classes
@@ -149,6 +183,11 @@ public class MovementData
     public int EndFrame;
     public Vector2 StartValue;
     public Vector2 EndValue;
+
+    public MovementData Clone()
+    {
+        return (MovementData)MemberwiseClone();
+    }
 }
 
 
@@ -182,33 +221,29 @@ public class HitboxData
 }
 
 [System.Serializable]
-public class HitData
+public class HitData : CloneHelper<HitData>
 {
     public int HitId;
     public float HitDamage;
     public float HitStopFrame;
     public float HitStunFrame;
     public float KnockbackPower;
-    public HitType hitType;
+    public HitType HitType;
     public bool HitApplyOwnerResource;
     [ShowIf(nameof(HitApplyOwnerResource), true)]
     public CharacterResourceKey ResourceKey;
     [ShowIf(nameof(HitApplyOwnerResource), true)]
     public int Value;
+    //public List<BuffData> HitApplyBuffs = new();
 
     [HideInInspector] public CharacterBehaviour Attacker; // 공격자를 추적하기 위한 필드 추가
     [HideInInspector] public CharacterBehaviour Victim;   // 피격자를 추적하기 위한 필드 추가
     [HideInInspector] public Vector3 Direction;   // 피격자를 추적하기 위한 필드 추가
-    [HideInInspector]
-    public HitData Clone()
-    {
-        return (HitData)MemberwiseClone();
-    }
 }
 
 
 [System.Serializable]
-public class ActionSpawnBulletData
+public class ActionSpawnBulletData : CloneHelper<ActionSpawnBulletData>
 {
     public int SpawnFrame;
     public BulletBehaviour BulletPrefab;

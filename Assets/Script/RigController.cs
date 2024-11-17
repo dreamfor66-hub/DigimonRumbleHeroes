@@ -21,6 +21,7 @@ public class RigController : MonoBehaviour
     } = false;
     private GameObject targetObject;
     private Vector3 trackingOffset;
+    public bool isInAction;
 
     private void Start()
     {
@@ -41,6 +42,7 @@ public class RigController : MonoBehaviour
                 }
             case CharacterState.Action:
                 {
+                    isInAction = true;
                     if (behaviour.target == null)
                     {
                         targetTracking = false;
@@ -64,16 +66,44 @@ public class RigController : MonoBehaviour
                 }
         }
 
-        if (behaviour.target != null && targetTracking)
-        {
-            targetObject = behaviour.target.gameObject;
-            targetTransform.position = Vector3.Lerp(targetTransform.position, targetObject.transform.position + trackingOffset, 20 * Time.deltaTime);
-            targetWeight = 1f;
-        }
-        else
+        if (behaviour.target == null)
         {
             targetWeight = 0f;
             targetTransform.localPosition = Vector3.Lerp(targetTransform.localPosition, new Vector3(0, 0, 3) + trackingOffset, weightChangeSpeed * Time.deltaTime);
+        }
+        else
+        {
+            if (isInAction)
+            {
+                if (targetTracking)
+                {
+                    targetObject = behaviour.target.gameObject;
+                    targetTransform.position = Vector3.Lerp(targetTransform.position, targetObject.transform.position + trackingOffset, 20 * Time.deltaTime);
+                    targetWeight = 1f;
+                }
+                else
+                {
+                    targetObject = behaviour.target.gameObject;
+                    targetTransform.position = Vector3.Lerp(targetTransform.position, targetObject.transform.position + trackingOffset, 20 * Time.deltaTime);
+                    targetWeight = 0f;
+                }
+
+            }
+            else
+            {
+                if (targetTracking)
+                {
+                    targetObject = behaviour.target.gameObject;
+                    targetTransform.position = Vector3.Lerp(targetTransform.position, targetObject.transform.position + trackingOffset, 20 * Time.deltaTime);
+                    targetWeight = 1f;
+                }
+                else
+                {
+                    targetObject = behaviour.target.gameObject;
+                    targetTransform.position = Vector3.Lerp(targetTransform.position, targetObject.transform.position + trackingOffset, 20 * Time.deltaTime);
+                    targetWeight = 0f;
+                }
+            }
         }
 
         // Smoothly interpolate rig weight toward the target weight

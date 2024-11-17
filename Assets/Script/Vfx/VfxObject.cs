@@ -95,8 +95,8 @@ public class VfxObject : NetworkBehaviour
     public void SetTransform(Transform target, Vector3 offset, Quaternion rotation, Vector3 localScale)
     {
         followTm = target;
-        localPosition = offset;
-        localRotation = rotation;
+        //localPosition = offset;
+        //localRotation = rotation;
 
         // 초기 위치와 회전 설정
         FollowTransform();

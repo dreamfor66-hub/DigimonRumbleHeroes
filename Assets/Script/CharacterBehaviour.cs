@@ -369,10 +369,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             break;
                     }
 
+                    var originBulletData = spawnData.BulletPrefab.bulletData;
+                    var clonedData = originBulletData.Clone();
+
+                    BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
+
+
                     // Bullet 인스턴스 생성 및 초기화
                     BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
-                    NetworkServer.Spawn(bullet.gameObject);
+                    bullet.bulletData = clonedData;
                     bullet.Initialize(this, spawnDirection);
+                    NetworkServer.Spawn(bullet.gameObject);
 
                     // 중복 방지용 HashSet에 추가
                     spawnedBulletData.Add(spawnData);
@@ -408,7 +415,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     {
                         CharacterBehaviour target = hitCollider.GetComponentInParent<CharacterBehaviour>();
 
-                        if (target == null || target == this)
+                        if (target == null || target == this || target.isDie)
                         {
                             continue;
                         }
@@ -499,7 +506,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected void HandleHit(HitData hit)
     {
-        if (hit.Victim == null) return;
 
         // 서버에서 피해 적용 요청
         if (isServer)
@@ -507,21 +513,26 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             OnHit(hit);
             RpcOnHit(hit);
 
-            hit.Victim.TakeDamage(hit);
-            hit.Victim.RpcTakeDamage(hit); ;
+            if (hit.Victim != null)
+            {
+                hit.Victim.TakeDamage(hit);
+                hit.Victim.RpcTakeDamage(hit); ;
+            }
 
 
             ApplyHitStop(hit.HitStopFrame);
             RpcApplyHitStop(hit.HitStopFrame);
-            target.ApplyHitStop(hit.HitStopFrame);
-            target.RpcApplyHitStop(hit.HitStopFrame);
+            if (hit.Victim != null)
+            {
+                hit.Victim.ApplyHitStop(hit.HitStopFrame);
+                hit.Victim.RpcApplyHitStop(hit.HitStopFrame);
+            }
         }
         else
         {
             CmdApplyHitStop(hit.HitStopFrame);
         }
 
-        Debug.Log($"Hit {target.name} for {hit.HitDamage} damage with {hit.HitStopFrame} frames of hitstop.");
     }
 
     [Command]
@@ -796,20 +807,22 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(directionToAttacker);
             transform.rotation = lookRotation; // 즉시 회전
         }
+        OnAttacked(hit.Attacker);
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 || isDie)
         {
             currentHealth = 0;
             Die();
+            return;
         }
         else
         {
-            if (hit.hitType == HitType.DamageOnly)
+            if (hit.HitType == HitType.DamageOnly)
             {
                 return;
             }
 
-            switch (hit.hitType)
+            switch (hit.HitType)
             {
                 case HitType.Weak:
                     if (isServer)
@@ -837,7 +850,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             }
         }
 
-        OnAttacked(hit.Attacker);
+        
     }
 
     [Command]
@@ -892,6 +905,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (hit.HitApplyOwnerResource)
             resourceTable.AddResource(hit.ResourceKey, hit.Value);
+
+        //foreach (var buff in hit.HitApplyBuffs)
+        //{
+        //    BuffManager.Instance.AddBuff(buff, hit.Victim);
+        //}
 
         BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerHit, hit);
         BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.EveryHit, hit);
@@ -1003,7 +1021,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private void StartKnockBackSmash(HitData hit)
     {
         ChangeStatePrev(CharacterState.KnockBackSmash);
-        currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
+        //currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
         knockBackDirection = hit.Direction.normalized;
         knockBackSpeed = hit.KnockbackPower;
 
@@ -1110,36 +1128,135 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         Vector3 knockBackMovement = knockBackDirection * knockBackSpeed * speedModifier * Time.deltaTime;
 
-        RaycastHit hit;
-        var radius = characterData.colliderRadius;
-        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
 
-        if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
-        {
-            // 벽에 충돌했을 때 HitStop 적용
-            ApplyHitStop(5.5f);  // 대상자에게만 HitStop 5프레임 적용
-
-            // 반사 시 속도 감소
-            Vector3 collisionNormal = hit.normal;
-            Vector3 reflectDirection = Vector3.Reflect(knockBackDirection, collisionNormal).normalized;
-            knockBackDirection = reflectDirection;
-            knockBackSpeed *= 0.5f;
-        }
-        else
-        {
-            transform.position += knockBackMovement;
-        }
-
-        if (knockBackSpeed < 7f)
+        if (knockBackSpeed < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
         {
             ChangeStatePrev(CharacterState.KnockBack);
             knockBackDuration = Mathf.Max(knockBackTimer, knockBackSpeed / 10f);
+            return;
         }
 
         if (knockBackTimer >= totalDuration || knockBackSpeed < 0.1f)
         {
             ChangeStatePrev(CharacterState.Idle);
             knockBackSpeed = 0f;
+            return;
+        }
+
+
+        //벽충돌
+        RaycastHit hit;
+        var radius = characterData.colliderRadius;
+        LayerMask wallLayer = LayerMask.GetMask("WallCollider");
+
+        if (Physics.SphereCast(transform.position, radius, knockBackDirection, out hit, knockBackMovement.magnitude, wallLayer))
+        {
+            HitData wallHitData = new HitData
+            {
+                Attacker = null, // 벽은 attacker가 아님
+                Victim = this, // 
+                Direction = Vector3.Reflect(knockBackDirection, hit.normal).normalized,
+                KnockbackPower = knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, // 속도 감소
+                HitType = HitType.Strong, // 속도 감소
+                HitDamage = 0f, // 벽 충돌은 대미지 없음
+                HitStopFrame = ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
+            };
+
+            if (isServer)
+            {
+                HandleHit(wallHitData);
+                RpcHandleHit(wallHitData);
+            }
+
+            //if (wallHitData.KnockbackPower < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
+            //{
+            //    StartKnockBack(wallHitData);
+            //    RpcStartKnockBack(wallHitData);
+            //}
+            //else
+            //{
+            //    StartKnockBackSmash(wallHitData);
+            //    RpcStartKnockBackSmash(wallHitData);
+            //}
+
+            //ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide); // 벽 충돌 후 HitStop
+            //RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+        }
+        else
+        {
+            transform.position += knockBackMovement;
+        }
+
+        // 다른 CharacterBehaviour와의 충돌 처리
+        Collider[] colliders = Physics.OverlapSphere(transform.position, radius);
+        foreach (var collider in colliders)
+        {
+            CharacterBehaviour otherCharacter = collider.GetComponentInParent<CharacterBehaviour>();
+
+            // 자신이 아니고, 상대가 KnockBackSmash 상태가 아닐 경우만 처리
+            if (otherCharacter != null && otherCharacter != this && (otherCharacter.currentState != CharacterState.KnockBackSmash || otherCharacter.currentState != CharacterState.KnockBack) && knockBackTimer > 0.015f)
+            {
+                Vector3 collisionNormal = (otherCharacter.transform.position - transform.position).normalized;
+
+                // **위치 보정**: 두 캐릭터를 강제로 분리
+                float overlapDistance = radius * 2f - Vector3.Distance(transform.position, otherCharacter.transform.position);
+                transform.position -= collisionNormal * (overlapDistance / 2f);
+                otherCharacter.transform.position += collisionNormal * (overlapDistance / 2f);
+
+                // **충돌에 따른 새로운 HitData 생성**
+                float knockbackPowerForThis = Mathf.Max(knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, 5f);
+                float knockbackPowerForOther = Mathf.Max(otherCharacter.knockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, 5f);
+
+                HitData newHitDataForThis = new HitData
+                {
+                    Attacker = otherCharacter,
+                    Victim = this,
+                    HitDamage = 0f, // 운동량에 따라 계산 가능
+                    Direction = -collisionNormal, // 반대 방향으로 넉백
+                    HitStopFrame = ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
+                    HitType = HitType.Strong,
+                    KnockbackPower = knockbackPowerForThis
+                };
+
+                HitData newHitDataForOther = new HitData
+                {
+                    Attacker = this,
+                    Victim = otherCharacter,
+                    HitDamage = 0f,
+                    Direction = collisionNormal,
+                    HitStopFrame = ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
+                    HitType = HitType.Strong,
+                    KnockbackPower = knockbackPowerForOther
+                };
+
+                // **넉백 및 HitStop 처리**
+                if (isServer)
+                {
+                    HandleHit(newHitDataForThis);
+                    HandleHit(newHitDataForOther);
+                    RpcHandleHit(newHitDataForThis);
+                    RpcHandleHit(newHitDataForOther);
+
+                    //// 양쪽 캐릭터에 HitStop 적용
+                    //ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+                    //RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+                    //otherCharacter.ApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+                    //otherCharacter.RpcApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+                    //}
+                    //else
+                    //{
+                    //    if (newHitDataForThis.KnockbackPower < ResourceHolder.Instance.gameVariables.knockBackPowerReference)
+                    //    {
+                    //        CmdStartKnockBack(newHitDataForThis);
+                    //    }
+                    //    else
+                    //    {
+                    //        CmdStartKnockBackSmash(newHitDataForThis);
+                    //    }
+                    //    CmdApplyHitStop(ResourceHolder.Instance.gameVariables.hitstopWhenCollide);
+                    //}
+                }
+            }
         }
     }
     [ClientRpc]
@@ -1196,8 +1313,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         .Select(entry => entry.ActionData)
         .ToList();
 
-        foreach (var actionData in actionsForKey)
+        foreach (var originActionData in actionsForKey)
         {
+
+            var actionData = originActionData.Clone();
             // 조건을 체크하여 실행할 수 있는지 확인
             bool canExecute = true;
             foreach (var condition in actionData.Conditions)
@@ -1210,6 +1329,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     break;
                 }
             }
+
 
             // 실행 가능 여부에 따라 액션 실행 또는 다음 액션으로 이동
             if (canExecute)
@@ -1229,6 +1349,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     animator.SetLayerWeight(1, 0);
                 }
                 hitTargets.Clear();
+
+                BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerAction, actionData);
 
                 // 루프를 종료하여 첫 번째로 조건을 만족하는 액션만 실행
                 return;

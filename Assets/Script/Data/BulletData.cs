@@ -43,6 +43,25 @@ public class BulletData : ScriptableObject
     [PropertyOrder(3)]
     [TableList(AlwaysExpanded = true)]
     public List<BulletSpawnVfxData> BulletSpawnVfxList = new List<BulletSpawnVfxData>();
+
+    public BulletData Clone()
+    {
+        // 얕은 복사 수행
+        BulletData clonedBullet = (BulletData)MemberwiseClone();
+
+        // HitIdList 복사
+        clonedBullet.HitIdList = new List<HitData>();
+        foreach (var hit in HitIdList)
+        {
+            clonedBullet.HitIdList.Add(hit.Clone()); // HitData에 Clone() 메서드가 있다고 가정
+        }
+
+        clonedBullet.HitboxList = new List<HitboxData>(HitboxList);
+        clonedBullet.BulletSpawnBulletList = new List<BulletSpawnBulletData>(BulletSpawnBulletList);
+        clonedBullet.BulletSpawnVfxList = new List<BulletSpawnVfxData>(BulletSpawnVfxList);
+
+        return clonedBullet;
+    }
 }
 
 [Flags]

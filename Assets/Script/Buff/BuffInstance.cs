@@ -184,7 +184,7 @@ public class BuffInstance
                 return this; // 현재 BuffInstance 자신을 반환
 
             case BuffTargetType.Bullet:
-                return null; // 가장 최근에 발생한 BulletBehaviour 객체 반환
+                return parameter; 
 
             case BuffTargetType.Victim:
                 if (hit.Victim != null)
@@ -214,10 +214,13 @@ public class BuffInstance
         var hitFilter = buffData.Units.FirstOrDefault()?.Trigger.HitFilter; // 첫 번째 BuffUnitData의 HitFilter 사용
         if (hitFilter != null)
         {
-            // HitFilterType이 All이 아니고, HitFilter의 HitType과 일치하지 않으면 false 반환
-            if (hitFilter.HitType != HitType.All && hitFilter.HitType != hitData.hitType)
+            // HitType을 비트 플래그로 변환
+            HitTypeFilter hitTypeAsFilter = (HitTypeFilter)(1 << (int)hitData.HitType);
+
+            // hitType이 hitFilter에 포함되는지 확인
+            if ((hitFilter.HitType & hitTypeAsFilter) == 0)
             {
-                return false;
+                return false; // hitType이 hitFilter에 포함되지 않으면 false 반환
             }
         }
         return true; // 조건에 맞는 Hit
@@ -228,7 +231,7 @@ public class BuffInstance
     public void ExecuteEffect(List<BuffEffectData> effects, object target)
     {
         CharacterBehaviour targetCharacter = target as CharacterBehaviour;
-        BulletBehaviour targetBullet = target as BulletBehaviour;
+        BulletData targetBullet = target as BulletData;
         BuffInstance targetBuff = target as BuffInstance;
         HitData targetHit = target as HitData;
         ActionData targetAction = target as ActionData;
@@ -265,10 +268,11 @@ public class BuffInstance
                 case BuffEffectType.Character_InstantDamage:
                     HitData hit = new();
                     hit.HitDamage = effect.Value;
-                    hit.hitType = HitType.DamageOnly;
+                    hit.HitType = HitType.DamageOnly;
                     hit.Attacker = owner;
                     hit.Victim = targetCharacter;
                     hit.HitApplyOwnerResource = false;
+                    //hit.HitApplyBuffs = new();
                     hit.Direction = Vector3.zero;
                     targetCharacter.TakeDamage(hit);
                     break;
@@ -284,20 +288,51 @@ public class BuffInstance
                     break;
 
                 case BuffEffectType.Hit_AttackPowerPercent:
-                    targetHit.HitDamage *= ( 1 + (effect.Value) / 100);
+                    targetHit.HitDamage *= ( 1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
                     break;
                 case BuffEffectType.Hit_DamageZero:
                     targetHit.HitDamage = 0f;
                     break;
                 case BuffEffectType.Hit_KnockBackPower:
-                    targetHit.KnockbackPower *= (1 + (effect.Value) / 100);
+                    targetHit.KnockbackPower *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
                     break;
                 case BuffEffectType.Hit_KnockBackIgnore:
                     targetHit.KnockbackPower = 0f;
                     break;
                 
                 case BuffEffectType.Action_AttackPowerPercent:
-                    //음 액션의 hitDamage를 증가시키려면 데이터로 들어갈수밖에 없는데 흠...
+                    foreach (var actionHit in owner.currentActionData.HitIdList)
+                    {
+                        actionHit.HitDamage *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                    }
+                    break;
+                case BuffEffectType.Action_KnockBackPowerPercent:
+                    foreach (var actionHit in owner.currentActionData.HitIdList)
+                    {
+                        actionHit.KnockbackPower *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                    }
+                    break;
+                case BuffEffectType.Action_MoveAmountPercent:
+                    foreach (var actionHit in owner.currentActionData.MovementList)
+                    {
+                        actionHit.StartValue *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                        actionHit.EndValue *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                    }
+                    break;
+                case BuffEffectType.Bullet_AttackPowerPercent:
+                    foreach (var bulletHit in targetBullet.HitIdList)
+                    {
+                        bulletHit.HitDamage *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                    }
+                    break;
+                case BuffEffectType.Bullet_SpeedPercent:
+                    targetBullet.Speed *= (1 + effect.Value / (100 + Mathf.Abs(effect.Value)));
+                    break;
+                case BuffEffectType.Bullet_KnockBackPowerPercent:
+                    foreach (var bulletHit in targetBullet.HitIdList)
+                    {
+                        bulletHit.KnockbackPower *= (1 + (effect.Value) / (100 + Mathf.Abs(effect.Value)));
+                    }
                     break;
                 default:
                     Debug.LogWarning($"Unknown BuffEffectType: {effect.Type}");

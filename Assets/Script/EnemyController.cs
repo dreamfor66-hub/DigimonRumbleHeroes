@@ -25,6 +25,8 @@ public class EnemyController : CharacterBehaviour
 
     protected override void Update()
     {
+        if (isDie)
+            return;
         if (target == null)
             FindClosestPlayer();
         base.Update();

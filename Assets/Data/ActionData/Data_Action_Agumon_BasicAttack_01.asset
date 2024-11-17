@@ -116,10 +116,7 @@ MonoBehaviour:
     Angle: 0
   ActionSpawnVfxList: []
   Conditions: []
-  Resources:
-  - Frame: 1
-    ResourceKey: 1
-    Count: 1
+  Resources: []
   canLookInAction: 0
   AutoCorrection:
     correctionType: 0

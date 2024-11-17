@@ -56,11 +56,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MovementList:
-  - StartFrame: 0
-    EndFrame: 10
-    StartValue: {x: 0, y: 10}
-    EndValue: {x: 0, y: 0}
+  MovementList: []
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 100
@@ -267,15 +263,22 @@ MonoBehaviour:
     HitGroup: 3
   HitIdList:
   - HitId: 0
-    HitDamage: 0
+    HitDamage: 0.1
     HitStopFrame: 1
     HitStunFrame: 30
-    KnockbackPower: 0.1
+    KnockbackPower: 1
     hitType: 1
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
   ActionSpawnBulletList: []
   ActionSpawnVfxList: []
   Conditions: []
   Resources: []
+  canLookInAction: 0
   AutoCorrection:
     correctionType: 1
     entityName: Kiwi

@@ -138,14 +138,14 @@ public class HitFilter
 {
     //public List<HitFilterUnit> units = new();
     //public HitFilterType Type;
-    public HitType HitType = HitType.All;
+    public HitTypeFilter HitType = HitTypeFilter.All;
 }
 
 [Serializable]
 public class HitFilterUnit
 {
     public HitFilterType Type;
-    public HitType HitType = HitType.All;
+    public HitType HitType = HitType.Weak;
     public TeamType TriggerTeam = TeamType.All;
 }
 
@@ -225,10 +225,10 @@ public enum BuffEffectType
         Character_AddResource = 360,
         Character_SetResource = 361, 
 
-        Action_AttackPowerPercent = 400, //Action 전부 미구현
-        Action_AttackScalePercent,
+        Action_AttackPowerPercent = 400,
+        Action_AttackScalePercent, //미구현
         Action_KnockBackPowerPercent,
-        Action_ActionSpeedPercent,
+        Action_ActionSpeedPercent, //미구현
         Action_MoveAmountPercent,
 
         Hit_AttackPowerPercent = 500,
@@ -238,12 +238,10 @@ public enum BuffEffectType
         Hit_KnockBackIgnore = 541,
 
 
-        Bullet_AttackPowerPercent = 600, //Bullet 전부 미구현
-        Bullet_FinalDamagePercent = 601,
-        Bullet_PierceCount = 611,
+        Bullet_AttackPowerPercent = 600,
+        Bullet_PierceCount = 611, //미구현. pierce라는 개념이 아직 없음
         Bullet_SpeedPercent = 620,
-        Bullet_KnockBackPower = 640,
-        Bullet_HitApplyBuff = 650,
+        Bullet_KnockBackPowerPercent = 640,
         Bullet_ScalePercent = 660,
 
         Buff_AddStack = 700,
