@@ -222,6 +222,14 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 break;
         }
 
+        if (Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            HandleEvolution(0); // 첫 번째 EvolutionInfo
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad2))
+        {
+            HandleEvolution(1); // 두 번째 EvolutionInfo
+        }
 
         if (AnimatorHasParameter(animator, "X"))
         {
@@ -1439,6 +1447,77 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         // 최종 이동 방향 및 속도 계산
         return finalDirection * moveSpeed * finalSpeedAdjustment * Time.deltaTime;
+    }
+
+    ///
+    ///
+    ///
+    [Command]
+    private void HandleEvolution(int index)
+    {
+        // 현재 캐릭터의 EvolutionInfos 확인
+        if (characterData == null || characterData.EvolutionInfos.Count <= index)
+        {
+            Debug.LogWarning($"진화 데이터가 없거나 {index}번 데이터가 존재하지 않습니다.");
+            return;
+        }
+
+        var evolutionInfo = characterData.EvolutionInfos[index];
+        if (evolutionInfo.NextCharacter == null)
+        {
+            Debug.LogWarning($"진화 대상 캐릭터가 설정되지 않았습니다. Index: {index}");
+            return;
+        }
+
+        // 로컬 플레이어 확인
+        if (!isLocalPlayer)
+        {
+            Debug.LogWarning("HandleEvolution 호출자는 로컬 플레이어가 아닙니다.");
+            return;
+        }
+
+        // 기존 캐릭터 정보 저장
+        Vector3 currentPosition = transform.position;
+        Quaternion currentRotation = transform.rotation;
+
+        // EntityContainer에서 기존 캐릭터 제거
+        EntityContainer.Instance.UnregisterCharacter(this);
+
+        // 새로운 캐릭터 생성
+        var nextCharacterPrefab = evolutionInfo.NextCharacter.gameObject;
+        var newCharacterInstance = Instantiate(nextCharacterPrefab, currentPosition, currentRotation);
+        var newCharacterBehaviour = newCharacterInstance.GetComponent<CharacterBehaviour>();
+
+        if (newCharacterBehaviour == null)
+        {
+            Debug.LogError("새 캐릭터 프리팹에 CharacterBehaviour가 없습니다.");
+            return;
+        }
+
+        // 새로운 캐릭터를 EntityContainer에 등록
+        EntityContainer.Instance.RegisterCharacter(newCharacterBehaviour);
+
+        // 네트워크 오브젝트로 스폰
+        NetworkServer.Spawn(newCharacterInstance);
+
+        // 새로운 캐릭터를 로컬 플레이어로 전환
+        newCharacterBehaviour.SetLocalPlayer();
+
+        // 기존 캐릭터 삭제
+        NetworkServer.Destroy(gameObject);
+
+        Debug.Log($"로컬 플레이어가 {newCharacterBehaviour.name}(으)로 진화했습니다.");
+    }
+
+    [Client]
+    private void SetLocalPlayer()
+    {
+        Debug.Log($"로컬 플레이어가 {name}로 전환되었습니다.");
+        // 새로운 캐릭터에서 로컬 플레이어 처리
+        if (isLocalPlayer)
+        {
+            Camera.main.GetComponent<CameraController>().SetTarget(transform);
+        }
     }
 
     /// <summary>

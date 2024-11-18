@@ -21,5 +21,4 @@ public class ResourceHolder : ScriptableObject
         }
     }
     public GameVariables gameVariables;
-    public EvolutionTable evolutionTable;
 }

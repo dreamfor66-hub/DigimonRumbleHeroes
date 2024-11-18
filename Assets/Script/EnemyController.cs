@@ -171,6 +171,9 @@ public class EnemyController : CharacterBehaviour
         {
             if (character is PlayerController player)
             {
+                if (player == null) // 플레이어가 null인지 확인
+                    continue;
+
                 float distance = Vector3.Distance(transform.position, player.transform.position);
                 if (distance < closestDistance)
                 {

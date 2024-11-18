@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
+  m_Name: Data_Character_Woodmon
+  m_EditorClassIdentifier: 
+  characterName: "\uC6B0\uB4DC\uBAAC"
+  characterItemColor: 2
+  characterItemForm: 3
+  characterItemTrait1: 5
+  characterItemTrait2: 10
+  characterItemTrait3: 102
+  baseHP: 10
+  baseATK: 5
+  moveSpeed: 5
+  defaultBasicAttackCycle: 2
+  colliderRadius: 0.45
+  mass: 10
+  drag: 10
+  attackRange: 6
+  Hurtboxes:
+  - Offset: {x: 0, y: 0}
+    Radius: 0.5
+  rigOffset: {x: 0, y: 0.5, z: 0}
+  weightChangeSpeed: 1
+  ActionTable:
+  - ActionKey: 10
+    ActionData: {fileID: 11400000, guid: e6aca6ab51ecabf4cb2dbc6d7c3250cf, type: 2}
+  - ActionKey: 20
+    ActionData: {fileID: 11400000, guid: afd8bd872a9f31b4798dbbb2e509ffcb, type: 2}
+  Resources:
+  - Key: 10
+    Min: 0
+    Max: 1
+    Init: 1
+    ResetBy: 0
+  - Key: 1
+    Min: 0
+    Max: 10
+    Init: 0
+    ResetBy: 0
+  Buffs: []
+  EvolutionInfos: []
+  targetingWeightThreshold: 0.273
+  shortDistance: 7
+  wideAngle: 160
+  narrowAngle: 30
+  longDistance: 10

@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,13 +7,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Data_Character_New", menuName = "Data/CharacterData", order = 1)]
 public class CharacterData : ScriptableObject
 {
-    [Title("Appearance")]
-    [HorizontalGroup("Character", Width = 0.4f)] // A 구역
-    [PreviewField(220, ObjectFieldAlignment.Center)]
-    [HideLabel]
-    public Sprite characterSprite;
-
-    [Title("")]
     [Title("이름")] 
     [HideLabel]
     [VerticalGroup("Character/RightSide")] // B 구역
@@ -36,13 +30,11 @@ public class CharacterData : ScriptableObject
     [HorizontalGroup("Character/RightSide/Traits")]
     public CharacterItemTrait characterItemTrait1;
 
-    [Title("")]
     [HideLabel]
     [VerticalGroup("Character/RightSide")]
     [HorizontalGroup("Character/RightSide/Traits")]
     public CharacterItemTrait characterItemTrait2;
 
-    [Title("")]
     [HideLabel]
     [VerticalGroup("Character/RightSide")]
     [HorizontalGroup("Character/RightSide/Traits")]
@@ -54,10 +46,6 @@ public class CharacterData : ScriptableObject
     public float baseATK = 5;
     public float moveSpeed = 5;
     public float defaultBasicAttackCycle = 1.5f;
-
-    // 레벨업 당 증가하는 HP와 ATK
-    public float hpPerLevel = 1;
-    public float atkPerLevel = 1;
 
     [Title("Physics")]
     public float colliderRadius = 0.5f;
@@ -96,6 +84,10 @@ public class CharacterData : ScriptableObject
 
     [Title("StartBuff")]
     public List<BuffData> Buffs = new();
+    
+    [Title("EvolutionInfo")]
+    [TableList(AlwaysExpanded = true)]
+    public List<EvolutionInfo> EvolutionInfos = new List<EvolutionInfo>();
 
     [Title("Targeting")]
     [Range(0f, 1f)]
@@ -195,4 +187,28 @@ public class CharacterResourceTable
         var resource = resources.Find(x => x.Data.Key == key);
         return resource?.Data.Max ?? 0; // 리소스를 찾지 못하면 기본값 0 반환
     }
+}
+
+[Serializable]
+public class EvolutionInfo
+{
+    public CharacterBehaviour NextCharacter;
+    [TableList(AlwaysExpanded = true)]
+    [HideLabel]
+    public List<EvolutionConditionData> Condition = new List<EvolutionConditionData>();
+}
+
+[Serializable]
+public class EvolutionConditionData
+{
+    [HideLabel]
+    public EvolutionConditionType Type;
+    [HideLabel]
+    public float Value;
+}
+
+[Serializable]
+public enum EvolutionConditionType
+{
+    None,
 }

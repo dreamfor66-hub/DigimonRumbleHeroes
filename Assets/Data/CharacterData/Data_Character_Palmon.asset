@@ -12,19 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_Palmon
   m_EditorClassIdentifier: 
-  characterSprite: {fileID: 21300000, guid: d14f6aefdb1673c4a85ed81dfdce1817, type: 3}
-  characterName: "\uC544\uAD6C\uBAAC"
+  characterName: "\uD314\uBAAC"
   characterItemColor: 2
   characterItemForm: 2
-  characterItemTrait1: 5
+  characterItemTrait1: 4
   characterItemTrait2: 10
-  characterItemTrait3: 102
+  characterItemTrait3: 100
   baseHP: 10
   baseATK: 5
   moveSpeed: 5
   defaultBasicAttackCycle: 2
-  hpPerLevel: 2
-  atkPerLevel: 1
   colliderRadius: 0.45
   mass: 10
   drag: 10
@@ -56,6 +53,13 @@ MonoBehaviour:
     ResetBy: 0
   Buffs:
   - {fileID: 11400000, guid: 38e2a0ea6efb44b44a7c0a325e491b92, type: 2}
+  EvolutionInfos:
+  - NextCharacter: {fileID: 4771394053400359985, guid: ed34d06137745824fb1c3b4238f5a595,
+      type: 3}
+    Condition: []
+  - NextCharacter: {fileID: 4771394053400359985, guid: 4374e9d2eb992c04eae9f5cde65e507c,
+      type: 3}
+    Condition: []
   targetingWeightThreshold: 0.273
   shortDistance: 7
   wideAngle: 160
