@@ -111,11 +111,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   MovementList:
-  - StartFrame: 10
-    EndFrame: 15
-    StartValue: {x: 0, y: 2}
-    EndValue: {x: 0, y: 5}
-  - StartFrame: 15
+  - StartFrame: 12
+    EndFrame: 18
+    StartValue: {x: 0, y: 5}
+    EndValue: {x: 0, y: 2}
+  - StartFrame: 18
     EndFrame: 25
     StartValue: {x: 0, y: 5}
     EndValue: {x: 0, y: 5}
@@ -130,11 +130,36 @@ MonoBehaviour:
     CanRotate: 0
     Value: 3
   - StartFrame: 10
-    EndFrame: 30
+    EndFrame: 24
+    MoveType: 1
+    CanRotate: 0
+    Value: 7
+  - StartFrame: 45
+    EndFrame: 55
     MoveType: 1
     CanRotate: 0
     Value: 7
   - StartFrame: 0
+    EndFrame: 10
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.5
+  - StartFrame: 10
+    EndFrame: 24
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.1
+  - StartFrame: 24
+    EndFrame: 45
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.3
+  - StartFrame: 45
+    EndFrame: 55
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.1
+  - StartFrame: 55
     EndFrame: 100
     MoveType: 0
     CanRotate: 0

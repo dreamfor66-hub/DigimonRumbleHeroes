@@ -42,7 +42,7 @@ MonoBehaviour:
   Buffs: []
   EvolutionInfos: []
   targetingWeightThreshold: 0.224
-  shortDistance: 7
+  shortDistance: 15
   wideAngle: 150
   narrowAngle: 30
   longDistance: 10

@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Data_Character_Palmon
   m_EditorClassIdentifier: 
   characterName: "\uD314\uBAAC"
-  characterItemColor: 2
   characterItemForm: 2
   characterItemTrait1: 4
   characterItemTrait2: 10
@@ -53,9 +52,6 @@ MonoBehaviour:
     ResetBy: 0
   Buffs: []
   EvolutionInfos:
-  - NextCharacter: {fileID: 4771394053400359985, guid: ed34d06137745824fb1c3b4238f5a595,
-      type: 3}
-    Condition: []
   - NextCharacter: {fileID: 4771394053400359985, guid: 4374e9d2eb992c04eae9f5cde65e507c,
       type: 3}
     Condition: []

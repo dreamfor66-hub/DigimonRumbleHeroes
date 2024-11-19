@@ -90,8 +90,8 @@ MonoBehaviour:
     EndValue: {x: 0, y: 5}
   - StartFrame: 12
     EndFrame: 21
-    StartValue: {x: 0, y: 5}
-    EndValue: {x: 0, y: 5}
+    StartValue: {x: 0, y: 3}
+    EndValue: {x: 0, y: 3}
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 15
@@ -104,6 +104,16 @@ MonoBehaviour:
     CanRotate: 0
     Value: 10
   - StartFrame: 0
+    EndFrame: 20
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.3
+  - StartFrame: 20
+    EndFrame: 60
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.1
+  - StartFrame: 65
     EndFrame: 100
     MoveType: 0
     CanRotate: 0
@@ -159,7 +169,7 @@ MonoBehaviour:
     HitGroup: 2
   - StartFrame: 35
     EndFrame: 40
-    Offset: {x: 0, y: 0.65}
+    Offset: {x: 0, y: 0.7}
     Radius: 0.5
     HitId: 0
     HitGroup: 2
@@ -177,7 +187,7 @@ MonoBehaviour:
     HitGroup: 3
   - StartFrame: 40
     EndFrame: 45
-    Offset: {x: 0, y: 0.65}
+    Offset: {x: 0, y: 0.75}
     Radius: 0.5
     HitId: 0
     HitGroup: 3
@@ -195,7 +205,7 @@ MonoBehaviour:
     HitGroup: 4
   - StartFrame: 45
     EndFrame: 50
-    Offset: {x: 0, y: 0.65}
+    Offset: {x: 0, y: 1}
     Radius: 0.5
     HitId: 0
     HitGroup: 4
@@ -213,7 +223,7 @@ MonoBehaviour:
     HitGroup: 5
   - StartFrame: 50
     EndFrame: 55
-    Offset: {x: 0, y: 0.65}
+    Offset: {x: 0, y: 1.2}
     Radius: 0.5
     HitId: 0
     HitGroup: 5
@@ -231,32 +241,14 @@ MonoBehaviour:
     HitGroup: 6
   - StartFrame: 55
     EndFrame: 60
-    Offset: {x: 0, y: 0.65}
+    Offset: {x: 0, y: 1.2}
     Radius: 0.5
     HitId: 0
     HitGroup: 6
-  - StartFrame: 60
-    EndFrame: 65
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 7
-  - StartFrame: 60
-    EndFrame: 65
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 7
-  - StartFrame: 60
-    EndFrame: 65
-    Offset: {x: 0, y: 0.65}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 7
   HitIdList:
   - HitId: 0
     HitDamage: 0.2
-    HitStopFrame: 4
+    HitStopFrame: 3
     HitStunFrame: 30
     KnockbackPower: 2
     HitType: 1

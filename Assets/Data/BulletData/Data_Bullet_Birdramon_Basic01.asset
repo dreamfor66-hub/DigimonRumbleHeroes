@@ -30,7 +30,7 @@ MonoBehaviour:
     HitDamage: 0.5
     HitStopFrame: 3
     HitStunFrame: 30
-    KnockbackPower: 20
+    KnockbackPower: 10
     HitType: 2
     HitApplyOwnerResource: 0
     ResourceKey: 0
@@ -40,13 +40,8 @@ MonoBehaviour:
     Direction: {x: 0, y: 0, z: 0}
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
-  - SpawnTrigger: 1
-    VfxPrefab: {fileID: -1134785986197523482, guid: a9b82af3e92016b4dbbfb75c2d86ff6c,
-      type: 3}
-    Offset: {x: 0, y: 0}
-    Angle: 0
   - SpawnTrigger: 4
-    VfxPrefab: {fileID: -5731697141335408088, guid: d3923114db8f1414ea3e6faafef08846,
+    VfxPrefab: {fileID: -5731697141335408088, guid: 0b8c12ecc76355a4a907d52adf44d194,
       type: 3}
     Offset: {x: 0, y: 0}
     Angle: 0

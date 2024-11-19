@@ -82,7 +82,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  bulletData: {fileID: 11400000, guid: e26cec290555bfe49bd8062667a017a3, type: 2}
+  bulletData: {fileID: 11400000, guid: a657d9f522874eb4786027aa2c8d96ba, type: 2}
 --- !u!114 &7678862045598438448
 MonoBehaviour:
   m_ObjectHideFlags: 0
