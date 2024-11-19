@@ -4,7 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameVariables", menuName = "Settings/GameVariables", order = 1)]
 public class GameVariables : ScriptableObject
 {
-    public GameObject HPStaminaBarPrefab; // 추가한 부분
+    public GameObject HPStaminaBarPrefab; 
+    public GameObject DamageTextPrefab;
+
     public float dragThreshold = 12f;
     public float tapThreshold = 0.2f;
     public float maxDistance = 200f;

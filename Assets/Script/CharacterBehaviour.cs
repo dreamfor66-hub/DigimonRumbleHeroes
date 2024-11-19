@@ -841,6 +841,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
         OnAttacked(hit.Attacker);
 
+        // 데미지 텍스트 표시
+        if (ResourceHolder.Instance != null && ResourceHolder.Instance.gameVariables != null)
+        {
+            DamageTextManager.Instance.ShowDamageText(transform.position, (int)hit.HitDamage);
+        }
+
+
         if (currentHealth <= 0 || isDie)
         {
             currentHealth = 0;
