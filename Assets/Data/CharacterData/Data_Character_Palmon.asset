@@ -51,13 +51,15 @@ MonoBehaviour:
     Max: 10
     Init: 0
     ResetBy: 0
-  Buffs:
-  - {fileID: 11400000, guid: 38e2a0ea6efb44b44a7c0a325e491b92, type: 2}
+  Buffs: []
   EvolutionInfos:
   - NextCharacter: {fileID: 4771394053400359985, guid: ed34d06137745824fb1c3b4238f5a595,
       type: 3}
     Condition: []
   - NextCharacter: {fileID: 4771394053400359985, guid: 4374e9d2eb992c04eae9f5cde65e507c,
+      type: 3}
+    Condition: []
+  - NextCharacter: {fileID: 4771394053400359985, guid: 556d166b0f30d6a47b4b7c73309763a2,
       type: 3}
     Condition: []
   targetingWeightThreshold: 0.273

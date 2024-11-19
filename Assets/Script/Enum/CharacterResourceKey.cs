@@ -8,6 +8,7 @@ public enum CharacterResourceKey
         
     Skill_Cooldown = 1,
     Character_Basic_01 = 10,
+    Character_Basic_02 = 11,
 }
 
 [Flags]

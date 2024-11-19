@@ -230,6 +230,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             HandleEvolution(1); // 두 번째 EvolutionInfo
         }
+        else if (Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            HandleEvolution(2); // 두 번째 EvolutionInfo
+        }
 
         if (AnimatorHasParameter(animator, "X"))
         {
@@ -318,13 +322,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 {
                     ApplySpecialMovement(specialMovement);
                     
-                }
-                else
-                {
-                    if (AnimatorHasLayer(animator, 1))
-                    {
-                        animator.SetLayerWeight(1, 0);
-                    }
                 }
             }
 
@@ -444,6 +441,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
                                 hit.Attacker = this;
                                 hit.Victim = target;
+                                hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;
                                 HandleHit(hit);
                                 RpcHandleHit(hit);
                             }
@@ -678,8 +676,21 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     {
                         animator.SetFloat("Z", localInputDirection.z, 0.05f, Time.deltaTime);
                     }
-                    
-                    
+                    if (AnimatorHasLayer(animator, 1))
+                    {
+                        // 현재 가중치를 Animator에서 가져옴
+                        float currentLayerWeight = animator.GetLayerWeight(1);
+
+                        // 목표 가중치 설정
+                        float targetLayerWeight = 1f; // 활성화하려면 1f로 변경
+
+                        // 가중치를 부드럽게 변화시킴
+                        float newLayerWeight = Mathf.Lerp(currentLayerWeight, targetLayerWeight, Time.deltaTime * 5f);
+
+                        // Animator에 새로운 가중치 설정
+                        animator.SetLayerWeight(1, newLayerWeight);
+                    }
+
                 }
                 else
                 {
@@ -697,12 +708,23 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     {
                         animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
                     }
+                    if (AnimatorHasLayer(animator, 1))
+                    {
+                        // 현재 가중치를 Animator에서 가져옴
+                        float currentLayerWeight = animator.GetLayerWeight(1);
+
+                        // 목표 가중치 설정
+                        float targetLayerWeight = 0f; // 활성화하려면 1f로 변경
+
+                        // 가중치를 부드럽게 변화시킴
+                        float newLayerWeight = Mathf.Lerp(currentLayerWeight, targetLayerWeight, Time.deltaTime * 5f);
+
+                        // Animator에 새로운 가중치 설정
+                        animator.SetLayerWeight(1, newLayerWeight);
+                    }
                 }
 
-                if (AnimatorHasLayer(animator, 1))
-                {
-                    animator.SetLayerWeight(1, 1);
-                }
+                
                 break;
 
             case SpecialMovementType.LookRotateTarget:
@@ -1075,17 +1097,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (knockBackTimer <= initialBurstDuration)
         {
             float t = knockBackTimer / initialBurstDuration;
-            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+            speedModifier = Mathf.Lerp(1f, 0.3f, t);
         }
         else if (knockBackTimer <= initialBurstDuration + flightDuration)
         {
             float t = (knockBackTimer - initialBurstDuration) / flightDuration;
-            speedModifier = Mathf.Lerp(0.5f, 0.3f, t);
+            speedModifier = Mathf.Lerp(0.3f, 0.15f, t);
         }
         else
         {
             float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
-            speedModifier = Mathf.Lerp(0.3f, 0f, t);
+            speedModifier = Mathf.Lerp(0.15f, 0f, t);
         }
 
         currentknockBackSpeed = initialKnockBackSpeed * speedModifier;
@@ -1195,7 +1217,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             CharacterBehaviour otherCharacter = collider.GetComponentInParent<CharacterBehaviour>();
 
             // 자신이 아니고, 상대가 KnockBackSmash 상태가 아닐 경우만 처리
-            if (otherCharacter != null && otherCharacter != this &&
+            if (otherCharacter != null && otherCharacter != this && (otherCharacter.teamType is not TeamType.Player && teamType is not TeamType.Player) &&
                 (otherCharacter.currentState != CharacterState.KnockBackSmash || otherCharacter.currentState != CharacterState.KnockBack) &&
                 knockBackTimer > ResourceHolder.Instance.gameVariables.collideAvoidTime)
             {
@@ -1338,6 +1360,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (AnimatorHasLayer(animator, 1))
                 {
                     animator.SetLayerWeight(1, 0);
+                    animator.SetFloat("X", 0);
+                    animator.SetFloat("Z", 0);
                 }
                 hitTargets.Clear();
 
@@ -1455,7 +1479,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [Command]
     private void HandleEvolution(int index)
     {
-        // 현재 캐릭터의 EvolutionInfos 확인
+        // 1. 진화 가능 여부 검증
         if (characterData == null || characterData.EvolutionInfos.Count <= index)
         {
             Debug.LogWarning($"진화 데이터가 없거나 {index}번 데이터가 존재하지 않습니다.");
@@ -1469,21 +1493,21 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             return;
         }
 
-        // 로컬 플레이어 확인
+        // 2. 로컬 플레이어 확인
         if (!isLocalPlayer)
         {
             Debug.LogWarning("HandleEvolution 호출자는 로컬 플레이어가 아닙니다.");
             return;
         }
 
-        // 기존 캐릭터 정보 저장
+        // 3. 기존 캐릭터의 정보 저장
         Vector3 currentPosition = transform.position;
         Quaternion currentRotation = transform.rotation;
 
-        // EntityContainer에서 기존 캐릭터 제거
-        EntityContainer.Instance.UnregisterCharacter(this);
+        // 4. 기존 캐릭터의 네트워크 연결 정보 저장
+        var oldConnection = connectionToClient;
 
-        // 새로운 캐릭터 생성
+        // 5. 새 캐릭터 생성
         var nextCharacterPrefab = evolutionInfo.NextCharacter.gameObject;
         var newCharacterInstance = Instantiate(nextCharacterPrefab, currentPosition, currentRotation);
         var newCharacterBehaviour = newCharacterInstance.GetComponent<CharacterBehaviour>();
@@ -1494,17 +1518,22 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             return;
         }
 
-        // 새로운 캐릭터를 EntityContainer에 등록
+        // 6. EntityContainer에서 현재 캐릭터 제거 및 새 캐릭터 등록
+        EntityContainer.Instance.UnregisterCharacter(this);
         EntityContainer.Instance.RegisterCharacter(newCharacterBehaviour);
 
-        // 네트워크 오브젝트로 스폰
+        // 7. 네트워크 상에서 새 객체를 먼저 생성
         NetworkServer.Spawn(newCharacterInstance);
 
-        // 새로운 캐릭터를 로컬 플레이어로 전환
+        // 8. 기존 객체 제거 전에 소유권 변경
+        NetworkServer.ReplacePlayerForConnection(oldConnection, newCharacterInstance);
+
+        // 9. 로컬 플레이어 전환
         newCharacterBehaviour.SetLocalPlayer();
 
-        // 기존 캐릭터 삭제
-        NetworkServer.Destroy(gameObject);
+        // 10. 기존 객체 제거 (소유권 변경 이후)
+        hpStaminaBarController.Despawn(0f);
+        StartCoroutine(DelayedDestroy());
 
         Debug.Log($"로컬 플레이어가 {newCharacterBehaviour.name}(으)로 진화했습니다.");
     }
@@ -1518,6 +1547,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             Camera.main.GetComponent<CameraController>().SetTarget(transform);
         }
+    }
+
+    private IEnumerator DelayedDestroy()
+    {
+        yield return new WaitForEndOfFrame();
+        NetworkServer.Destroy(gameObject);
     }
 
     /// <summary>

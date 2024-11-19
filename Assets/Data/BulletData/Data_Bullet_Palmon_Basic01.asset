@@ -28,10 +28,10 @@ MonoBehaviour:
   HitIdList:
   - HitId: 0
     HitDamage: 0.3
-    HitStopFrame: 7
-    HitStunFrame: 0
+    HitStopFrame: 10
+    HitStunFrame: 30
     KnockbackPower: 10
-    hitType: 2
+    HitType: 1
     HitApplyOwnerResource: 1
     ResourceKey: 1
     Value: 1

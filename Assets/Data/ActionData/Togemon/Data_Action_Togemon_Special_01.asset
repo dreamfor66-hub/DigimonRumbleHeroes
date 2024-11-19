@@ -1,0 +1,374 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Togemon_Special_01
+  m_EditorClassIdentifier: 
+  ActionFrame: 120
+  AnimationKey: Special01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.7
+      outSlope: 0.70000005
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 10.38499
+      value: 7.269493
+      inSlope: 0.70000005
+      outSlope: 0.22383226
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 20.107052
+      value: 9.445604
+      inSlope: 0.22383226
+      outSlope: 0.5199089
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 60.838364
+      value: 30.622177
+      inSlope: 0.5199089
+      outSlope: 0.14176106
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 76.132935
+      value: 32.79035
+      inSlope: 0.14176106
+      outSlope: 0.32837945
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 93.67035
+      value: 38.54928
+      inSlope: 0.32837945
+      outSlope: 0.6627783
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 120
+      value: 56
+      inSlope: 0.6627783
+      outSlope: 0.7
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList:
+  - StartFrame: 0
+    EndFrame: 10
+    StartValue: {x: 0, y: 0}
+    EndValue: {x: 0, y: 2}
+  SpecialMovementList:
+  - StartFrame: 0
+    EndFrame: 15
+    MoveType: 1
+    CanRotate: 0
+    Value: 5
+  - StartFrame: 15
+    EndFrame: 30
+    MoveType: 1
+    CanRotate: 0
+    Value: 10
+  - StartFrame: 0
+    EndFrame: 30
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.7
+  - StartFrame: 30
+    EndFrame: 50
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.2
+  HitboxList: []
+  HitIdList: []
+  ActionSpawnBulletList:
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 30
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 60
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 90
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 120
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 150
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 180
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 210
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 240
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 270
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 300
+  - SpawnFrame: 30
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 330
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 30
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 60
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 90
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 120
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 150
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 180
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 210
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 240
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 270
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 300
+  - SpawnFrame: 40
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 330
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 30
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 60
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 90
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 120
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 150
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 180
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 210
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 240
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 270
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 300
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 564eefb57bf8c04419620fade7cea038,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Anchor: 0
+    Pivot: 0
+    Angle: 330
+  ActionSpawnVfxList: []
+  Conditions: []
+  Resources: []
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 0
+    entityName: Kiwi
+    characterName: Kiwi

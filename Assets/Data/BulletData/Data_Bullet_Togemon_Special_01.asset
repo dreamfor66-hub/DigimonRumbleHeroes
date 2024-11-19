@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
+  m_Name: Data_Bullet_Togemon_Special_01
+  m_EditorClassIdentifier: 
+  LiftTime: 3
+  DespawnBy: 26
+  BulletRadius: 0.05
+  ReflectOnWall: 0
+  MoveType: 0
+  Speed: 15
+  HitboxList:
+  - StartFrame: 0
+    EndFrame: 180
+    Offset: {x: 0, y: 0}
+    Radius: 0.5
+    HitId: 0
+    HitGroup: 0
+  HitIdList:
+  - HitId: 0
+    HitDamage: 0.3
+    HitStopFrame: 2
+    HitStunFrame: 30
+    KnockbackPower: 1
+    HitType: 1
+    HitApplyOwnerResource: 1
+    ResourceKey: 1
+    Value: 1
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0.17482257, y: 0, z: 0.98459995}
+  BulletSpawnBulletList: []
+  BulletSpawnVfxList: []

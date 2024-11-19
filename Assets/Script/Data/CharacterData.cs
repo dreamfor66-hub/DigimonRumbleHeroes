@@ -9,35 +9,21 @@ public class CharacterData : ScriptableObject
 {
     [Title("이름")] 
     [HideLabel]
-    [VerticalGroup("Character/RightSide")] // B 구역
     public string characterName;
-
-    [Title("컬러")]
-    [HideLabel]
-    [EnumToggleButtons]
-    [VerticalGroup("Character/RightSide")]
-    public CharacterItemColor characterItemColor;
 
     [Title("진화단계")]
     [HideLabel]
     [EnumToggleButtons]
-    [VerticalGroup("Character/RightSide")]
     public CharacterItemForm characterItemForm;
 
     [Title("특성")]
     [HideLabel]
-    [VerticalGroup("Character/RightSide")]
-    [HorizontalGroup("Character/RightSide/Traits")]
     public CharacterItemTrait characterItemTrait1;
 
     [HideLabel]
-    [VerticalGroup("Character/RightSide")]
-    [HorizontalGroup("Character/RightSide/Traits")]
     public CharacterItemTrait characterItemTrait2;
 
     [HideLabel]
-    [VerticalGroup("Character/RightSide")]
-    [HorizontalGroup("Character/RightSide/Traits")]
     public CharacterItemTrait characterItemTrait3;
 
 

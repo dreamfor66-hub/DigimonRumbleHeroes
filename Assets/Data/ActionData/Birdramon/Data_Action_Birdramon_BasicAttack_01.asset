@@ -1,0 +1,124 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Birdramon_BasicAttack_01
+  m_EditorClassIdentifier: 
+  ActionFrame: 85
+  AnimationKey: Basic01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.36666667
+      outSlope: 2.6528044
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.9183898
+      value: 5.0891128
+      inSlope: 2.6528044
+      outSlope: 0.3525625
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 5.367961
+      value: 6.305302
+      inSlope: 0.3525625
+      outSlope: 2.8234222
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 10.103001
+      value: 19.674318
+      inSlope: 2.8234222
+      outSlope: 0.9248685
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 12.970264
+      value: 22.32616
+      inSlope: 0.9248685
+      outSlope: 1.416049
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 19.916647
+      value: 32.16258
+      inSlope: 1.416049
+      outSlope: 0.40873843
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 44.082054
+      value: 42.03991
+      inSlope: 0.40873843
+      outSlope: 0.5198389
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 85
+      value: 63.31065
+      inSlope: 0.5198389
+      outSlope: 0.24206856
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList: []
+  SpecialMovementList:
+  - StartFrame: 0
+    EndFrame: 100
+    MoveType: 1
+    CanRotate: 0
+    Value: 5
+  - StartFrame: 0
+    EndFrame: 100
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.5
+  HitboxList: []
+  HitIdList: []
+  ActionSpawnBulletList:
+  - SpawnFrame: 20
+    BulletPrefab: {fileID: 5111934926271759165, guid: 5b18152df67d72a4094fa79b5d43f108,
+      type: 3}
+    Offset: {x: 0, y: 1}
+    Anchor: 0
+    Pivot: 1
+    Angle: 0
+  ActionSpawnVfxList: []
+  Conditions: []
+  Resources: []
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 0
+    entityName: Kiwi
+    characterName: Kiwi

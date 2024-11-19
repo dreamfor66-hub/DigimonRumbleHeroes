@@ -182,7 +182,7 @@ private void Update()
         if (hit == null) return;
         if (hit.Victim == null) return;
 
-        //if (isServer)
+        if (isServer)
         {
             owner.OnHit(hit);
             owner.RpcOnHit(hit);

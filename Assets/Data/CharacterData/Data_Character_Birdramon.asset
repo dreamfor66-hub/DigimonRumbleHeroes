@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
+  m_Name: Data_Character_Birdramon
+  m_EditorClassIdentifier: 
+  characterName: "\uBC84\uB4DC\uB77C\uBAAC"
+  characterItemForm: 3
+  characterItemTrait1: 5
+  characterItemTrait2: 10
+  characterItemTrait3: 101
+  baseHP: 10
+  baseATK: 5
+  moveSpeed: 5
+  defaultBasicAttackCycle: 1.25
+  colliderRadius: 0.45
+  mass: 10
+  drag: 10
+  attackRange: 7
+  Hurtboxes:
+  - Offset: {x: 0, y: 0}
+    Radius: 0.5
+  rigOffset: {x: 0, y: 0.25, z: 0}
+  weightChangeSpeed: 1
+  ActionTable:
+  - ActionKey: 10
+    ActionData: {fileID: 11400000, guid: 6d705ea2af5f79340a75364510850c23, type: 2}
+  Resources:
+  - Key: 10
+    Min: 0
+    Max: 10
+    Init: 0
+    ResetBy: 0
+  Buffs: []
+  EvolutionInfos: []
+  targetingWeightThreshold: 0.224
+  shortDistance: 7
+  wideAngle: 150
+  narrowAngle: 30
+  longDistance: 10
