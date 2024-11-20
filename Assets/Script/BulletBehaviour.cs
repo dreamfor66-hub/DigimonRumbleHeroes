@@ -162,6 +162,7 @@ private void Update()
                         hit.Victim = target;
                         hit.Attacker = owner;
                         hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;
+                        hit.HitDamage *= owner.characterData.baseATK;
                         HandleHit(hit);
 
                         if (!hitTargets.ContainsKey(target))

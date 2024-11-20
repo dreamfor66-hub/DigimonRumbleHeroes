@@ -20,62 +20,53 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.62352943
-      outSlope: 0.7104005
+      inSlope: 0.6625
+      outSlope: 0.6625
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 6.5548644
-      value: 4.656579
-      inSlope: 0.7104005
-      outSlope: 0.3001631
+      time: 5.415726
+      value: 3.5879188
+      inSlope: 0.6625
+      outSlope: 0.23237738
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 14.708992
-      value: 7.104147
-      inSlope: 0.3001631
-      outSlope: 1.8825084
+      time: 19.873674
+      value: 6.947619
+      inSlope: 0.23237738
+      outSlope: 2.0788224
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 19.985228
-      value: 17.036705
-      inSlope: 1.8825084
-      outSlope: 1.2324183
+      time: 24.856228
+      value: 17.305462
+      inSlope: 2.0788224
+      outSlope: 0.4756726
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 41.61128
-      value: 43.689045
-      inSlope: 1.2324183
-      outSlope: 1.8128906
-      tangentMode: 69
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 57.501827
-      value: 72.49687
-      inSlope: 1.8128906
-      outSlope: 0.82242805
+      time: 37.50307
+      value: 23.321218
+      inSlope: 0.4756726
+      outSlope: 0.69837475
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 80
-      value: 91
-      inSlope: 0.82242805
-      outSlope: 0.62352943
+      value: 53
+      inSlope: 0.69837475
+      outSlope: 0.6625
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
@@ -92,6 +83,10 @@ MonoBehaviour:
     EndFrame: 21
     StartValue: {x: 0, y: 3}
     EndValue: {x: 0, y: 3}
+  - StartFrame: 21
+    EndFrame: 25
+    StartValue: {x: 0, y: 5}
+    EndValue: {x: 0, y: 20}
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 15
@@ -107,154 +102,41 @@ MonoBehaviour:
     EndFrame: 20
     MoveType: 0
     CanRotate: 0
-    Value: 0.3
+    Value: 0.5
   - StartFrame: 20
-    EndFrame: 60
-    MoveType: 0
-    CanRotate: 0
-    Value: 0.1
-  - StartFrame: 65
-    EndFrame: 100
+    EndFrame: 80
     MoveType: 0
     CanRotate: 0
     Value: 0.3
   HitboxList:
-  - StartFrame: 20
-    EndFrame: 25
+  - StartFrame: 26
+    EndFrame: 29
     Offset: {x: 0, y: 0}
     Radius: 0.5
     HitId: 0
     HitGroup: 0
-  - StartFrame: 20
-    EndFrame: 25
+  - StartFrame: 26
+    EndFrame: 29
     Offset: {x: 0, y: 0.5}
     Radius: 0.5
     HitId: 0
     HitGroup: 0
-  - StartFrame: 20
-    EndFrame: 25
-    Offset: {x: 0, y: 0.65}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 0
-  - StartFrame: 30
-    EndFrame: 35
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 1
-  - StartFrame: 30
-    EndFrame: 35
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 1
-  - StartFrame: 30
-    EndFrame: 35
-    Offset: {x: 0, y: 0.65}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 1
-  - StartFrame: 35
-    EndFrame: 40
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 2
-  - StartFrame: 35
-    EndFrame: 40
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 2
-  - StartFrame: 35
-    EndFrame: 40
-    Offset: {x: 0, y: 0.7}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 2
-  - StartFrame: 40
-    EndFrame: 45
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 3
-  - StartFrame: 40
-    EndFrame: 45
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 3
-  - StartFrame: 40
-    EndFrame: 45
-    Offset: {x: 0, y: 0.75}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 3
-  - StartFrame: 45
-    EndFrame: 50
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 4
-  - StartFrame: 45
-    EndFrame: 50
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 4
-  - StartFrame: 45
-    EndFrame: 50
-    Offset: {x: 0, y: 1}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 4
-  - StartFrame: 50
-    EndFrame: 55
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 5
-  - StartFrame: 50
-    EndFrame: 55
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 5
-  - StartFrame: 50
-    EndFrame: 55
+  - StartFrame: 26
+    EndFrame: 29
     Offset: {x: 0, y: 1.2}
     Radius: 0.5
     HitId: 0
-    HitGroup: 5
-  - StartFrame: 55
-    EndFrame: 60
-    Offset: {x: 0, y: 0}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 6
-  - StartFrame: 55
-    EndFrame: 60
-    Offset: {x: 0, y: 0.5}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 6
-  - StartFrame: 55
-    EndFrame: 60
-    Offset: {x: 0, y: 1.2}
-    Radius: 0.5
-    HitId: 0
-    HitGroup: 6
+    HitGroup: 0
   HitIdList:
   - HitId: 0
     HitDamage: 0.2
-    HitStopFrame: 3
+    HitStopFrame: 20
     HitStunFrame: 30
     KnockbackPower: 2
     HitType: 1
-    HitApplyOwnerResource: 0
-    ResourceKey: 0
-    Value: 0
+    HitApplyOwnerResource: 1
+    ResourceKey: 1
+    Value: 1
     Attacker: {fileID: 0}
     Victim: {fileID: 0}
     Direction: {x: 0, y: 0, z: 0}
@@ -262,12 +144,12 @@ MonoBehaviour:
   ActionSpawnVfxList: []
   Conditions:
   - Type: 0
-    ResourceKey: 10
-    Count: 0
+    ResourceKey: 11
+    Count: 1
   Resources:
   - Frame: 1
-    ResourceKey: 10
-    Count: 1
+    ResourceKey: 11
+    Count: -1
   canLookInAction: 0
   AutoCorrection:
     correctionType: 0

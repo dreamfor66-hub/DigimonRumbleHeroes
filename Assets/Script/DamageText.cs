@@ -1,10 +1,11 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DamageText : MonoBehaviour
 {
-    [SerializeField] private Text damageText;
+    [SerializeField] private TextMeshProUGUI damageText;
     [SerializeField] private float lifetime = 1f;
 
     private Action onDespawn;

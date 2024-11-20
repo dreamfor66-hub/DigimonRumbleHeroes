@@ -12,19 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_TestDummy
   m_EditorClassIdentifier: 
-  characterSprite: {fileID: 0}
   characterName: "\uD14C\uC2A4\uD2B8\uB354\uBBF8"
-  characterItemColor: 0
   characterItemForm: 0
   characterItemTrait1: 5
   characterItemTrait2: 0
   characterItemTrait3: 0
-  baseHP: 10
-  baseATK: 5
+  baseHP: 500
+  baseATK: 100
   moveSpeed: 2
   defaultBasicAttackCycle: 1.5
-  hpPerLevel: 1
-  atkPerLevel: 1
   colliderRadius: 0.5
   mass: 10
   drag: 10
@@ -43,6 +39,8 @@ MonoBehaviour:
     Max: 10
     Init: 0
     ResetBy: 0
+  Buffs: []
+  EvolutionInfos: []
   targetingWeightThreshold: 0.5
   shortDistance: 5
   wideAngle: 90

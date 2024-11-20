@@ -53,7 +53,7 @@ MonoBehaviour:
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:
-  - SpawnFrame: 40
+  - SpawnFrame: 35
     BulletPrefab: {fileID: 5111934926271759165, guid: a013badf01c8d5346be1f19b3704baf3,
       type: 3}
     Offset: {x: 0, y: 1}

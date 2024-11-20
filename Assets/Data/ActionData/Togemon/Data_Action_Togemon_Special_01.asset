@@ -365,8 +365,14 @@ MonoBehaviour:
     Pivot: 0
     Angle: 330
   ActionSpawnVfxList: []
-  Conditions: []
-  Resources: []
+  Conditions:
+  - Type: 0
+    ResourceKey: 1
+    Count: 10
+  Resources:
+  - Frame: 1
+    ResourceKey: 1
+    Count: -10
   canLookInAction: 0
   AutoCorrection:
     correctionType: 0

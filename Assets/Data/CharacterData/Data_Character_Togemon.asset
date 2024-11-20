@@ -17,28 +17,35 @@ MonoBehaviour:
   characterItemTrait1: 5
   characterItemTrait2: 10
   characterItemTrait3: 102
-  baseHP: 10
-  baseATK: 5
+  baseHP: 500
+  baseATK: 100
   moveSpeed: 5
   defaultBasicAttackCycle: 1.25
-  colliderRadius: 0.45
+  colliderRadius: 0.65
   mass: 10
   drag: 10
   attackRange: 2.3
   Hurtboxes:
   - Offset: {x: 0, y: 0}
-    Radius: 0.5
+    Radius: 0.7
   rigOffset: {x: 0, y: 0.5, z: 0}
   weightChangeSpeed: 1
   ActionTable:
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: 007b69fc1d1e8af4c926eff164f8b55b, type: 2}
   - ActionKey: 10
+    ActionData: {fileID: 11400000, guid: a12a790042769b143a5390e3edc2c36c, type: 2}
+  - ActionKey: 10
     ActionData: {fileID: 11400000, guid: 08202c6752daa9d4e8d110b892aa72eb, type: 2}
   - ActionKey: 20
     ActionData: {fileID: 11400000, guid: 4229bddcb18b76d40bbf5440326c41ea, type: 2}
   Resources:
   - Key: 10
+    Min: 0
+    Max: 1
+    Init: 1
+    ResetBy: 0
+  - Key: 11
     Min: 0
     Max: 1
     Init: 1

@@ -12,19 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
   m_Name: Data_Character_Gaomon
   m_EditorClassIdentifier: 
-  characterSprite: {fileID: 21300000, guid: a4fdeb474e4277e4281e3e17d3203f54, type: 3}
   characterName: "\uAC00\uC624\uBAAC"
-  characterItemColor: 1
   characterItemForm: 2
   characterItemTrait1: 2
   characterItemTrait2: 10
   characterItemTrait3: 100
-  baseHP: 10
-  baseATK: 5
+  baseHP: 500
+  baseATK: 100
   moveSpeed: 5
   defaultBasicAttackCycle: 1.5
-  hpPerLevel: 1
-  atkPerLevel: 1
   colliderRadius: 0.4
   mass: 10
   drag: 10
@@ -43,6 +39,7 @@ MonoBehaviour:
     ActionData: {fileID: 11400000, guid: 196b9f4195f9f1e4b9eaa86a0a82468f, type: 2}
   Resources: []
   Buffs: []
+  EvolutionInfos: []
   targetingWeightThreshold: 0.273
   shortDistance: 5
   wideAngle: 110

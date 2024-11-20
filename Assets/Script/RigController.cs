@@ -71,6 +71,12 @@ public class RigController : MonoBehaviour
             targetWeight = 0f;
             targetTransform.localPosition = Vector3.Lerp(targetTransform.localPosition, new Vector3(0, 0, 3) + trackingOffset, weightChangeSpeed * Time.deltaTime);
         }
+        else if (behaviour.OnEvolution)
+        {
+            targetWeight = 0f;
+            targetTracking = false;
+            targetTransform.localPosition = Vector3.Lerp(targetTransform.localPosition, new Vector3(0, 0, 3) + trackingOffset, 10 * Time.deltaTime);
+        }
         else
         {
             if (isInAction)

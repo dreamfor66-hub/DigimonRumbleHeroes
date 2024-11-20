@@ -183,14 +183,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (!isServer && !isLocalPlayer)
             return; // 클라이언트에서만 동작이 실행되지 않도록 설정
 
+        if (OnEvolution)
+            return;
+
         if (IsHitStopped)
         {
             hitStopTimer -= Time.deltaTime;
+
             if (hitStopTimer <= 0f)
             {
                 ResumeAfterHitStop();
             }
-
             // HitStop 중인 상태에서 Manual VFX를 멈추도록 설정
             foreach (var vfx in activeManualVfxList)
             {
@@ -441,7 +444,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
                                 hit.Attacker = this;
                                 hit.Victim = target;
-                                hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;
+                                hit.Direction = (target.transform.position - transform.position).normalized;
+                                hit.HitDamage *= characterData.baseATK;
                                 HandleHit(hit);
                                 RpcHandleHit(hit);
                             }
@@ -636,8 +640,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         hitTargets.Clear();
         ChangeStatePrev(CharacterState.Idle);
+        if (AnimatorHasLayer(animator, 1))
+            animator.SetLayerWeight(1, 0);
         //currentFrame = 0;
-        foreach(var vfx in activeManualVfxList)
+        foreach (var vfx in activeManualVfxList)
         {
             vfx.OnDespawn();
         }
@@ -842,7 +848,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         OnAttacked(hit.Attacker);
 
         // 데미지 텍스트 표시
-        if (ResourceHolder.Instance != null && ResourceHolder.Instance.gameVariables != null)
+        if (ResourceHolder.Instance != null && ResourceHolder.Instance.gameVariables != null && hit.HitDamage > 0)
         {
             DamageTextManager.Instance.ShowDamageText(transform.position, (int)hit.HitDamage);
         }
@@ -860,6 +866,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 return;
             }
+
+            if (currentState == CharacterState.Action)
+                EndAction();
 
             switch (hit.HitType)
             {
@@ -1483,6 +1492,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     ///
     ///
     ///
+    public bool OnEvolution;
+
     [Command]
     private void HandleEvolution(int index)
     {
@@ -1506,15 +1517,32 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             Debug.LogWarning("HandleEvolution 호출자는 로컬 플레이어가 아닙니다.");
             return;
         }
+        if (AnimatorHasLayer(animator, 1))
+        {
+            animator.SetLayerWeight(1, 0);
+            animator.SetFloat("X", 0);
+            animator.SetFloat("Z", 0);
+        }
+        // 3. 진화 전 애니메이션 재생 및 딜레이
+        PlayEvolutionStartAnimation();
+        OnEvolution = true;
 
-        // 3. 기존 캐릭터의 정보 저장
+        StartCoroutine(HandleEvolutionCoroutine(index, evolutionInfo));
+    }
+
+    private IEnumerator HandleEvolutionCoroutine(int index, EvolutionInfo evolutionInfo)
+    {
+        // 진화 전 애니메이션 대기 (1.5초)
+        yield return new WaitForSeconds(1.5f);
+
+        // 4. 기존 캐릭터의 정보 저장
         Vector3 currentPosition = transform.position;
         Quaternion currentRotation = transform.rotation;
 
-        // 4. 기존 캐릭터의 네트워크 연결 정보 저장
+        // 5. 기존 캐릭터의 네트워크 연결 정보 저장
         var oldConnection = connectionToClient;
 
-        // 5. 새 캐릭터 생성
+        // 6. 새 캐릭터 생성
         var nextCharacterPrefab = evolutionInfo.NextCharacter.gameObject;
         var newCharacterInstance = Instantiate(nextCharacterPrefab, currentPosition, currentRotation);
         var newCharacterBehaviour = newCharacterInstance.GetComponent<CharacterBehaviour>();
@@ -1522,29 +1550,77 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (newCharacterBehaviour == null)
         {
             Debug.LogError("새 캐릭터 프리팹에 CharacterBehaviour가 없습니다.");
-            return;
+            OnEvolution = false; // 상태 해제
+            yield break;
         }
 
-        // 6. EntityContainer에서 현재 캐릭터 제거 및 새 캐릭터 등록
+        // 7. EntityContainer에서 현재 캐릭터 제거 및 새 캐릭터 등록
         EntityContainer.Instance.UnregisterCharacter(this);
         EntityContainer.Instance.RegisterCharacter(newCharacterBehaviour);
 
-        // 7. 네트워크 상에서 새 객체를 먼저 생성
+        // 8. 네트워크 상에서 새 객체를 먼저 생성
         NetworkServer.Spawn(newCharacterInstance);
 
-        // 8. 기존 객체 제거 전에 소유권 변경
+        // 9. 기존 객체 제거 전에 소유권 변경
         NetworkServer.ReplacePlayerForConnection(oldConnection, newCharacterInstance);
-
-        // 9. 로컬 플레이어 전환
+        // 새로운 캐릭터에서 로컬 플레이어 처리
         newCharacterBehaviour.SetLocalPlayer();
 
-        // 10. 기존 객체 제거 (소유권 변경 이후)
+        // 새로운 캐릭터에서 진화 완료 애니메이션 및 초기화 처리 시작
+        newCharacterBehaviour.StartCoroutine(newCharacterBehaviour.HandleEvolutionComplete());
+
+        // 10. 기존 객체 제거
         hpStaminaBarController.Despawn(0f);
         StartCoroutine(DelayedDestroy());
+
 
         Debug.Log($"로컬 플레이어가 {newCharacterBehaviour.name}(으)로 진화했습니다.");
     }
 
+    private IEnumerator DelayedDestroy()
+    {
+        yield return new WaitForEndOfFrame();
+        NetworkServer.Destroy(gameObject);
+    }
+
+    private void PlayEvolutionStartAnimation()
+    {
+        if (animator != null)
+        {
+            animator.Play("EvolutionStart");
+            Debug.Log("진화 시작 애니메이션 재생");
+        }
+        else
+        {
+            Debug.LogWarning("Animator가 존재하지 않아 진화 시작 애니메이션을 재생할 수 없습니다.");
+        }
+    }
+    public IEnumerator HandleEvolutionComplete()
+    {
+        yield return new WaitForEndOfFrame();
+        OnEvolution = true;
+        PlayEvolutionCompleteAnimation();
+
+        // 진화 완료 대기 (0.5초)
+        yield return new WaitForSeconds(1f);
+
+        // 진화 완료
+        OnEvolution = false;
+        Debug.Log($"진화 완료: {name}");
+    }
+
+    private void PlayEvolutionCompleteAnimation()
+    {
+        if (animator != null)
+        {
+            animator.Play("EvolutionComplete");
+            Debug.Log("진화 완료 애니메이션 재생");
+        }
+        else
+        {
+            Debug.LogWarning("Animator가 존재하지 않아 진화 완료 애니메이션을 재생할 수 없습니다.");
+        }
+    }
     [Client]
     private void SetLocalPlayer()
     {
@@ -1556,11 +1632,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
     }
 
-    private IEnumerator DelayedDestroy()
-    {
-        yield return new WaitForEndOfFrame();
-        NetworkServer.Destroy(gameObject);
-    }
 
     /// <summary>
     /// 오토코렉션

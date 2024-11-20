@@ -12,7 +12,19 @@ public class DamageTextManager : SingletonBehaviour<DamageTextManager>
     {
         if (uiCanvas == null)
         {
-            uiCanvas = FindObjectOfType<Canvas>();
+            GameObject canvasObject = GameObject.FindWithTag("MainCanvas");
+            if (canvasObject != null)
+            {
+                uiCanvas = canvasObject.GetComponent<Canvas>();
+                if (uiCanvas == null)
+                {
+                    Debug.LogError("태그가 'MainCanvas'인 오브젝트에 Canvas 컴포넌트가 없습니다.");
+                }
+            }
+            else
+            {
+                Debug.LogError("태그가 'MainCanvas'인 Canvas를 찾을 수 없습니다.");
+            }
         }
     }
 
@@ -65,6 +77,9 @@ public class DamageTextManager : SingletonBehaviour<DamageTextManager>
 
         // Convert world position to UI position
         Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+        float offsetX = UnityEngine.Random.Range(-30f, 30f); // X축 오프셋 범위
+        float offsetY = UnityEngine.Random.Range(-20f, 20f); // Y축 오프셋 범위
+        screenPosition += new Vector3(offsetX, offsetY, 0);
         instance.transform.position = screenPosition;
 
         // Update text
