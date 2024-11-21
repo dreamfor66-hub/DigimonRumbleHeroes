@@ -24,7 +24,7 @@ MonoBehaviour:
   colliderRadius: 0.45
   mass: 10
   drag: 10
-  attackRange: 6
+  attackRange: 5
   Hurtboxes:
   - Offset: {x: 0, y: 0}
     Radius: 0.5

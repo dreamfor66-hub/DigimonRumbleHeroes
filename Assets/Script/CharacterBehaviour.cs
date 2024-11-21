@@ -227,33 +227,25 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Keypad1))
         {
-            if (isServer)
+            if (isLocalPlayer)
             {
-                HandleEvolution(0);
-                RpcHandleEvolution(0);
+                CmdHandleEvolution(0);
             }
-            else
-                CmdHandleEvolution(0); // 첫 번째 EvolutionInfo
+                 // 첫 번째 EvolutionInfo
         }
         else if (Input.GetKeyDown(KeyCode.Keypad2))
         {
-            if (isServer)
+            if (isLocalPlayer)
             {
-                HandleEvolution(1);
-                RpcHandleEvolution(1);
+                CmdHandleEvolution(1);
             }
-            else
-                CmdHandleEvolution(1); // 첫 번째 EvolutionInfo
         }
         else if (Input.GetKeyDown(KeyCode.Keypad3))
         {
-            if (isServer)
+            if (isLocalPlayer)
             {
-                HandleEvolution(2);
-                RpcHandleEvolution(2);
+                CmdHandleEvolution(2);
             }
-            else
-                CmdHandleEvolution(2); // 첫 번째 EvolutionInfo
         }
 
         if (AnimatorHasParameter(animator, "X"))
@@ -1517,32 +1509,44 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [Command]
     private void CmdHandleEvolution(int index)
     {
-        RpcHandleEvolution(index);
-        HandleEvolution(index); // 서버에서도 실행
+        HandleEvolution(index); // Host에서 실행
+        RpcHandleEvolution(connectionToClient.connectionId, index); // 클라이언트에 동기화
     }
 
     [ClientRpc]
-    private void RpcHandleEvolution(int index)
+    private void RpcHandleEvolution(int connectionId, int index)
     {
-        if (!isServer)
-            HandleEvolution(index); // 클라이언트에서도 실행
+        if (connectionToClient == null || connectionToClient.connectionId != connectionId)
+        {
+            Debug.LogWarning("이 RPC는 다른 클라이언트를 대상으로 하므로 무시합니다.");
+            return;
+        }
+
+        if (characterData == null || characterData.EvolutionInfos == null || characterData.EvolutionInfos.Count <= index)
+        {
+            Debug.LogError($"클라이언트에서 Evolution 데이터가 유효하지 않습니다. Index: {index}");
+            return;
+        }
+
+        HandleEvolution(index);
     }
 
     private void HandleEvolution(int index)
     {
-        // 1. 진화 가능 여부 검증
         if (characterData == null || characterData.EvolutionInfos.Count <= index)
         {
-            Debug.LogWarning($"진화 데이터가 없거나 {index}번 데이터가 존재하지 않습니다.");
+            Debug.LogWarning($"진화 데이터가 유효하지 않음. Index: {index}");
             return;
         }
 
         var evolutionInfo = characterData.EvolutionInfos[index];
-        if (evolutionInfo.NextCharacter == null)
+        if (evolutionInfo?.NextCharacter == null)
         {
-            Debug.LogWarning($"진화 대상 캐릭터가 설정되지 않았습니다. Index: {index}");
+            Debug.LogError($"EvolutionInfo 또는 NextCharacter가 null입니다. Index: {index}");
             return;
         }
+
+        if (OnEvolution) return; // 중복 처리 방지
 
         if (AnimatorHasLayer(animator, 1))
         {
@@ -1552,9 +1556,23 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
         // 3. 진화 전 애니메이션 재생 및 딜레이
         PlayEvolutionStartAnimation();
+        if (isClient)
+            RpcPlayEvolutionStart(connectionToClient.connectionId);
         OnEvolution = true;
 
         StartCoroutine(HandleEvolutionCoroutine(index, evolutionInfo));
+    }
+
+    [ClientRpc]
+    private void RpcPlayEvolutionStart(int connectionId)
+    {
+        // 특정 클라이언트에서만 실행
+        if (connectionToClient == null || connectionToClient.connectionId != connectionId)
+        {
+            return;
+        }
+
+        PlayEvolutionStartAnimation();
     }
 
     private IEnumerator HandleEvolutionCoroutine(int index, EvolutionInfo evolutionInfo)
@@ -1569,7 +1587,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         // 5. 기존 캐릭터의 네트워크 연결 정보 저장
         var oldConnection = connectionToClient;
 
-        // 6. 새 캐릭터 생성
+        // 새 캐릭터 생성
         var nextCharacterPrefab = evolutionInfo.NextCharacter.gameObject;
         var newCharacterInstance = Instantiate(nextCharacterPrefab, currentPosition, currentRotation);
         var newCharacterBehaviour = newCharacterInstance.GetComponent<CharacterBehaviour>();
@@ -1581,23 +1599,25 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             yield break;
         }
 
-        // 7. EntityContainer에서 현재 캐릭터 제거 및 새 캐릭터 등록
+        // 네트워크 동기화
         EntityContainer.Instance.UnregisterCharacter(this);
         EntityContainer.Instance.RegisterCharacter(newCharacterBehaviour);
 
         // 8. 네트워크 상에서 새 객체를 먼저 생성
-        NetworkServer.Spawn(newCharacterInstance);
+        // 네트워크 객체 관리
+        if (isServer)
+        {
+            NetworkServer.Spawn(newCharacterInstance);
+            NetworkServer.ReplacePlayerForConnection(oldConnection, newCharacterInstance);
+        }
+        // HpStaminaBar 제거 동기화
+        RpcHandleHpStaminaBarDespawn();
 
-        // 9. 기존 객체 제거 전에 소유권 변경
-        NetworkServer.ReplacePlayerForConnection(oldConnection, newCharacterInstance);
-        // 새로운 캐릭터에서 로컬 플레이어 처리
+        // 새로운 캐릭터 초기화
         newCharacterBehaviour.SetLocalPlayer();
-
-        // 새로운 캐릭터에서 진화 완료 애니메이션 및 초기화 처리 시작
         newCharacterBehaviour.StartCoroutine(newCharacterBehaviour.HandleEvolutionComplete());
 
-        // 10. 기존 객체 제거
-        hpStaminaBarController.Despawn(0f);
+        // 기존 객체 제거
         StartCoroutine(DelayedDestroy());
 
 
@@ -1607,8 +1627,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private IEnumerator DelayedDestroy()
     {
         yield return new WaitForEndOfFrame();
-        NetworkServer.Destroy(gameObject);
+        if (isServer)
+        {
+            NetworkServer.Destroy(gameObject);
+        }
     }
+
 
     private void PlayEvolutionStartAnimation()
     {
@@ -1622,6 +1646,22 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             Debug.LogWarning("Animator가 존재하지 않아 진화 시작 애니메이션을 재생할 수 없습니다.");
         }
     }
+
+    [ClientRpc]
+    private void RpcHandleHpStaminaBarDespawn()
+    {
+        hpStaminaBarController?.Despawn(0f);
+    }
+
+
+    [ClientRpc]
+    public void RpcPlayEvolutionComplete()
+    {
+        if (!isLocalPlayer) return;
+
+        StartCoroutine(HandleEvolutionComplete());
+    }
+
     public IEnumerator HandleEvolutionComplete()
     {
         yield return new WaitForEndOfFrame();

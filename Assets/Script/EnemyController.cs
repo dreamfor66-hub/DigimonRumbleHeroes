@@ -71,6 +71,10 @@ public class EnemyController : CharacterBehaviour
 
     private void TransitionToNextState()
     {
+        if (target == null)
+        {
+            FindClosestPlayer();
+        }
         float distanceToPlayer = Vector3.Distance(transform.position, target.transform.position);
 
         for (int i = 0; i < botAIData.botAIStates.Count; i++)
@@ -109,11 +113,12 @@ public class EnemyController : CharacterBehaviour
 
         foreach (var player in EntityContainer.Instance.PlayerList)
         {
+            if (player == null || player.gameObject == null) continue;
             distanceToAnyPlayer = Vector3.Distance(transform.position, player.transform.position);
             awarePlayer = player;
         }
 
-        if (!isAware && distanceToAnyPlayer <= characterData.attackRange)
+        if (!isAware && distanceToAnyPlayer <= characterData.attackRange && awarePlayer != null)
         {
             target = awarePlayer;
             isAware = true;
