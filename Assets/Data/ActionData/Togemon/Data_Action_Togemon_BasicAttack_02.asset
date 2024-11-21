@@ -132,7 +132,7 @@ MonoBehaviour:
     HitDamage: 0.2
     HitStopFrame: 20
     HitStunFrame: 30
-    KnockbackPower: 2
+    KnockbackPower: 5
     HitType: 1
     HitApplyOwnerResource: 1
     ResourceKey: 1

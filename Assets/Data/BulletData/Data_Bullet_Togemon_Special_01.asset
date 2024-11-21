@@ -32,7 +32,7 @@ MonoBehaviour:
     HitStunFrame: 30
     KnockbackPower: 1
     HitType: 1
-    HitApplyOwnerResource: 1
+    HitApplyOwnerResource: 0
     ResourceKey: 1
     Value: 1
     Attacker: {fileID: 0}

@@ -21,52 +21,61 @@ MonoBehaviour:
       time: 0
       value: 0
       inSlope: 0.42
-      outSlope: 0.4344232
+      outSlope: 0.28871587
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 7.6473875
-      value: 3.3222027
-      inSlope: 0.4344232
-      outSlope: 1.3193914
+      time: 8.847384
+      value: 2.5543804
+      inSlope: 0.28871587
+      outSlope: 2.1370873
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 11.534846
-      value: 8.4512825
-      inSlope: 1.3193914
-      outSlope: 0.09941649
+      value: 8.297721
+      inSlope: 2.1370873
+      outSlope: 0.108462855
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 23.334782
-      value: 9.624391
-      inSlope: 0.09941649
-      outSlope: 4.471062
+      time: 20.93478
+      value: 9.317265
+      inSlope: 0.108462855
+      outSlope: 0.8264722
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 24.974535
-      value: 16.95583
-      inSlope: 4.471062
-      outSlope: 0.14466631
+      value: 12.65601
+      inSlope: 0.8264722
+      outSlope: 1.1640629
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 33.10926
-      value: 18.13265
-      inSlope: 0.14466631
-      outSlope: 0.35681096
+      value: 22.125341
+      inSlope: 1.1640629
+      outSlope: 1.1289065
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 37.035625
+      value: 26.55784
+      inSlope: 1.1289065
+      outSlope: 0.24525233
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
@@ -74,7 +83,7 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 100
       value: 42
-      inSlope: 0.35681096
+      inSlope: 0.24525233
       outSlope: 0.42
       tangentMode: 69
       weightedMode: 0
@@ -84,10 +93,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   MovementList:
-  - StartFrame: 0
+  - StartFrame: 5
     EndFrame: 10
-    StartValue: {x: 0, y: 5}
-    EndValue: {x: 0, y: 2}
+    StartValue: {x: 0, y: 0}
+    EndValue: {x: 0, y: 10}
   - StartFrame: 10
     EndFrame: 14
     StartValue: {x: 0, y: 5}
@@ -97,13 +106,18 @@ MonoBehaviour:
     StartValue: {x: 0, y: 2}
     EndValue: {x: 0, y: 8}
   SpecialMovementList:
-  - StartFrame: 0
-    EndFrame: 10
+  - StartFrame: 10
+    EndFrame: 20
     MoveType: 1
     CanRotate: 0
-    Value: 3
+    Value: 30
+  - StartFrame: 20
+    EndFrame: 28
+    MoveType: 1
+    CanRotate: 0
+    Value: 10
   - StartFrame: 45
-    EndFrame: 55
+    EndFrame: 60
     MoveType: 1
     CanRotate: 0
     Value: 7
@@ -133,45 +147,45 @@ MonoBehaviour:
     CanRotate: 0
     Value: 0.5
   HitboxList:
-  - StartFrame: 14
-    EndFrame: 16
+  - StartFrame: 13
+    EndFrame: 19
     Offset: {x: 0, y: 0}
     Radius: 0.5
     HitId: 0
     HitGroup: 0
-  - StartFrame: 14
-    EndFrame: 16
+  - StartFrame: 13
+    EndFrame: 19
     Offset: {x: 0, y: 0.5}
     Radius: 0.5
     HitId: 0
     HitGroup: 0
-  - StartFrame: 14
-    EndFrame: 16
+  - StartFrame: 13
+    EndFrame: 19
     Offset: {x: 0, y: 1}
     Radius: 0.5
     HitId: 0
     HitGroup: 0
-  - StartFrame: 25
-    EndFrame: 27
+  - StartFrame: 30
+    EndFrame: 32
     Offset: {x: 0, y: 0}
     Radius: 0.5
     HitId: 1
     HitGroup: 1
-  - StartFrame: 25
-    EndFrame: 27
+  - StartFrame: 30
+    EndFrame: 32
     Offset: {x: 0, y: 0.5}
     Radius: 0.5
     HitId: 1
     HitGroup: 1
-  - StartFrame: 25
-    EndFrame: 27
-    Offset: {x: 0, y: 0.7}
+  - StartFrame: 30
+    EndFrame: 32
+    Offset: {x: 0, y: 1}
     Radius: 0.5
     HitId: 1
     HitGroup: 1
   HitIdList:
   - HitId: 0
-    HitDamage: 0.2
+    HitDamage: 0.1
     HitStopFrame: 4
     HitStunFrame: 30
     KnockbackPower: 2
@@ -206,6 +220,6 @@ MonoBehaviour:
     Count: -1
   canLookInAction: 0
   AutoCorrection:
-    correctionType: 0
+    correctionType: 1
     entityName: Kiwi
     characterName: Kiwi
