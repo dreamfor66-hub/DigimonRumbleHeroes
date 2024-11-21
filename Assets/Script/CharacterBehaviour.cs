@@ -227,15 +227,33 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Keypad1))
         {
-            HandleEvolution(0); // 첫 번째 EvolutionInfo
+            if (isServer)
+            {
+                HandleEvolution(0);
+                RpcHandleEvolution(0);
+            }
+            else
+                CmdHandleEvolution(0); // 첫 번째 EvolutionInfo
         }
         else if (Input.GetKeyDown(KeyCode.Keypad2))
         {
-            HandleEvolution(1); // 두 번째 EvolutionInfo
+            if (isServer)
+            {
+                HandleEvolution(1);
+                RpcHandleEvolution(1);
+            }
+            else
+                CmdHandleEvolution(1); // 첫 번째 EvolutionInfo
         }
         else if (Input.GetKeyDown(KeyCode.Keypad3))
         {
-            HandleEvolution(2); // 두 번째 EvolutionInfo
+            if (isServer)
+            {
+                HandleEvolution(2);
+                RpcHandleEvolution(2);
+            }
+            else
+                CmdHandleEvolution(2); // 첫 번째 EvolutionInfo
         }
 
         if (AnimatorHasParameter(animator, "X"))
@@ -388,8 +406,10 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     // Bullet 인스턴스 생성 및 초기화
                     BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
                     bullet.bulletData = clonedData;
+                    
                     bullet.Initialize(this, spawnDirection);
                     NetworkServer.Spawn(bullet.gameObject);
+                    
 
                     // 중복 방지용 HashSet에 추가
                     spawnedBulletData.Add(spawnData);
@@ -1495,6 +1515,19 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     public bool OnEvolution;
 
     [Command]
+    private void CmdHandleEvolution(int index)
+    {
+        RpcHandleEvolution(index);
+        HandleEvolution(index); // 서버에서도 실행
+    }
+
+    [ClientRpc]
+    private void RpcHandleEvolution(int index)
+    {
+        if (!isServer)
+            HandleEvolution(index); // 클라이언트에서도 실행
+    }
+
     private void HandleEvolution(int index)
     {
         // 1. 진화 가능 여부 검증
@@ -1511,12 +1544,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             return;
         }
 
-        // 2. 로컬 플레이어 확인
-        if (!isLocalPlayer)
-        {
-            Debug.LogWarning("HandleEvolution 호출자는 로컬 플레이어가 아닙니다.");
-            return;
-        }
         if (AnimatorHasLayer(animator, 1))
         {
             animator.SetLayerWeight(1, 0);

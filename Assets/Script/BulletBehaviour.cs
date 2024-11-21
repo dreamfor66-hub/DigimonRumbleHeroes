@@ -38,6 +38,16 @@ public class BulletBehaviour : NetworkBehaviour
         currentFrame = 0;
     }
 
+    [ClientRpc]
+    
+    public void RpcInitialize(CharacterBehaviour owner, Vector3 direction)
+    {
+        if(!isServer)
+        {
+            Initialize(owner, direction);
+        }
+    }
+
 private void Update()
     {
         if (isHitStopped)
