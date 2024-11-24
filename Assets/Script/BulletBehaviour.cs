@@ -15,6 +15,13 @@ public class BulletBehaviour : NetworkBehaviour
     private bool isHitStopped;
     private float hitStopTimer;
 
+    // 복사한 데이터
+    private float lifeTime;
+    private float speed;
+    private List<HitboxData> hitboxList = new List<HitboxData>();
+    private List<HitData> hitIdList = new List<HitData>();
+    private SerializedBulletData serializedBulletData;
+
     public bool IsValidTarget(CharacterBehaviour target)
     {
         if (target == null || owner == null) return false;
@@ -29,26 +36,45 @@ public class BulletBehaviour : NetworkBehaviour
 
     private Dictionary<CharacterBehaviour, List<int>> hitTargets = new Dictionary<CharacterBehaviour, List<int>>();
 
-    public void Initialize(CharacterBehaviour owner, Vector3 direction)
+    public void Initialize(CharacterBehaviour owner, Vector3 direction, SerializedBulletData data)
     {
+        if (data == null)
+            return;
         this.owner = owner;
         this.direction = direction.normalized;
+        this.serializedBulletData = data;
+
+        // SerializedBulletData에서 복사하여 사용
+        this.lifeTime = data.lifeTime;
+        this.speed = data.speed;
+        this.hitboxList = new List<HitboxData>(data.hitboxList);
+        this.hitIdList = new List<HitData>(data.hitIdList);
+
         TriggerBullet(BulletTrigger.Spawn); // 초기 스폰 트리거 발생
         spawnTime = Time.time;
         currentFrame = 0;
     }
-
-    [ClientRpc]
-    
-    public void RpcInitialize(CharacterBehaviour owner, Vector3 direction)
+    [Command]
+    public void CmdInitialize(NetworkIdentity ownerIdentity, Vector3 dir, SerializedBulletData data)
     {
-        if(!isServer)
-        {
-            Initialize(owner, direction);
-        }
+        // 서버에서 초기화 데이터 설정
+        CharacterBehaviour owner = ownerIdentity.GetComponent<CharacterBehaviour>();
+        Initialize(owner, dir, data);
+
+        // 클라이언트 동기화
+        RpcInitialize(ownerIdentity, dir, data);
     }
 
-private void Update()
+    [ClientRpc]
+    public void RpcInitialize(NetworkIdentity ownerIdentity, Vector3 dir, SerializedBulletData data)
+    {
+        if (isServer) return; // 서버에서는 이미 초기화되었으므로 클라이언트만 실행
+
+        CharacterBehaviour owner = ownerIdentity.GetComponent<CharacterBehaviour>();
+        Initialize(owner, dir, data); // 클라이언트 초기화
+    }
+
+    private void Update()
     {
         if (isHitStopped)
         {
@@ -71,7 +97,7 @@ private void Update()
         switch (bulletData.MoveType)
         {
             case BulletMoveType.ConstantSpeed:
-                transform.position += transform.forward * bulletData.Speed * Time.deltaTime;
+                transform.position += transform.forward * speed * Time.deltaTime;
                 break;
 
                 // 추후 다른 움직임 타입 추가 가능
@@ -80,7 +106,7 @@ private void Update()
 
     private void CheckLifetime()
     {
-        if (bulletData.LiftTime > 0 && Time.time - spawnTime >= bulletData.LiftTime)
+        if (lifeTime > 0 && Time.time - spawnTime >= lifeTime)
         {
             TriggerBullet(BulletTrigger.LifeTime);
         }
@@ -130,14 +156,22 @@ private void Update()
         Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
         Quaternion spawnRotation = Quaternion.Euler(0, spawnData.Angle, 0) * transform.rotation;
 
-        var originBulletData = spawnData.BulletPrefab.bulletData;
-        var clonedData = originBulletData.Clone();
+        // spawnData에서 새로 생성할 Bullet의 데이터 가져오기
+        BulletData newBulletData = spawnData.BulletPrefab.bulletData;
 
-        BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
+        SerializedBulletData serializedData = new SerializedBulletData(
+            newBulletData.LiftTime,
+            newBulletData.Speed,
+            newBulletData.HitboxList,
+            newBulletData.HitIdList
+        );
 
         BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, spawnRotation);
-        bullet.Initialize(owner, spawnRotation * Vector3.forward);
+        //BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
+        bullet.Initialize(owner, spawnRotation * Vector3.forward, serializedData);
     }
+
+
 
     private void SpawnVfx(BulletSpawnVfxData vfxData)
     {
@@ -150,7 +184,7 @@ private void Update()
 
     private void HitCast()
     {
-        foreach (var hitbox in bulletData.HitboxList)
+        foreach (var hitbox in hitboxList)
         {
             if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
             {
@@ -167,7 +201,7 @@ private void Update()
 
                     if (IsValidTarget(target))
                     {
-                        var hit = bulletData.HitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
+                        var hit = hitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
 
                         hit.Victim = target;
                         hit.Attacker = owner;

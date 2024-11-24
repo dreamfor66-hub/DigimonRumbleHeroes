@@ -388,23 +388,26 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                             spawnDirection = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
                             break;
                     }
+                    // BulletData로부터 SerializedBulletData 생성
+                    var bulletData = spawnData.BulletPrefab.bulletData;
+                    SerializedBulletData serializedData = new SerializedBulletData(
+                        bulletData.LiftTime,
+                        bulletData.Speed,
+                        bulletData.HitboxList,
+                        bulletData.HitIdList
+                    );
 
-                    var originBulletData = spawnData.BulletPrefab.bulletData;
-                    var clonedData = originBulletData.Clone();
+                    // 서버/클라이언트 구분하여 소환 로직 호출
+                    //if (isServer)
+                    //{
+                    //    //ActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
+                    //    //RpcActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
+                    //}
+                    //else
+                        CmdActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
 
-                    BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
 
-
-                    // Bullet 인스턴스 생성 및 초기화
-                    BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection));
-                    bullet.bulletData = clonedData;
-                    
-                    bullet.Initialize(this, spawnDirection);
-                    NetworkServer.Spawn(bullet.gameObject);
-                    
-
-                    // 중복 방지용 HashSet에 추가
-                    spawnedBulletData.Add(spawnData);
+                    spawnedBulletData.Add(spawnData); // 중복 방지
                 }
             }
 
@@ -845,6 +848,46 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         return (inputDirection.x * cameraRight + inputDirection.z * cameraForward) * speedMultiplier;
     }
 
+    private void ActionSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
+    {
+        GameObject bulletPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == prefabName);
+        if (bulletPrefab == null)
+        {
+            Debug.LogError($"Prefab '{prefabName}' not found in RegisteredSpawnablePrefabs.");
+            return;
+        }
+
+        // 서버에서 Bullet 생성
+        GameObject bulletObject = Instantiate(bulletPrefab, position, Quaternion.LookRotation(direction));
+
+        NetworkServer.Spawn(bulletObject);
+        // Bullet 초기화
+        BulletBehaviour bullet = bulletObject.GetComponent<BulletBehaviour>();
+        if (bullet != null)
+        {
+            if (isServer)
+            {
+                bullet.Initialize(this, direction, serializedData);
+                bullet.RpcInitialize(this.GetComponent<NetworkIdentity>(), direction, serializedData);
+            }
+            else
+                bullet.CmdInitialize(this.GetComponent<NetworkIdentity>(), direction, serializedData);
+        }
+    }
+    [Command]
+    public void CmdActionSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
+    {
+        ActionSpawnBullet( position,  direction,  serializedData,  prefabName);
+        //RpcActionSpawnBullet(position, direction, serializedData, prefabName);
+    }
+
+
+    [ClientRpc]
+    private void RpcActionSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
+    {
+        if (isServer) return; // 서버에서는 이미 처리되었으므로 클라이언트만 실행
+        ActionSpawnBullet(position, direction, serializedData, prefabName);
+    }
 
     public virtual void TakeDamage(HitData hit)
     {

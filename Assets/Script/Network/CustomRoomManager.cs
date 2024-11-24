@@ -20,4 +20,19 @@ public class CustomRoomManager : NetworkRoomManager
             }
         }
     }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        Debug.Log("Client started.");
+    }
+
+    public void OnClientConnectInternal(NetworkConnection conn)
+    {
+        Debug.Log("Client connected.");
+        if (!NetworkClient.ready)
+        {
+            NetworkClient.Ready();
+        }
+    }
 }

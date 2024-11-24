@@ -104,7 +104,16 @@ public class BuffManager : SingletonBehaviour<BuffManager>
     {
         BulletBehaviour bullet = Instantiate(bulletPrefab, position, Quaternion.LookRotation(direction));
 
-        bullet.Initialize(owner, direction);
+        BulletData newBulletData = bulletPrefab.bulletData;
+
+        SerializedBulletData serializedData = new SerializedBulletData(
+            newBulletData.LiftTime,
+            newBulletData.Speed,
+            newBulletData.HitboxList,
+            newBulletData.HitIdList
+        );
+
+        bullet.Initialize(owner, direction, serializedData);
         NetworkServer.Spawn(bullet.gameObject);
     }
 }

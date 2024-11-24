@@ -103,3 +103,24 @@ public class BulletSpawnVfxData
     public Vector2 Offset;
     public float Angle;
 }
+
+////////////
+///
+[System.Serializable]
+public class SerializedBulletData
+{
+    public float lifeTime;
+    public float speed;
+    public List<HitboxData> hitboxList = new List<HitboxData>();
+    public List<HitData> hitIdList = new List<HitData>();
+
+    public SerializedBulletData() { }
+
+    public SerializedBulletData(float lifeTime, float speed, List<HitboxData> hitboxes, List<HitData> hits)
+    {
+        this.speed = speed;
+        this.lifeTime = lifeTime;
+        this.hitboxList = hitboxes;
+        this.hitIdList = hits;
+    }
+}
