@@ -12,8 +12,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private Collider[] hurtboxColliders;
 
     protected Animator animator;
+    [SyncVar]
     protected Vector3 direction;
-    [SerializeField]
     [SyncVar]
     protected float currentSpeed;
     protected float stopTime = 0.05f;
@@ -248,6 +248,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             }
         }
 
+        if (isLocalPlayer)
+        {
+            CmdUpdateSpeed(currentSpeed);
+        }
+
         if (AnimatorHasParameter(animator, "X"))
         {
             animator.SetFloat("X", Mathf.Lerp(animator.GetFloat("X"), 0, Time.deltaTime * 10f));
@@ -256,6 +261,23 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
         }
+    }
+
+    void UpdateSpeed(float value)
+    {
+        currentSpeed = value;
+    }
+    [Command]
+    void CmdUpdateSpeed(float value)
+    {
+        UpdateSpeed(value);
+        RpcUpdateSpeed(value);
+    }
+    [ClientRpc]
+    void RpcUpdateSpeed(float value)
+    {
+        if (isServer) return;
+        UpdateSpeed(value);
     }
 
     public void ChangeStatePrev(CharacterState newState)
@@ -292,9 +314,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
 
-    protected virtual void HandleIdle() { }
+    protected virtual void HandleIdle()
+    {
+        if (AnimatorHasLayer(animator, 1))
+            animator.SetLayerWeight(1, 0);
+    }
 
-    protected virtual void HandleMovement() { } 
+    protected virtual void HandleMovement()
+    {
+        if (AnimatorHasLayer(animator, 1))
+            animator.SetLayerWeight(1, 0);
+    } 
 
     protected void HandleAction()
     {
@@ -370,7 +400,15 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                         {
                             // Transition 조건에 맞으면 현재 액션 종료 후 새로운 액션 시작
                             EndAction();
-                            StartAction(transition.NextAction);
+                            if (isServer)
+                            {
+                                StartAction(transition.NextAction);
+                                RpcStartAction(transition.NextAction);
+                            }
+                            else if (isLocalPlayer)
+                            {
+                                CmdStartAction(transition.NextAction);
+                            }
                             return; // 새로운 액션 시작 후 종료
                         }
                     }
@@ -677,7 +715,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         ChangeStatePrev(CharacterState.Idle);
         if (AnimatorHasLayer(animator, 1))
             animator.SetLayerWeight(1, 0);
-        //currentFrame = 0;
         foreach (var vfx in activeManualVfxList)
         {
             vfx.OnDespawn();
@@ -1618,24 +1655,32 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             animator.SetFloat("Z", 0);
         }
         // 3. 진화 전 애니메이션 재생 및 딜레이
-        PlayEvolutionStartAnimation();
-        if (isClient)
-            RpcPlayEvolutionStart(connectionToClient.connectionId);
+        if (isServer)
+        {
+            animator.Play("EvolutionStart");
+            RpcPlayEvolutionStart();
+        }
+        else
+        {
+            CmdPlayEvolutionStart();
+        }
         OnEvolution = true;
 
         StartCoroutine(HandleEvolutionCoroutine(index, evolutionInfo));
     }
 
     [ClientRpc]
-    private void RpcPlayEvolutionStart(int connectionId)
+    private void RpcPlayEvolutionStart()
     {
-        // 특정 클라이언트에서만 실행
-        if (connectionToClient == null || connectionToClient.connectionId != connectionId)
-        {
-            return;
-        }
-
-        PlayEvolutionStartAnimation();
+        if (!isServer)
+        animator.Play("EvolutionStart");
+    }
+    
+    [Command]
+    private void CmdPlayEvolutionStart()
+    {
+        animator.Play("EvolutionStart");
+        RpcPlayEvolutionStart();
     }
 
     private IEnumerator HandleEvolutionCoroutine(int index, EvolutionInfo evolutionInfo)
@@ -1693,20 +1738,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (isServer)
         {
             NetworkServer.Destroy(gameObject);
-        }
-    }
-
-
-    private void PlayEvolutionStartAnimation()
-    {
-        if (animator != null)
-        {
-            animator.Play("EvolutionStart");
-            Debug.Log("진화 시작 애니메이션 재생");
-        }
-        else
-        {
-            Debug.LogWarning("Animator가 존재하지 않아 진화 시작 애니메이션을 재생할 수 없습니다.");
         }
     }
 

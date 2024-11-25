@@ -226,6 +226,7 @@ public class PlayerController : CharacterBehaviour
 
     protected override void HandleIdle()
     {
+        base.HandleIdle();
         if (stopTimer > 0)
         {
             currentSpeed = Mathf.Lerp(currentSpeed, 0, (stopTime - stopTimer) / stopTime);
@@ -251,6 +252,7 @@ public class PlayerController : CharacterBehaviour
 
     protected override void HandleMovement()
     {
+        base.HandleMovement();
         moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
         transform.position += moveVector;
 
