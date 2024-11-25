@@ -62,7 +62,7 @@ public class PlayerController : CharacterBehaviour
 
         HandleTargeting();
 
-        if (currentState is CharacterState.Idle or CharacterState.Move)
+        //if (currentState is CharacterState.Idle or CharacterState.Move)
         {
             HandleInput();
         }
@@ -82,7 +82,7 @@ public class PlayerController : CharacterBehaviour
                 float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
                 if (distanceToTarget <= characterData.attackRange)
                 {
-                    HandleInputMessage(InputMessage.A);
+                    ReceiveInputMessage(InputMessage.A);
                     basicTimer = 0f; // 타이머 초기화
                     basicReady = false; // 다시 대기 상태로 변경
                 }
@@ -189,11 +189,13 @@ public class PlayerController : CharacterBehaviour
             direction = inputDirection.x * cameraRight + inputDirection.z * cameraForward;
             currentSpeed = characterData.moveSpeed * speedMultiplier;
 
-            ChangeStatePrev(CharacterState.Move);
+            if (currentState == CharacterState.Idle)
+                ChangeStatePrev(CharacterState.Move);
         }
         else
         {
-            ChangeStatePrev(CharacterState.Idle);
+            if (currentState == CharacterState.Move)
+                ChangeStatePrev(CharacterState.Idle);
             currentSpeed = 0;
         }
     }
@@ -209,11 +211,12 @@ public class PlayerController : CharacterBehaviour
 
         if (touchDeltaDistance < ResourceHolder.Instance.gameVariables.dragThreshold && touchElapsedTime < ResourceHolder.Instance.gameVariables.tapThreshold)
         {
-            HandleInputMessage(InputMessage.A);
+            ReceiveInputMessage(InputMessage.A);
         }
         else
         {
-            ChangeStatePrev(CharacterState.Idle);
+            if (currentState == CharacterState.Move)
+                ChangeStatePrev(CharacterState.Idle);
         }
 
         isTouching = false;
@@ -265,6 +268,14 @@ public class PlayerController : CharacterBehaviour
         {
             CmdSetAnimatorParameters("Idle", normalizedSpeed);
         }
+    }
+
+    public override void StartAction(ActionKey actionKey)
+    {
+        base.StartAction(actionKey);
+        if (currentActionKey == ActionKey.Basic01)
+            basicTimer = 0f; // 타이머 초기화
+            basicReady = false;
     }
 
 

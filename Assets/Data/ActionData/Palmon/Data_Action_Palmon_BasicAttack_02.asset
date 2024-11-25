@@ -100,6 +100,11 @@ MonoBehaviour:
     MoveType: 0
     CanRotate: 0
     Value: 0.5
+  Transition:
+  - StartFrame: 38
+    EndFrame: 50
+    InputType: 0
+    NextAction: 10
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:
@@ -130,6 +135,7 @@ MonoBehaviour:
   - Frame: 1
     ResourceKey: 10
     Count: 1
+  canLookInAction: 0
   AutoCorrection:
     correctionType: 0
     entityName: Kiwi

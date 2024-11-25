@@ -39,7 +39,7 @@ public class UIInputMessageToPlayer : MonoBehaviour
 
         if (localPlayer != null)
         {
-            localPlayer.HandleInputMessage(message);
+            localPlayer.ReceiveInputMessage(message);
         }
         else
         {

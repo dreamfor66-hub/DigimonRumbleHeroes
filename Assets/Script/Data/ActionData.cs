@@ -33,6 +33,11 @@ public class ActionData : ScriptableObject
     [PropertyOrder(1)]
     [TableList(AlwaysExpanded = true)]
     public List<SpecialMovementData> SpecialMovementList = new List<SpecialMovementData>();
+    
+    [Title ("Transition")]
+    [PropertyOrder(1)]
+    [TableList(AlwaysExpanded = true)]
+    public List<TransitionData> Transition = new List<TransitionData>();
 
     [Title("Hitboxes")]
     [PropertyOrder(1)]
@@ -188,6 +193,15 @@ public class MovementData
     {
         return (MovementData)MemberwiseClone();
     }
+}
+
+[System.Serializable]
+public class TransitionData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public InputMessage InputType = InputMessage.A;
+    public ActionKey NextAction = ActionKey.Basic01;
 }
 
 

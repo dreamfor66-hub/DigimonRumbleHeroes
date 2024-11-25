@@ -357,6 +357,26 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 }
             }
 
+            foreach (var transition in currentActionData.Transition)
+            {
+                if (currentFrame >= transition.StartFrame && currentFrame <= transition.EndFrame)
+                {
+                    // 큐에서 입력 메시지 확인
+                    while (inputQueue.Count > 0)
+                    {
+                        var input = inputQueue.Dequeue();
+
+                        if (input == transition.InputType)
+                        {
+                            // Transition 조건에 맞으면 현재 액션 종료 후 새로운 액션 시작
+                            EndAction();
+                            StartAction(transition.NextAction);
+                            return; // 새로운 액션 시작 후 종료
+                        }
+                    }
+                }
+            }
+
             foreach (var spawnData in currentActionData.ActionSpawnBulletList)
             {
                 // 중복된 소환을 방지: HashSet에 포함되지 않은 경우에만 소환
@@ -1390,7 +1410,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
     }
 
-    public void StartAction(ActionKey actionKey)
+    public virtual void StartAction(ActionKey actionKey)
     {
         var actionsForKey = characterData.ActionTable
         .Where(entry => entry.ActionKey == actionKey)
@@ -1791,9 +1811,24 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     /// <summary>
     /// 인풋 메시지
     /// </summary>
+    /// 
+    private Queue<InputMessage> inputQueue = new Queue<InputMessage>();
+    private IEnumerator RemoveInputAfterDelay(InputMessage message, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Queue의 첫 번째 메시지가 현재 코루틴의 메시지와 일치할 때만 제거
+        if (inputQueue.Count > 0 && inputQueue.Peek() == message)
+        {
+            inputQueue.Dequeue();
+        }
+    }
 
     public void ReceiveInputMessage(InputMessage message)
     {
+        // 입력 메시지를 큐에 저장
+        inputQueue.Enqueue(message);
+        StartCoroutine(RemoveInputAfterDelay(message, 0.2f));
         HandleInputMessage(message);
     }
 
@@ -1805,6 +1840,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             case CharacterState.Idle:
             case CharacterState.Move:
                 ProcessInputMessage(message);
+                inputQueue.Dequeue();
                 break;
             case CharacterState.Action:
                 break;
@@ -1964,4 +2000,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         hpStaminaBarController = hpStaminaBarInstance.GetComponentInChildren<HpStaminaBarController>();
         hpStaminaBarController.target = this;
     }
+}
+
+
+[System.Serializable]
+public class TimedInput
+{
+    public InputMessage Message; // 입력 메시지
+    public float ExpiryTime;     // 사라질 시간
 }

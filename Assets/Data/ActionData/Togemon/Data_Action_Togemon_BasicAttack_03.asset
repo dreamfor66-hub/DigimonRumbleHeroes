@@ -118,6 +118,15 @@ MonoBehaviour:
     MoveType: 0
     CanRotate: 0
     Value: 0.5
+  Transition:
+  - StartFrame: 65
+    EndFrame: 80
+    InputType: 0
+    NextAction: 10
+  - StartFrame: 0
+    EndFrame: 80
+    InputType: 1
+    NextAction: 20
   HitboxList:
   - StartFrame: 18
     EndFrame: 19

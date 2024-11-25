@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
-  m_Name: Data_Action_Palmon_SpecialAttck
+  m_Name: Data_Action_Palmon_Special01_Begin
   m_EditorClassIdentifier: 
   ActionFrame: 120
-  AnimationKey: Special01
+  AnimationKey: Special01_Begin
   AnimationCurve:
     serializedVersion: 2
     m_Curve:
@@ -74,6 +74,7 @@ MonoBehaviour:
   - Frame: 1
     ResourceKey: 1
     Count: -10
+  canLookInAction: 0
   AutoCorrection:
     correctionType: 1
     entityName: Kiwi

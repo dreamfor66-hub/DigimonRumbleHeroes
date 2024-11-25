@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Palmon_Special01_Loop
+  m_EditorClassIdentifier: 
+  ActionFrame: 120
+  AnimationKey: Special01_Begin
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.36666667
+      outSlope: 1.8411869
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 12.520977
+      value: 23.05346
+      inSlope: 1.8411869
+      outSlope: 0.1551645
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 65.135254
+      value: 31.217327
+      inSlope: 0.1551645
+      outSlope: 0.88914424
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 120
+      value: 80
+      inSlope: 0.88914424
+      outSlope: 0.36666667
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList:
+  - StartFrame: 0
+    EndFrame: 10
+    StartValue: {x: 0, y: 10}
+    EndValue: {x: 0, y: 0}
+  SpecialMovementList: []
+  HitboxList: []
+  HitIdList: []
+  ActionSpawnBulletList: []
+  ActionSpawnVfxList: []
+  Conditions:
+  - Type: 0
+    ResourceKey: 1
+    Count: 10
+  Resources:
+  - Frame: 1
+    ResourceKey: 1
+    Count: -10
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 1
+    entityName: Kiwi
+    characterName: Kiwi
