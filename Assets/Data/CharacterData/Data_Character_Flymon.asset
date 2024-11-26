@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72423a6779a69a3499dd2984c8db199b, type: 3}
+  m_Name: Data_Character_Flymon
+  m_EditorClassIdentifier: 
+  characterName: "\uD50C\uB77C\uC774\uBAAC"
+  characterItemForm: 3
+  characterItemTrait1: 1
+  characterItemTrait2: 12
+  characterItemTrait3: 103
+  baseHP: 1500
+  baseATK: 150
+  moveSpeed: 4
+  defaultBasicAttackCycle: 1.5
+  colliderRadius: 0.9
+  mass: 10
+  drag: 10
+  attackRange: 0
+  Hurtboxes:
+  - Offset: {x: 0, y: 0}
+    Radius: 1
+  rigOffset: {x: 0, y: 0.5, z: 0}
+  weightChangeSpeed: 1
+  ActionTable:
+  - ActionKey: 11
+    ActionData: {fileID: 11400000, guid: e033ca5644cf38248be1bcfd0490cba9, type: 2}
+  - ActionKey: 20
+    ActionData: {fileID: 11400000, guid: 711df955511e60442a9c8a923c23658e, type: 2}
+  - ActionKey: 21
+    ActionData: {fileID: 11400000, guid: c668693488ff8804fa967892a836dc4e, type: 2}
+  - ActionKey: 10
+    ActionData: {fileID: 11400000, guid: c8eae5c5d1865404c8a10aefb8d980ae, type: 2}
+  Resources: []
+  Buffs: []
+  EvolutionInfos: []
+  targetingWeightThreshold: 0.5
+  shortDistance: 5
+  wideAngle: 90
+  narrowAngle: 30
+  longDistance: 10

@@ -1,5 +1,7 @@
 public enum ActionKey
 {
+    None = 0,
+
     Basic01 = 10,
     Basic02,
 

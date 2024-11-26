@@ -250,6 +250,7 @@ MonoBehaviour:
   - {fileID: 3678699042631848217, guid: 0b8c12ecc76355a4a907d52adf44d194, type: 3}
   - {fileID: 3678699042631848217, guid: 95efbbfca7437a644ab2698cba31ba29, type: 3}
   - {fileID: 3678699042631848217, guid: 3a5045f5648223446903759a32392d39, type: 3}
+  - {fileID: 289781361294771909, guid: 95f9af8e539420649b7909ec97401e5e, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -267,7 +268,7 @@ MonoBehaviour:
   timeInterpolationGui: 0
   showRoomGUI: 1
   minPlayers: 1
-  roomPlayerPrefab: {fileID: 7775866477397053862, guid: 629f344d38667da4db2a1f8c15e3f921,
+  roomPlayerPrefab: {fileID: 7775866477397053862, guid: 95f9af8e539420649b7909ec97401e5e,
     type: 3}
   RoomScene: Assets/Scenes/RoomScene.unity
   GameplayScene: Assets/Scenes/GamePlayScene.unity

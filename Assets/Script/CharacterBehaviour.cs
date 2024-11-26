@@ -392,25 +392,47 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 if (currentFrame >= transition.StartFrame && currentFrame <= transition.EndFrame)
                 {
                     // 큐에서 입력 메시지 확인
-                    while (inputQueue.Count > 0)
+                    switch (transition.Type)
                     {
-                        var input = inputQueue.Dequeue();
+                        case TransitionType.Always:
+                            {
+                                EndAction();
+                                if (isServer)
+                                {
+                                    StartAction(transition.NextAction);
+                                    RpcStartAction(transition.NextAction);
+                                }
+                                else if (isLocalPlayer)
+                                {
+                                    CmdStartAction(transition.NextAction);
+                                }
+                                return; // 새로운 액션 시작 후 종료
+                                break;
+                            }
+                        case TransitionType.Input:
+                            {
+                                while (inputQueue.Count > 0)
+                                {
+                                    var input = inputQueue.Dequeue();
 
-                        if (input == transition.InputType)
-                        {
-                            // Transition 조건에 맞으면 현재 액션 종료 후 새로운 액션 시작
-                            EndAction();
-                            if (isServer)
-                            {
-                                StartAction(transition.NextAction);
-                                RpcStartAction(transition.NextAction);
+                                    if (input == transition.InputType)
+                                    {
+                                        // Transition 조건에 맞으면 현재 액션 종료 후 새로운 액션 시작
+                                        EndAction();
+                                        if (isServer)
+                                        {
+                                            StartAction(transition.NextAction);
+                                            RpcStartAction(transition.NextAction);
+                                        }
+                                        else if (isLocalPlayer)
+                                        {
+                                            CmdStartAction(transition.NextAction);
+                                        }
+                                        return; // 새로운 액션 시작 후 종료
+                                    }
+                                }
+                                break;
                             }
-                            else if (isLocalPlayer)
-                            {
-                                CmdStartAction(transition.NextAction);
-                            }
-                            return; // 새로운 액션 시작 후 종료
-                        }
                     }
                 }
             }

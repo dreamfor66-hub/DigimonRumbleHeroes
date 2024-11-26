@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Flymon_Special01
+  m_EditorClassIdentifier: 
+  ActionFrame: 150
+  AnimationKey: Special01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.32666665
+      outSlope: 0.2547096
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 29.195347
+      value: 7.4363356
+      inSlope: 0.2547096
+      outSlope: 0.16192503
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 52.67047
+      value: 11.237546
+      inSlope: 0.16192503
+      outSlope: 0.38798565
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 65.196815
+      value: 16.097588
+      inSlope: 0.38798565
+      outSlope: 0.032213803
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 94.72449
+      value: 17.048786
+      inSlope: 0.032213803
+      outSlope: 0.5780356
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 150
+      value: 49
+      inSlope: 0.5780356
+      outSlope: 0.32666665
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList:
+  - StartFrame: 60
+    EndFrame: 100
+    StartValue: {x: 0, y: 15}
+    EndValue: {x: 0, y: 15}
+  SpecialMovementList:
+  - StartFrame: 0
+    EndFrame: 12
+    MoveType: 1
+    CanRotate: 0
+    Value: 12
+  Transition: []
+  HitboxList:
+  - StartFrame: 60
+    EndFrame: 100
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  - StartFrame: 60
+    EndFrame: 70
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 1
+    HitGroup: 1
+  - StartFrame: 70
+    EndFrame: 80
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 1
+    HitGroup: 2
+  - StartFrame: 80
+    EndFrame: 90
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 1
+    HitGroup: 3
+  - StartFrame: 90
+    EndFrame: 100
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 1
+    HitGroup: 4
+  HitIdList:
+  - HitId: 0
+    HitDamage: 1
+    HitStopFrame: 2
+    HitStunFrame: 0
+    KnockbackPower: 20
+    HitType: 2
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
+  - HitId: 1
+    HitDamage: 0
+    HitStopFrame: 0
+    HitStunFrame: 0
+    KnockbackPower: 0
+    HitType: 0
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
+  ActionSpawnBulletList: []
+  ActionSpawnVfxList: []
+  Conditions: []
+  Resources: []
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 0
+    entityName: Kiwi
+    characterName: Kiwi

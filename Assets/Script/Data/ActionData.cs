@@ -200,6 +200,7 @@ public class TransitionData
 {
     public int StartFrame;
     public int EndFrame;
+    public TransitionType Type;
     public InputMessage InputType = InputMessage.A;
     public ActionKey NextAction = ActionKey.Basic01;
 }
@@ -294,6 +295,12 @@ public enum ActionConditionType
     //BulletExist,
     //BulletNotExist,
     //PropLessThan,
+}
+
+public enum TransitionType
+{
+    Always,
+    Input,
 }
 
 [System.Serializable]
