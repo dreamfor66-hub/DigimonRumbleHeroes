@@ -100,11 +100,7 @@ MonoBehaviour:
     MoveType: 0
     CanRotate: 0
     Value: 0.5
-  Transition:
-  - StartFrame: 38
-    EndFrame: 50
-    InputType: 0
-    NextAction: 10
+  Transition: []
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:

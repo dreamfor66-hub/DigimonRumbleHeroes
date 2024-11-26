@@ -111,10 +111,12 @@ MonoBehaviour:
   Transition:
   - StartFrame: 35
     EndFrame: 80
+    Type: 1
     InputType: 0
     NextAction: 10
   - StartFrame: 0
     EndFrame: 80
+    Type: 1
     InputType: 1
     NextAction: 20
   HitboxList:

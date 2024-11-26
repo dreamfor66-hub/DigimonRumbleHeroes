@@ -53,10 +53,15 @@ MonoBehaviour:
   syncInterval: 0
   characterData: {fileID: 11400000, guid: 6434ed24d8ccc0f41bc15d09bfa532eb, type: 2}
   currentSpeed: 0
+  teamType: 0
   currentState: 1
+  currentActionData: {fileID: 0}
   isDie: 0
   currentHealth: 0
+  maxHealth: 0
   collisionCollider: {fileID: 0}
+  initialKnockBackSpeed: 0
+  currentknockBackSpeed: 0
   target: {fileID: 0}
   moveVector: {x: 0, y: 0, z: 0}
   targetRotation: {x: 0, y: 0, z: 0, w: 0}
@@ -67,15 +72,15 @@ MonoBehaviour:
   inputDirection: {x: 0, y: 0, z: 0}
   speedMultiplier: 0
   touchStartTime: 0
-  HPStaminaBarPrefab: {fileID: 7840219643611680230, guid: f3a8610aa5a09364dae4b5899239324a,
-    type: 3}
   hit: 0
   currentHitTarget: {fileID: 0}
   lastHitTarget: {fileID: 0}
   attacked: 0
   currentAttacker: {fileID: 0}
   lastAttacker: {fileID: 0}
+  OnEvolution: 0
   botAIData: {fileID: 11400000, guid: 1fc024b789495094cbebe9cc8ce85d82, type: 2}
+  isSuperArmor: 1
 --- !u!114 &6903048608739270492
 MonoBehaviour:
   m_ObjectHideFlags: 0

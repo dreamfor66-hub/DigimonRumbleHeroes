@@ -14,13 +14,20 @@ public class EnemyController : CharacterBehaviour
     [SyncVar, Mirror.ShowInInspector]
     private float duration = 0f;
 
+    public bool isSuperArmor = false;
+
     protected override void Start()
     {
         base.Start();
         teamType = TeamType.Enemy;
+        currentSpeed = characterData.moveSpeed;
         ChangeStatePrev(CharacterState.Init);
         FindClosestPlayer();
         UpdateCurrentAIState();
+
+        if (isSuperArmor)
+            CmdAddStatus(StatusType.SuperArmor, -1f); // -1로 영구 슈퍼아머 상태 추가
+            
     }
 
     protected override void Update()
@@ -29,6 +36,8 @@ public class EnemyController : CharacterBehaviour
             return;
         if (target == null)
             FindClosestPlayer();
+
+        UpdateCooldownTimers();
         base.Update();
 
         if (currentState != CharacterState.Action)
@@ -46,18 +55,11 @@ public class EnemyController : CharacterBehaviour
             return;
         }
 
-        if (currentState == CharacterState.Action)
-        {
-            HandleAction();
-            return;
-        }
-
         if (stateTimer >= duration)
         {
             TransitionToNextState();
         }
 
-        HandleCurrentState();
         HandleAwareness();
     }
 
@@ -83,6 +85,11 @@ public class EnemyController : CharacterBehaviour
 
             if (state.state == currentState && distanceToPlayer >= state.distanceRange.x && distanceToPlayer <= state.distanceRange.y)
             {
+                // 쿨다운 상태 확인
+                if (state.nextState == CharacterState.Action && state.IsOnCooldown())
+                {
+                    continue; // 쿨다운 중이라면 다음 상태로 넘어감
+                }
                 currentState = state.nextState;
                 currentBotAIIndex = i;
                 UpdateCurrentAIState();
@@ -92,6 +99,7 @@ public class EnemyController : CharacterBehaviour
                 if (currentState == CharacterState.Action)
                 {
                     StartAction(state.actionKey);
+                    state.cooldownTimer = state.cooldown;
                 }
                 return;
             }
@@ -103,7 +111,14 @@ public class EnemyController : CharacterBehaviour
         BotAIState currentAIState = botAIData.botAIStates[currentBotAIIndex];
         duration = currentAIState.duration;
     }
-
+    // BotAIState의 쿨다운 타이머를 개별적으로 업데이트
+    private void UpdateCooldownTimers()
+    {
+        foreach (var state in botAIData.botAIStates)
+        {
+            state.UpdateCooldown(Time.deltaTime);
+        }
+    }
     private void HandleAwareness()
     {
 
@@ -130,41 +145,49 @@ public class EnemyController : CharacterBehaviour
 
     }
 
-    private void HandleCurrentState()
-    {
-        if (currentState == CharacterState.Idle)
-        {
-            HandleIdle();
-        }
-        else if (currentState == CharacterState.Move)
-        {
-            HandleMovement();
-        }
-    }
-
     protected override void HandleIdle()
     {
         base.HandleIdle();
+        speedMultiplier = 0;
+        currentSpeed = characterData.moveSpeed * speedMultiplier;
         animator.Play("Idle");
         LookAtPlayer();
     }
 
     protected override void HandleMovement()
     {
+        base.HandleMovement();
         if (target == null) return;
+
+        speedMultiplier = 1;
+        currentSpeed = characterData.moveSpeed * speedMultiplier;
 
         Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
 
+        // 충돌과 슬라이딩을 처리한 움직임 계산
+        Vector3 moveVector = HandleCollisionAndSliding(directionToTarget, currentSpeed);
+        transform.position += moveVector;
+
+        // 높이를 0으로 고정
+        transform.position = new Vector3(transform.position.x, 0, transform.position.z);
+
+        // 방향 설정 및 회전
         if (directionToTarget != Vector3.zero)
         {
-            Vector3 targetPosition = transform.position + directionToTarget * characterData.moveSpeed * Time.deltaTime;
-
-            transform.position = targetPosition;
-
             Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
-        animator.Play("Move");
+
+        // 애니메이션 처리
+        animator.Play("Idle");
+        float normalizedSpeed = 1; // 항상 1로 유지
+        animator.SetFloat("speed", normalizedSpeed);
+
+        //// 네트워크 동기화 (로컬 플레이어일 때만)
+        //if (isLocalPlayer)
+        //{
+        //    CmdSetAnimatorParameters("Move", normalizedSpeed);
+        //}
     }
 
     private void FindClosestPlayer()

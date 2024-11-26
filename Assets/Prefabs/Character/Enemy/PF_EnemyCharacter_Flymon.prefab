@@ -53,6 +53,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   characterData: {fileID: 11400000, guid: 897ee6d399ceb6c429693d2a3f59884c, type: 2}
+  currentSpeed: 0
   teamType: 1
   currentState: 1
   currentActionData: {fileID: 0}
@@ -80,6 +81,7 @@ MonoBehaviour:
   lastAttacker: {fileID: 0}
   OnEvolution: 0
   botAIData: {fileID: 11400000, guid: e4fc394df43a80f46b8d95a5c4151735, type: 2}
+  isSuperArmor: 1
 --- !u!114 &1841091628799428591
 MonoBehaviour:
   m_ObjectHideFlags: 0

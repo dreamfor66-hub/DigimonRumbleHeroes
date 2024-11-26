@@ -15,7 +15,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [SyncVar]
     protected Vector3 direction;
     [SyncVar]
-    protected float currentSpeed;
+    public float currentSpeed;
     protected float stopTime = 0.05f;
     protected float stopTimer;
 
@@ -101,8 +101,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private GameObject hpStaminaBarInstance; // 생성된 HP Bar 인스턴스
     protected HpStaminaBarController hpStaminaBarController;
 
-    //resource 관련 변수
+    //resource 관련 변수 + Status 관련 변수
     public CharacterResourceTable resourceTable;
+    private List<CharacterStatusData> activeStatuses = new List<CharacterStatusData>();
 
     protected virtual void Start()
     {
@@ -225,6 +226,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 break;
         }
 
+        UpdateStatuses();
+
         if (Input.GetKeyDown(KeyCode.Keypad1))
         {
             if (isLocalPlayer)
@@ -261,6 +264,19 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
         }
+
+        if (activeStatuses == null || activeStatuses.Count == 0)
+        {
+            Debug.Log($"{name}: No active statuses.");
+            return;
+        }
+
+        string statuses = $"{name} - Active Statuses: ";
+        foreach (var status in activeStatuses)
+        {
+            statuses += $"{status.StatusType} {(status.IsPermanent ? "(Permanent)" : $"(Remaining: {Mathf.Max(0, status.IsExpired ? 0 : (status.statusDuration - (Time.time - status.statusStartTime))):0.00}s)")}, ";
+        }
+        Debug.Log(statuses.TrimEnd(',', ' '));
     }
 
     void UpdateSpeed(float value)
@@ -340,7 +356,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             float animationFrame = currentActionData.AnimationCurve.Evaluate(currentFrame);
 
             // 로컬 플레이어일 경우 애니메이션 재생 및 서버에 요청
-            if (isLocalPlayer)
+            if (isLocalPlayer || isServer)
             {
                 animator.Play(currentActionData.AnimationKey, 0, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
                 CmdPlayAnimation(currentActionData.AnimationKey, animationFrame / GetClipTotalFrames(currentActionData.AnimationKey));
@@ -379,7 +395,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
                     // 로컬 플레이어의 이동을 서버에 동기화
-                    if (isLocalPlayer)
+                    if (isLocalPlayer || isServer)
                     {
                         transform.position += finalMoveVector;
                         CmdSyncMovement(finalMoveVector);
@@ -402,7 +418,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                                     StartAction(transition.NextAction);
                                     RpcStartAction(transition.NextAction);
                                 }
-                                else if (isLocalPlayer)
+                                else if (isLocalPlayer || isServer)
                                 {
                                     CmdStartAction(transition.NextAction);
                                 }
@@ -997,7 +1013,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
         else
         {
-            if (hit.HitType == HitType.DamageOnly)
+            if (hit.HitType == HitType.DamageOnly || HasStatus(StatusType.SuperArmor))
             {
                 return;
             }
@@ -1622,6 +1638,56 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         // 최종 이동 방향 및 속도 계산
         return finalDirection * moveSpeed * finalSpeedAdjustment * Time.deltaTime;
+    }
+
+    private void UpdateStatuses()
+    {
+        // 만료된 상태 제거
+        activeStatuses.RemoveAll(status => status.IsExpired);
+    }
+
+    /// <summary>
+    /// 서버에서 상태를 추가하고, 클라이언트에 동기화
+    /// </summary>
+    [Command]
+    public void CmdAddStatus(StatusType statusType, float duration)
+    {
+        AddStatus(statusType, duration); // 서버에서 상태 추가
+        RpcAddStatus(statusType, duration); // 클라이언트에 동기화
+    }
+    [ClientRpc]
+    private void RpcAddStatus(StatusType statusType, float duration)
+    {
+        if (isServer) return; // 서버는 이미 실행되었으므로 제외
+        AddStatus(statusType, duration);
+    }
+    public void AddStatus(StatusType statusType, float duration)
+    {
+        var existingStatus = activeStatuses.Find(status => status.StatusType == statusType);
+
+        if (existingStatus != null)
+        {
+            if (existingStatus.IsPermanent)
+            {
+                // 이미 영구 상태라면 무시
+                return;
+            }
+
+            // 영구 상태가 아니면 지속 시간 연장
+            existingStatus.ExtendDuration(duration);
+        }
+        else
+        {
+            // 새로 상태 추가
+            activeStatuses.Add(new CharacterStatusData(statusType, duration));
+        }
+
+        Debug.Log($"Added status: {statusType}, Duration: {(duration < 0 ? "Permanent" : $"{duration}s")}");
+    }
+
+    public bool HasStatus(StatusType statusType)
+    {
+        return activeStatuses.Exists(status => status.StatusType == statusType);
     }
 
     ///
