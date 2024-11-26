@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2039629ee49df414e9791e5105b68043, type: 3}
+  m_Name: Data_BotAI_Flymon_MiniBoss
+  m_EditorClassIdentifier: 
+  botAIStates:
+  - state: 0
+    distanceRange: {x: 0, y: 10}
+    nextState: 1
+    duration: 1
+    actionKey: 0
+  - state: 1
+    distanceRange: {x: 3, y: 10}
+    nextState: 2
+    duration: 0.5
+    actionKey: 0
+  - state: 1
+    distanceRange: {x: 0, y: 3}
+    nextState: 3
+    duration: 1
+    actionKey: 10
+  - state: 2
+    distanceRange: {x: 3, y: 5}
+    nextState: 2
+    duration: 0.5
+    actionKey: 0
+  - state: 2
+    distanceRange: {x: 0, y: 3}
+    nextState: 3
+    duration: 1
+    actionKey: 10

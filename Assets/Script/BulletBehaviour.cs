@@ -206,6 +206,7 @@ public class BulletBehaviour : NetworkBehaviour
                         hit.Victim = target;
                         hit.Attacker = owner;
                         hit.Direction = (target.transform.position + direction.normalized - transform.position).normalized;
+                        hit.Direction.y = 0;
                         hit.HitDamage *= owner.characterData.baseATK;
                         HandleHit(hit);
 

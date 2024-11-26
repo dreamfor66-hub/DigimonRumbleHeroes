@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2264505462597491491}
-  - component: {fileID: 4771394053400359985}
+  - component: {fileID: 1116135649605338572}
   - component: {fileID: 1841091628799428591}
   - component: {fileID: 7775866477397053862}
   - component: {fileID: 2772748040953012727}
@@ -37,7 +37,7 @@ Transform:
   - {fileID: 5734779392469205627}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4771394053400359985
+--- !u!114 &1116135649605338572
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,14 +46,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 289781361294771909}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a698c58af7160b44b0d944239cd2933, type: 3}
+  m_Script: {fileID: 11500000, guid: f9137b7ec6e159b4a88ad9c2527b5977, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
   characterData: {fileID: 11400000, guid: 897ee6d399ceb6c429693d2a3f59884c, type: 2}
-  teamType: 0
+  teamType: 1
   currentState: 1
   currentActionData: {fileID: 0}
   isDie: 0
@@ -79,9 +79,7 @@ MonoBehaviour:
   currentAttacker: {fileID: 0}
   lastAttacker: {fileID: 0}
   OnEvolution: 0
-  playerNumber: 0
-  basicAttackCycle: 1.25
-  basicReady: 0
+  botAIData: {fileID: 11400000, guid: e4fc394df43a80f46b8d95a5c4151735, type: 2}
 --- !u!114 &1841091628799428591
 MonoBehaviour:
   m_ObjectHideFlags: 0

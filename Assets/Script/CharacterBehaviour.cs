@@ -539,7 +539,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
                                 hit.Attacker = this;
                                 hit.Victim = target;
-                                hit.Direction = (target.transform.position - transform.position).normalized;
+                                hit.Direction = (new Vector3(target.transform.position.x, 0, target.transform.position.z) - new Vector3(transform.position.x,0, transform.position.z)).normalized;
+                                hit.Direction.y = 0;
                                 hit.HitDamage *= characterData.baseATK;
                                 HandleHit(hit);
                                 RpcHandleHit(hit);
@@ -587,7 +588,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [ClientRpc]
     private void RpcPlayAnimation(string animationKey, float normalizedTime)
     {
-        if (!isLocalPlayer)
+        if (!isServer)
         {
             animator.Play(animationKey, 0, normalizedTime);
         }
@@ -975,7 +976,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         // 공격자가 있다면 그 방향을 바라보게 함
         if (hit.Attacker != null)
         {
-            Vector3 directionToAttacker = (hit.Attacker.transform.position - transform.position).normalized;
+            Vector3 directionToAttacker = (new Vector3 (hit.Attacker.transform.position.x , 0 , hit.Attacker.transform.position.z) - new Vector3(transform.position.x, 0, transform.position.z)).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(directionToAttacker);
             transform.rotation = lookRotation; // 즉시 회전
         }

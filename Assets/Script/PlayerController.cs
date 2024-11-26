@@ -256,6 +256,8 @@ public class PlayerController : CharacterBehaviour
         moveVector = HandleCollisionAndSliding(direction.normalized, currentSpeed);
         transform.position += moveVector;
 
+        transform.position = new Vector3(transform.position.x, 0, transform.position.z);
+
         targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
 
