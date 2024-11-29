@@ -80,7 +80,7 @@ MonoBehaviour:
   lastAttacker: {fileID: 0}
   OnEvolution: 0
   botAIData: {fileID: 11400000, guid: 1fc024b789495094cbebe9cc8ce85d82, type: 2}
-  isSuperArmor: 1
+  isSuperArmor: 0
 --- !u!114 &6903048608739270492
 MonoBehaviour:
   m_ObjectHideFlags: 0

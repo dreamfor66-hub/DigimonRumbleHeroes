@@ -22,11 +22,11 @@ public class EnemyController : CharacterBehaviour
         teamType = TeamType.Enemy;
         currentSpeed = characterData.moveSpeed;
         ChangeStatePrev(CharacterState.Init);
+        if (isSuperArmor)
+            CmdAddStatus(StatusType.SuperArmor, -1f); // -1로 영구 슈퍼아머 상태 추가
         FindClosestPlayer();
         UpdateCurrentAIState();
 
-        if (isSuperArmor)
-            CmdAddStatus(StatusType.SuperArmor, -1f); // -1로 영구 슈퍼아머 상태 추가
             
     }
 

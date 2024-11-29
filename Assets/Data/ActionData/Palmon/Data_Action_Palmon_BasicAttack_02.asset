@@ -96,10 +96,20 @@ MonoBehaviour:
     CanRotate: 0
     Value: 10
   - StartFrame: 0
-    EndFrame: 100
+    EndFrame: 20
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.8
+  - StartFrame: 21
+    EndFrame: 50
     MoveType: 0
     CanRotate: 0
     Value: 0.5
+  - StartFrame: 51
+    EndFrame: 100
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.8
   Transition: []
   HitboxList: []
   HitIdList: []

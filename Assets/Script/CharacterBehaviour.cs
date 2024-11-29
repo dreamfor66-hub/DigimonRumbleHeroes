@@ -216,7 +216,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 HandleMovement();
                 break;
             case CharacterState.Action:
-                HandleAction();
+                CmdHandleAction();
                 break;
             case CharacterState.KnockBack:
                 CmdHandleKnockback();
@@ -264,19 +264,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             animator.SetFloat("Z", Mathf.Lerp(animator.GetFloat("Z"), 0, Time.deltaTime * 10f));
         }
-
-        if (activeStatuses == null || activeStatuses.Count == 0)
-        {
-            Debug.Log($"{name}: No active statuses.");
-            return;
-        }
-
-        string statuses = $"{name} - Active Statuses: ";
-        foreach (var status in activeStatuses)
-        {
-            statuses += $"{status.StatusType} {(status.IsPermanent ? "(Permanent)" : $"(Remaining: {Mathf.Max(0, status.IsExpired ? 0 : (status.statusDuration - (Time.time - status.statusStartTime))):0.00}s)")}, ";
-        }
-        Debug.Log(statuses.TrimEnd(',', ' '));
     }
 
     void UpdateSpeed(float value)
@@ -340,7 +327,21 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         if (AnimatorHasLayer(animator, 1))
             animator.SetLayerWeight(1, 0);
-    } 
+    }
+
+    [Command]
+    void CmdHandleAction()
+    {
+        HandleAction();
+        RpcHandleAction();
+    }
+
+    [ClientRpc]
+    void RpcHandleAction()
+    {
+        if (!isServer)
+            HandleAction();
+    }
 
     protected void HandleAction()
     {
@@ -383,21 +384,76 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     
                 }
             }
+            // Hitbox Cast
+            foreach (var hitbox in currentActionData.HitboxList)
+            {
+                if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
+                {
+                    Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
+                    Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
 
+                    foreach (var hitCollider in hitColliders)
+                    {
+                        CharacterBehaviour target = hitCollider.GetComponentInParent<CharacterBehaviour>();
+
+                        if (target == null || target == this || target.isDie)
+                        {
+                            continue;
+                        }
+
+                        if (IsValidTarget(target))
+                        {
+                            if (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup))
+                            {
+                                continue;
+                            }
+
+                            // 히트를 로컬 플레이어에서 서버에 요청
+                            if (isServer)
+                            {
+                                var hit = currentActionData.HitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
+
+                                hit.Attacker = this;
+                                hit.Victim = target;
+                                hit.Direction = (new Vector3(target.transform.position.x, 0, target.transform.position.z) - new Vector3(transform.position.x, 0, transform.position.z)).normalized;
+                                hit.Direction.y = 0;
+                                hit.HitDamage *= characterData.baseATK;
+                                HandleHit(hit);
+                                RpcHandleHit(hit);
+                            }
+                            //else if (isLocalPlayer)
+                            //{
+                            //    CmdHandleHit(hitbox.HitId, target, currentActionData);
+                            //}
+                            if (!hitTargets.ContainsKey(target))
+                            {
+                                hitTargets[target] = new List<int>();
+                            }
+                            hitTargets[target].Add(hitbox.HitGroup);
+
+                            break;
+                        }
+                    }
+                }
+
+                if (currentFrame >= currentActionData.ActionFrame)
+                {
+                    EndAction();
+                }
+            }
             // TransformMove
             foreach (var movement in currentActionData.MovementList)
             {
                 if (currentFrame >= movement.StartFrame && currentFrame <= movement.EndFrame)
                 {
-                    float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
-                    Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
-                    Vector3 moveVector = transform.forward * interpolatedSpeed.y + transform.right * interpolatedSpeed.x;
-                    Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
-
                     // 로컬 플레이어의 이동을 서버에 동기화
                     if (isLocalPlayer || isServer)
                     {
-                        transform.position += finalMoveVector;
+                        float t = (currentFrame - movement.StartFrame) / (float)(movement.EndFrame - movement.StartFrame);
+                        Vector2 interpolatedSpeed = Vector2.Lerp(movement.StartValue, movement.EndValue, t);
+                        Vector3 moveVector = transform.forward * interpolatedSpeed.y + transform.right * interpolatedSpeed.x;
+                        Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
+
                         CmdSyncMovement(finalMoveVector);
                     }
                 }
@@ -524,63 +580,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 vfx.SetTime(vfxTime);
             }
 
-            // Hitbox Cast
-            foreach (var hitbox in currentActionData.HitboxList)
-            {
-                if (currentFrame >= hitbox.StartFrame && currentFrame <= hitbox.EndFrame)
-                {
-                    Vector3 hitboxPosition = transform.position + transform.right * hitbox.Offset.x + transform.forward * hitbox.Offset.y;
-                    Collider[] hitColliders = Physics.OverlapSphere(hitboxPosition, hitbox.Radius);
-
-                    foreach (var hitCollider in hitColliders)
-                    {
-                        CharacterBehaviour target = hitCollider.GetComponentInParent<CharacterBehaviour>();
-
-                        if (target == null || target == this || target.isDie)
-                        {
-                            continue;
-                        }
-
-                        if (IsValidTarget(target))
-                        {
-                            if (hitTargets.ContainsKey(target) && hitTargets[target].Contains(hitbox.HitGroup))
-                            {
-                                continue;
-                            }
-
-                            // 히트를 로컬 플레이어에서 서버에 요청
-                            if (isServer)
-                            {
-                                var hit = currentActionData.HitIdList.Find(x => x.HitId == hitbox.HitId).Clone();
-
-                                hit.Attacker = this;
-                                hit.Victim = target;
-                                hit.Direction = (new Vector3(target.transform.position.x, 0, target.transform.position.z) - new Vector3(transform.position.x,0, transform.position.z)).normalized;
-                                hit.Direction.y = 0;
-                                hit.HitDamage *= characterData.baseATK;
-                                HandleHit(hit);
-                                RpcHandleHit(hit);
-                            }
-                            //else if (isLocalPlayer)
-                            //{
-                            //    CmdHandleHit(hitbox.HitId, target, currentActionData);
-                            //}
-                            if (!hitTargets.ContainsKey(target))
-                            {
-                                hitTargets[target] = new List<int>();
-                            }
-                            hitTargets[target].Add(hitbox.HitGroup);
-
-                            break;
-                        }
-                    }
-                }
-
-                if (currentFrame >= currentActionData.ActionFrame)
-                {
-                    EndAction();
-                }
-            }
+           
             if (currentFrame >= currentActionData.ActionFrame)
             {
                 EndAction();
@@ -614,6 +614,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     [Command]
     private void CmdSyncMovement(Vector3 moveVector)
     {
+        transform.position += moveVector;
         RpcSyncMovement(moveVector);
     }
 
@@ -1573,71 +1574,151 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected Vector3 HandleCollisionAndSliding(Vector3 moveDirection, float moveSpeed)
     {
-        RaycastHit hit;
         var radius = characterData.colliderRadius;
         LayerMask wallLayer = LayerMask.GetMask("WallCollider");
         LayerMask characterLayer = LayerMask.GetMask("Character");
 
         Vector3 finalDirection = moveDirection;
         float finalSpeedAdjustment = 1f;
+        float moveDistance = moveSpeed * Time.deltaTime;
+        const float collisionEpsilon = 0.01f; // 벽과의 여유 거리
+        const float minMovementThreshold = 0.001f; // 최소 이동 임계값 (진동 방지)
 
-        // 벽 충돌 처리
-        if (Physics.SphereCast(transform.position, radius, finalDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
+        // 1. 벽 충돌 처리
+        List<RaycastHit> hits = Physics.SphereCastAll(transform.position, radius, finalDirection, moveDistance, wallLayer).ToList();
+        if (hits.Count > 0)
         {
-            Vector3 normal = hit.normal;
-            Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, normal).normalized;
+            // 충돌한 모든 벽의 법선을 계산
+            Vector3 averageNormal = Vector3.zero;
+            float minDistance = float.MaxValue;
 
-            float firstAngle = Vector3.Angle(finalDirection, normal);
-            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
-
-            // 두 번째 벽 충돌 검사
-            if (Physics.SphereCast(transform.position, radius, slideDirection, out hit, moveSpeed * Time.deltaTime, wallLayer))
+            foreach (var hit in hits)
             {
-                Vector3 secondNormal = hit.normal;
-                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
+                averageNormal += hit.normal;
+                if (hit.distance < minDistance)
+                {
+                    minDistance = hit.distance;
+                }
+            }
 
-                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
-                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
+            // 평균 법선 계산
+            averageNormal.Normalize();
 
-                firstSpeedAdjustment *= secondSpeedAdjustment;
+            // 침투한 경우 밀어내기 처리
+            if (minDistance <= collisionEpsilon)
+            {
+                float pushOutDistance = radius - minDistance + collisionEpsilon;
+                Vector3 pushOutDirection = averageNormal * pushOutDistance;
+
+                // 너무 과도한 밀어내기 방지
+                pushOutDirection = Vector3.ClampMagnitude(pushOutDirection, 0.1f);
+
+                transform.position += pushOutDirection; // 벽에서 살짝 밀어냄
+                moveDistance -= pushOutDistance;       // 이동 거리 보정
+            }
+
+            // 이동 방향을 법선 벡터 기준으로 미끄러뜨림
+            Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, averageNormal).normalized;
+
+            float angle = Vector3.Angle(finalDirection, averageNormal);
+            float speedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(angle - 90) / 90f);
+
+            // 이동량이 너무 작으면 정지 처리
+            if (moveDistance < minMovementThreshold)
+            {
+                return Vector3.zero; // 진동 방지를 위해 정지
             }
 
             finalDirection = slideDirection;
-            finalSpeedAdjustment *= firstSpeedAdjustment;
+            finalSpeedAdjustment *= speedAdjustment;
         }
+        // 캐릭터 충돌 처리 (SphereCastAll 사용)
+        List<RaycastHit> characterHits = Physics.SphereCastAll(transform.position, radius, finalDirection, moveDistance, characterLayer).ToList();
 
-        // 캐릭터 충돌 처리 (이동 방향에 따라 판단)
-        Collider[] characterColliders = Physics.OverlapSphere(transform.position, radius, characterLayer);
-        foreach (var collider in characterColliders)
+        // 자기 자신 제외
+        characterHits.RemoveAll(hit => hit.collider.gameObject == gameObject);
+
+        foreach (var hit in characterHits)
         {
-            CharacterBehaviour otherCharacter = collider.GetComponentInParent<CharacterBehaviour>();
+            CharacterBehaviour otherCharacter = hit.collider.GetComponentInParent<CharacterBehaviour>();
 
-            // 자신이 아니고 KnockBack 상태가 아닌 캐릭터만 처리
-            if (otherCharacter != null && otherCharacter != this &&
-                otherCharacter.currentState != CharacterState.KnockBack &&
-                otherCharacter.currentState != CharacterState.KnockBackSmash)
+            if (otherCharacter != null && otherCharacter != this)
             {
+                float myMass = characterData.mass;
+                float otherMass = otherCharacter.characterData.mass;
+
                 Vector3 toOtherCharacter = (otherCharacter.transform.position - transform.position).normalized;
 
-                // 이동 방향과 충돌 방향이 일정 각도 이내일 경우만 충돌 처리
                 float angleToOther = Vector3.Angle(finalDirection, toOtherCharacter);
-                if (angleToOther > 90f) // 이동 방향과 반대면 충돌 무시
+                if (angleToOther > 90f)
                     continue;
 
                 Vector3 characterNormal = toOtherCharacter;
-                Vector3 characterSlideDirection = Vector3.ProjectOnPlane(finalDirection, characterNormal).normalized;
 
-                float characterAngle = Vector3.Angle(finalDirection, characterNormal);
-                float characterSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(characterAngle - 90) / 90f);
+                // 충돌 강도 계산
+                float totalMass = myMass + otherMass;
+                float myPushFactor = otherMass / totalMass;
+                float otherPushFactor = myMass / totalMass;
 
-                // 충돌 결과 반영
-                finalDirection = characterSlideDirection;
-                finalSpeedAdjustment *= characterSpeedAdjustment;
+                // 상대방 밀어내기
+                Vector3 pushDirection = characterNormal * moveDistance * otherPushFactor;
+                if (!TryPushCharacter(otherCharacter, pushDirection, radius, wallLayer, characterLayer))
+                {
+                    // 밀어낼 수 없는 경우 이동 중단
+                    Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, characterNormal).normalized;
+
+
+                    // 미끄러진 결과로 이동
+                    finalDirection = slideDirection;
+                    finalSpeedAdjustment *= myPushFactor; // 속도 조정
+                    continue;
+                }
+
+                // 내 이동 처리
+                Vector3 successfulSlideDirection = Vector3.ProjectOnPlane(finalDirection, characterNormal).normalized;
+                finalDirection = successfulSlideDirection;
+                finalSpeedAdjustment *= myPushFactor;
             }
         }
 
         // 최종 이동 방향 및 속도 계산
+        
         return finalDirection * moveSpeed * finalSpeedAdjustment * Time.deltaTime;
+    }
+
+
+    private bool TryPushCharacter(CharacterBehaviour target, Vector3 pushDirection, float radius, LayerMask wallLayer, LayerMask characterLayer)
+    {
+        Vector3 targetNewPosition = target.transform.position + pushDirection;
+
+        // 벽 충돌 검사
+        if (Physics.CheckSphere(targetNewPosition, radius, wallLayer))
+        {
+            return false; // 밀어낼 수 없음
+        }
+
+        // 다른 캐릭터와 충돌 검사
+        Collider[] characterOverlaps = Physics.OverlapSphere(targetNewPosition, radius, characterLayer);
+        foreach (var overlap in characterOverlaps)
+        {
+            CharacterBehaviour otherCharacter = overlap.GetComponentInParent<CharacterBehaviour>();
+            if (otherCharacter != null && otherCharacter != target)
+            {
+                Vector3 toOtherCharacter = (otherCharacter.transform.position - targetNewPosition).normalized;
+                if (Vector3.Angle(pushDirection, toOtherCharacter) < 90f)
+                {
+                    // 재귀적으로 밀어내기 시도
+                    if (!TryPushCharacter(otherCharacter, pushDirection, radius, wallLayer, characterLayer))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // 밀어내기 성공
+        target.transform.position = targetNewPosition;
+        return true;
     }
 
     private void UpdateStatuses()

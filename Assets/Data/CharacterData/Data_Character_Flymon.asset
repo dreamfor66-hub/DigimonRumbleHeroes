@@ -22,7 +22,7 @@ MonoBehaviour:
   moveSpeed: 5
   defaultBasicAttackCycle: 1.5
   colliderRadius: 0.5
-  mass: 1
+  mass: 100
   drag: 1
   attackRange: 5
   Hurtboxes:

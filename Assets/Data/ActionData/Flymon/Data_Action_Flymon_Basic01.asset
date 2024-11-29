@@ -81,12 +81,8 @@ MonoBehaviour:
     EndValue: {x: 0, y: 0}
   - StartFrame: 22
     EndFrame: 30
-    StartValue: {x: 0, y: 30}
-    EndValue: {x: 0, y: 10}
-  - StartFrame: 32
-    EndFrame: 42
-    StartValue: {x: 0, y: -15}
-    EndValue: {x: 0, y: 0}
+    StartValue: {x: 0, y: 20}
+    EndValue: {x: 0, y: 15}
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 10
@@ -98,7 +94,7 @@ MonoBehaviour:
   - StartFrame: 29
     EndFrame: 32
     Offset: {x: 0, y: 1}
-    Radius: 0.7
+    Radius: 1.5
     HitId: 0
     HitGroup: 0
   HitIdList:

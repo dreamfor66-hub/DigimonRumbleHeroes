@@ -77,8 +77,8 @@ MonoBehaviour:
   MovementList:
   - StartFrame: 60
     EndFrame: 100
-    StartValue: {x: 0, y: 15}
-    EndValue: {x: 0, y: 15}
+    StartValue: {x: 0, y: 12}
+    EndValue: {x: 0, y: 12}
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 12
@@ -90,35 +90,35 @@ MonoBehaviour:
   - StartFrame: 60
     EndFrame: 100
     Offset: {x: 0, y: 0}
-    Radius: 1
+    Radius: 1.2
     HitId: 0
     HitGroup: 0
   - StartFrame: 60
     EndFrame: 70
     Offset: {x: 0, y: 0}
-    Radius: 1
+    Radius: 1.2
     HitId: 1
     HitGroup: 1
   - StartFrame: 70
     EndFrame: 80
     Offset: {x: 0, y: 0}
-    Radius: 1
+    Radius: 1.2
     HitId: 1
     HitGroup: 2
   - StartFrame: 80
     EndFrame: 90
     Offset: {x: 0, y: 0}
-    Radius: 1
+    Radius: 1.2
     HitId: 1
     HitGroup: 3
   - StartFrame: 90
     EndFrame: 100
     Offset: {x: 0, y: 0}
-    Radius: 1
+    Radius: 1.2
     HitId: 1
     HitGroup: 4
   HitIdList:
-  - HitId: 0
+  - HitId: 1
     HitDamage: 0
     HitStopFrame: 2
     HitStunFrame: 0
@@ -130,7 +130,7 @@ MonoBehaviour:
     Attacker: {fileID: 0}
     Victim: {fileID: 0}
     Direction: {x: 0, y: 0, z: 0}
-  - HitId: 1
+  - HitId: 0
     HitDamage: 0
     HitStopFrame: 0
     HitStunFrame: 0
