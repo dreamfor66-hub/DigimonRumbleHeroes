@@ -274,53 +274,6 @@ MonoBehaviour:
   GameplayScene: Assets/Scenes/GamePlayScene.unity
   _allPlayersReady: 0
   clientIndex: 0
---- !u!1 &342743829
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 342743831}
-  - component: {fileID: 342743830}
-  m_Layer: 0
-  m_Name: Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &342743830
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 342743829}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce1476e3cf143b24f9e4101306d86017, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Party: []
-  PlayerStartPoint: {x: 2, y: -1}
-  MapSize: {x: 0, y: 0}
---- !u!4 &342743831
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 342743829}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1881740959
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,4 +467,3 @@ SceneRoots:
   - {fileID: 1881740962}
   - {fileID: 1883060503}
   - {fileID: 81771288}
-  - {fileID: 342743831}

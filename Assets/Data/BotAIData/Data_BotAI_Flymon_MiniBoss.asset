@@ -31,16 +31,9 @@ MonoBehaviour:
     distanceRange: {x: 0, y: 3}
     nextState: 3
     duration: 1
-    actionKey: 20
-    cooldown: 10
-    cooldownTimer: 6.6429343
-  - state: 1
-    distanceRange: {x: 0, y: 3}
-    nextState: 3
-    duration: 1
-    actionKey: 10
-    cooldown: 1
-    cooldownTimer: -0.003027169
+    actionKey: 21
+    cooldown: 0
+    cooldownTimer: 0
   - state: 2
     distanceRange: {x: 3, y: 5}
     nextState: 2

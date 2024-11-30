@@ -1192,6 +1192,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private void StartKnockBack(HitData hit)
     {
         ChangeStatePrev(CharacterState.KnockBack);
+        transform.rotation = Quaternion.LookRotation(-hit.Direction);
         knockBackDirection = hit.Direction;
         initialKnockBackSpeed = hit.KnockbackPower;
 
@@ -1222,6 +1223,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     {
         ChangeStatePrev(CharacterState.KnockBackSmash);
         //currentState = CharacterState.KnockBackSmash; // 로컬에서 상태 변경
+        transform.rotation = Quaternion.LookRotation(-hit.Direction);
         knockBackDirection = hit.Direction.normalized;
         initialKnockBackSpeed = hit.KnockbackPower;
 
@@ -1580,60 +1582,13 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
         Vector3 finalDirection = moveDirection;
         float finalSpeedAdjustment = 1f;
-        float moveDistance = moveSpeed * Time.deltaTime;
-        const float collisionEpsilon = 0.01f; // 벽과의 여유 거리
-        const float minMovementThreshold = 0.001f; // 최소 이동 임계값 (진동 방지)
+        float moveDistance = moveSpeed * Time.deltaTime; 
 
-        // 1. 벽 충돌 처리
-        List<RaycastHit> hits = Physics.SphereCastAll(transform.position, radius, finalDirection, moveDistance, wallLayer).ToList();
-        if (hits.Count > 0)
-        {
-            // 충돌한 모든 벽의 법선을 계산
-            Vector3 averageNormal = Vector3.zero;
-            float minDistance = float.MaxValue;
+        Vector3 currentPos = transform.position;
+        Vector3 nextPos = currentPos + moveDirection * moveSpeed * Time.deltaTime;
 
-            foreach (var hit in hits)
-            {
-                averageNormal += hit.normal;
-                if (hit.distance < minDistance)
-                {
-                    minDistance = hit.distance;
-                }
-            }
-
-            // 평균 법선 계산
-            averageNormal.Normalize();
-
-            // 침투한 경우 밀어내기 처리
-            if (minDistance <= collisionEpsilon)
-            {
-                float pushOutDistance = radius - minDistance + collisionEpsilon;
-                Vector3 pushOutDirection = averageNormal * pushOutDistance;
-
-                // 너무 과도한 밀어내기 방지
-                pushOutDirection = Vector3.ClampMagnitude(pushOutDirection, 0.1f);
-
-                transform.position += pushOutDirection; // 벽에서 살짝 밀어냄
-                moveDistance -= pushOutDistance;       // 이동 거리 보정
-            }
-
-            // 이동 방향을 법선 벡터 기준으로 미끄러뜨림
-            Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, averageNormal).normalized;
-
-            float angle = Vector3.Angle(finalDirection, averageNormal);
-            float speedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(angle - 90) / 90f);
-
-            // 이동량이 너무 작으면 정지 처리
-            if (moveDistance < minMovementThreshold)
-            {
-                return Vector3.zero; // 진동 방지를 위해 정지
-            }
-
-            finalDirection = slideDirection;
-            finalSpeedAdjustment *= speedAdjustment;
-        }
         // 캐릭터 충돌 처리 (SphereCastAll 사용)
-        List<RaycastHit> characterHits = Physics.SphereCastAll(transform.position, radius, finalDirection, moveDistance, characterLayer).ToList();
+        List<RaycastHit> characterHits = Physics.SphereCastAll(nextPos, radius, finalDirection, moveDistance, characterLayer).ToList();
 
         // 자기 자신 제외
         characterHits.RemoveAll(hit => hit.collider.gameObject == gameObject);
@@ -1680,6 +1635,41 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 finalSpeedAdjustment *= myPushFactor;
             }
         }
+
+        // 벽 충돌 처리
+        List<RaycastHit> hits = Physics.SphereCastAll(nextPos, radius, finalDirection, moveDistance, wallLayer).ToList();
+        if (hits.Count > 0)
+        {
+            RaycastHit nearestHit = hits.OrderBy(hit => hit.distance).First();
+            float distanceToHit = nearestHit.distance; // 오프셋 고려
+
+            Vector3 firstNormal = nearestHit.normal;
+            Vector3 slideDirection = Vector3.ProjectOnPlane(finalDirection, firstNormal).normalized;
+
+            float firstAngle = Vector3.Angle(finalDirection, firstNormal);
+            float firstSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(firstAngle - 90) / 90f);
+
+            // 두 번째 벽 충돌 검사
+            List<RaycastHit> secondaryHits = Physics.SphereCastAll(transform.position, radius, slideDirection, moveDistance - distanceToHit, wallLayer).ToList();
+            if (secondaryHits.Count > 0)
+            {
+                RaycastHit secondaryHit = secondaryHits.OrderBy(hit => hit.distance).First();
+
+                Vector3 secondNormal = secondaryHit.normal;
+                slideDirection = Vector3.ProjectOnPlane(slideDirection, secondNormal).normalized;
+
+                float secondAngle = Vector3.Angle(slideDirection, secondNormal);
+                float secondSpeedAdjustment = Mathf.Clamp01(1 - Mathf.Abs(secondAngle - 90) / 90f);
+
+                firstSpeedAdjustment *= secondSpeedAdjustment;
+
+            }
+            
+
+            finalDirection = slideDirection;
+            finalSpeedAdjustment *= firstSpeedAdjustment;
+        }
+       
 
         // 최종 이동 방향 및 속도 계산
         
@@ -2102,6 +2092,9 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     /// </summary>
     private void OnDrawGizmos()
     {
+        if (!Application.isPlaying || !isActiveAndEnabled)
+            return;
+
         if (characterData != null)
         {
             Gizmos.color = new Color(0f, 0f, 1f, 0.5f);

@@ -21,7 +21,7 @@ MonoBehaviour:
   baseATK: 100
   moveSpeed: 5
   defaultBasicAttackCycle: 2
-  colliderRadius: 0.45
+  colliderRadius: 0.35
   mass: 10
   drag: 10
   attackRange: 0

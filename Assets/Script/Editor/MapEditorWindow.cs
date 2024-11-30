@@ -141,10 +141,13 @@ public class MapEditorWindow : OdinEditorWindow
     [PropertyOrder(5)]
     private void CreateBoundary()
     {
-        if (currentMap != null)
+        if (currentMap == null)
         {
-            currentMap.MapSize = mapSize;
+            Debug.LogWarning("No map exists. Please create a map first.");
+            return;
         }
+
+        currentMap.MapSize = mapSize;
 
         GameObject floorParent = GameObject.Find("Map/Floor");
         if (floorParent != null)
@@ -163,6 +166,7 @@ public class MapEditorWindow : OdinEditorWindow
         floorParent.transform.SetParent(GameObject.Find("Map").transform);
         boundaryParent.transform.SetParent(GameObject.Find("Map").transform);
 
+        // 바닥 생성 (기존 방식)
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
@@ -174,21 +178,35 @@ public class MapEditorWindow : OdinEditorWindow
             }
         }
 
-        for (int x = -1; x <= mapSize.x; x++)
-        {
-            for (int y = -1; y <= mapSize.y; y++)
-            {
-                if (x == -1 || x == mapSize.x || y == -1 || y == mapSize.y)
-                {
-                    Vector3 position = new Vector3(x, 0, y);
-                    GameObject wallBlock = PrefabUtility.InstantiatePrefab(wallPrefab) as GameObject;
-                    wallBlock.transform.position = position;
-                    wallBlock.transform.SetParent(boundaryParent.transform);
-                    wallBlock.GetComponentInChildren<Collider>().isTrigger = true;
-                    Undo.RegisterCreatedObjectUndo(wallBlock, "Create Boundary Wall");
-                }
-            }
-        }
+        // 경계 생성 (새로운 방식)
+        CreateBoundaryEdges(boundaryParent.transform);
+    }
+
+    private void CreateBoundaryEdges(Transform parent)
+    {
+        float halfWidth = mapSize.x / 2f;
+        float halfHeight = mapSize.y / 2f;
+
+        // 위쪽 경계
+        CreateBoundaryCube(new Vector3(halfWidth - 0.5f, 0f, -1f), new Vector3(mapSize.x + 2f, 1f, 1f), parent);
+
+        // 아래쪽 경계
+        CreateBoundaryCube(new Vector3(halfWidth - 0.5f, 0f, mapSize.y), new Vector3(mapSize.x + 2f, 1f, 1f), parent);
+
+        // 왼쪽 경계
+        CreateBoundaryCube(new Vector3(-1f, 0f, halfHeight - 0.5f), new Vector3(1f, 1f, mapSize.y + 2f), parent);
+
+        // 오른쪽 경계
+        CreateBoundaryCube(new Vector3(mapSize.x, 0f, halfHeight - 0.5f), new Vector3(1f, 1f, mapSize.y + 2f), parent);
+    }
+
+    private void CreateBoundaryCube(Vector3 position, Vector3 scale, Transform parent)
+    {
+        GameObject boundaryCube = PrefabUtility.InstantiatePrefab(wallPrefab) as GameObject;
+        boundaryCube.transform.position = position;
+        boundaryCube.transform.localScale = scale;
+        boundaryCube.transform.SetParent(parent);
+        Undo.RegisterCreatedObjectUndo(boundaryCube, "Create Boundary Cube");
     }
 
     private GameObject CreateFloorBlock(Vector3 position)
@@ -213,11 +231,7 @@ public class MapEditorWindow : OdinEditorWindow
     {
         SceneView.duringSceneGui += OnSceneGUI;
 
-        if (GameObject.FindFirstObjectByType<Map>() == null)
-        {
-            MapSetting();  // Initialize currentMap if it doesn't exist.
-        }
-        else
+        if (GameObject.FindFirstObjectByType<Map>() != null)
         {
             currentMap = GameObject.FindFirstObjectByType<Map>();
         }
