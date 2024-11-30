@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class MapEditorWindow : OdinEditorWindow
@@ -269,16 +270,36 @@ public class MapEditorWindow : OdinEditorWindow
             }
         }
     }
+    private bool IsPrefabEditing()
+    {
+        // 현재 PrefabStage가 존재하고, 유효한 경로를 가지면 프리팹 편집 모드로 간주
+        var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+        return prefabStage != null && !string.IsNullOrEmpty(prefabStage.assetPath);
+    }
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        Event e = Event.current;
-
+        if (Application.isPlaying)
+            return;
         if (currentMap == null)
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             return;
         }
+
+        // 현재 Map 객체가 프리팹인지 확인
+        bool isMapPrefab = PrefabUtility.IsPartOfPrefabAsset(currentMap?.gameObject);
+        
+        // 씬 뷰가 프리팹 모드인지 확인
+        bool isPrefabMode = IsPrefabEditing();
+
+        // 프리팹이 아닌 상태거나 씬 뷰가 프리팹 모드가 아니면 동작 제한
+        if ((!isMapPrefab && isPrefabMode) || (isMapPrefab && !isPrefabMode))
+        {
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            return;
+        }
+        Event e = Event.current;
 
         DrawHandle();
 

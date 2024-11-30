@@ -100,10 +100,21 @@ MonoBehaviour:
     CanRotate: 0
     Value: 5
   - StartFrame: 0
-    EndFrame: 100
+    EndFrame: 20
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.8
+  - StartFrame: 21
+    EndFrame: 55
     MoveType: 0
     CanRotate: 0
     Value: 0.5
+  - StartFrame: 55
+    EndFrame: 100
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.8
+  Transition: []
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:

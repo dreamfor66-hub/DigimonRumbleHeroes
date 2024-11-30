@@ -107,7 +107,13 @@ MonoBehaviour:
     Victim: {fileID: 0}
     Direction: {x: 0, y: 0, z: 0}
   ActionSpawnBulletList: []
-  ActionSpawnVfxList: []
+  ActionSpawnVfxList:
+  - SpawnFrame: 0
+    VfxPrefab: {fileID: -5731697141335408088, guid: aafadb268246bef4a89d66dfb929f05c,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Angle: 0
+    HasSpawned: 0
   Conditions: []
   Resources: []
   canLookInAction: 0
