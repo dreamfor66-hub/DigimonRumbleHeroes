@@ -1,5 +1,6 @@
 using Mirror;
 using Sirenix.OdinInspector;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -145,7 +146,7 @@ public class BulletBehaviour : NetworkBehaviour
                 if (isServer)
                 {
                     SpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
-                    RpcSpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
+                    //RpcSpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
                 }
                 else
                     CmdSpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
@@ -177,6 +178,12 @@ public class BulletBehaviour : NetworkBehaviour
         TriggerBullet(BulletTrigger.Despawn);
         RemoveIndicators();
         // 실제 GameObject 소멸
+        StartCoroutine(DespawnWaitForServer());
+    }
+
+    private IEnumerator DespawnWaitForServer()
+    {
+        yield return null; // 1 프레임 대기
         Destroy(gameObject);
     }
 
@@ -193,7 +200,8 @@ public class BulletBehaviour : NetworkBehaviour
         GameObject bulletObject = Instantiate(bulletPrefab, position, Quaternion.LookRotation(this.direction));
         //BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
 
-        NetworkServer.Spawn(bulletObject);
+        if (isServer)
+            NetworkServer.Spawn(bulletObject);
         BulletBehaviour bullet = bulletObject.GetComponent<BulletBehaviour>();
         // Bullet 초기화
         if (bullet != null)
@@ -280,7 +288,6 @@ public class BulletBehaviour : NetworkBehaviour
                         hit.Direction.y = 0;
                         hit.HitDamage *= owner.characterData.baseATK;
                         HandleHit(hit);
-                        RpcHandleHit(hit);
 
                         if (!hitTargets.ContainsKey(target))
                             hitTargets[target] = new List<int>();
@@ -385,15 +392,14 @@ public class BulletBehaviour : NetworkBehaviour
             else if (currentFrame > indicator.EndFrame)
             {
                 // EndFrame 초과 시 Indicator 제거
-                if (activeIndicators.Contains(indicator))
+
+                if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
                 {
-                    if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
-                    {
-                        Destroy(indicatorObject);
-                        activeIndicatorObjects.Remove(indicator);
-                    }
-                    activeIndicators.Remove(indicator);
+                    Destroy(indicatorObject);
+                    activeIndicatorObjects.Remove(indicator);
                 }
+                activeIndicators.Remove(indicator);
+                
             }
         }
     }
