@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Flymon_Special02
   m_EditorClassIdentifier: 
-  LiftTime: 0.75
+  LifeTime: 0.75
   DespawnBy: 8
   BulletRadius: 0.05
   ReflectOnWall: 0
@@ -27,3 +27,12 @@ MonoBehaviour:
     Offset: {x: 0, y: 0}
     Angle: 0
   BulletSpawnVfxList: []
+  BulletIndicators:
+  - StartFrame: 0
+    EndFrame: 45
+    Type: 1
+    ShowMaxOnly: 0
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.5

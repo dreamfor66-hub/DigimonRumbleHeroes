@@ -593,7 +593,22 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 if (currentFrame >= vfxData.SpawnFrame && !spawnedVfxData.Contains(vfxData))
                 {
-                    SpawnVfx(vfxData);
+                    SerializedVfxData serializedVfxData = new SerializedVfxData(
+                        vfxData.Offset,
+                        vfxData.Angle,
+                        vfxData.VfxPrefab.name
+                    );
+                    Vector3 spawnPosition = transform.position + transform.forward * serializedVfxData.Offset.y + transform.right * serializedVfxData.Offset.x;
+                    Quaternion spawnRotation = Quaternion.Euler(0, serializedVfxData.Angle, 0);
+
+                    if (isServer)
+                    {
+                        SpawnVfx(spawnPosition, spawnRotation, serializedVfxData.VfxPrefabName);
+                    }
+                    else
+                    {
+                        CmdSpawnVfx(spawnPosition, spawnRotation, serializedVfxData.VfxPrefabName);
+                    }
                     spawnedVfxData.Add(vfxData); // 중복 소환 방지용 추가
                 }
             }
@@ -2297,21 +2312,52 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
     // Action에서 무언가를 소환하는 메서드
-    private void SpawnVfx(ActionSpawnVfxData vfxData)
+    private void SpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
     {
-        Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
-        Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0);
+        GameObject vfxPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == vfxPrefabName);
+        if (vfxPrefab == null)
+        {
+            Debug.LogError($"Prefab '{vfxPrefabName}' not found in RegisteredSpawnablePrefabs.");
+            return;
+        }
 
-        VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
-        NetworkServer.Spawn(vfx.gameObject);
-        vfx.SetTransform(transform, spawnPosition, Quaternion.Euler(0, vfxData.Angle, 0), Vector3.one);
+        // Instantiate the VFX object
+        VfxObject vfx = Instantiate(vfxPrefab, spawnPosition, spawnRotation).GetComponent<VfxObject>();
+        if (vfx == null)
+        {
+            Debug.LogError($"Prefab '{vfxPrefabName}' does not have a VfxObject component.");
+            return;
+        }
+
+        if (isServer)
+        {
+            NetworkServer.Spawn(vfx.gameObject);
+        }
+        vfx.SetTransform(transform, spawnPosition, spawnRotation, Vector3.one);
         vfx.OnSpawn(currentFrame);
 
         if (vfx.PlayType == VfxPlayType.Manual)
         {
-            activeManualVfxList.Add(vfx); // Manual 타입만 관리 리스트에 추가하여 Hitstop에 영향 받게 설정
+            activeManualVfxList.Add(vfx);
         }
     }
+
+    [Command]
+    private void CmdSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
+    {
+        SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
+        RpcSpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
+    }
+
+    [ClientRpc]
+    private void RpcSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
+    {
+        if (!isServer)
+        {
+            SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
+        }
+    }
+
     private Vector3 GetAnchor(SpawnAnchor anchorType)
     {
         switch (anchorType)

@@ -42,6 +42,8 @@ public class RigController : MonoBehaviour
                 }
             case CharacterState.Action:
                 {
+                    if (behaviour.currentActionData == null)
+                        return;
                     isInAction = true;
                     if (behaviour.target == null)
                     {

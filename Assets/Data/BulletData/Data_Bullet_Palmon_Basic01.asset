@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Palmon_Basic01
   m_EditorClassIdentifier: 
-  LiftTime: 3
+  LifeTime: 0.7
   DespawnBy: 26
   BulletRadius: 0.1
   ReflectOnWall: 0
@@ -45,3 +45,4 @@ MonoBehaviour:
       type: 3}
     Offset: {x: 0, y: 0}
     Angle: 0
+  BulletIndicators: []

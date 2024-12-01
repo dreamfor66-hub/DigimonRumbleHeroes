@@ -32,8 +32,6 @@ MonoBehaviour:
   weightChangeSpeed: 1
   ActionTable:
   - ActionKey: 10
-    ActionData: {fileID: 11400000, guid: 4f5a56df4b77bc649928b0322745c403, type: 2}
-  - ActionKey: 10
     ActionData: {fileID: 11400000, guid: e6aca6ab51ecabf4cb2dbc6d7c3250cf, type: 2}
   - ActionKey: 10
     ActionData: {fileID: 11400000, guid: 1ac97ad3c4d24cd4db791b8e374a3ee2, type: 2}

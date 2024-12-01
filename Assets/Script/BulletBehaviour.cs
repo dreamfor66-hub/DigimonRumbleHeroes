@@ -163,7 +163,7 @@ public class BulletBehaviour : NetworkBehaviour
                 if (isServer)
                 {
                     SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
-                    RpcSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                    //RpcSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
                 }
                 else
                     CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
@@ -241,8 +241,10 @@ public class BulletBehaviour : NetworkBehaviour
         }
 
         GameObject vfxObject = Instantiate(vfxPrefab, position, Quaternion.Euler(direction));
-
-        NetworkServer.Spawn(vfxObject);
+        if (isServer)
+        {
+            NetworkServer.Spawn(vfxObject);
+        }
         VfxObject vfx = vfxObject.GetComponent<VfxObject>();
         vfx.SetTransform(transform, position, Quaternion.Euler(direction), Vector3.one);
     }

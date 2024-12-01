@@ -231,14 +231,20 @@ MonoBehaviour:
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
+  - {fileID: 3678699042631848217, guid: 5b18152df67d72a4094fa79b5d43f108, type: 3}
+  - {fileID: 3678699042631848217, guid: a013badf01c8d5346be1f19b3704baf3, type: 3}
+  - {fileID: 3678699042631848217, guid: 8af647b970594c443bb56a461fe36a80, type: 3}
+  - {fileID: 3678699042631848217, guid: 1bee7e964921e8b40bb58a5d90337e31, type: 3}
+  - {fileID: 3678699042631848217, guid: 5e6ba8da64bf07b4bb4c741a33782ef0, type: 3}
   - {fileID: 3678699042631848217, guid: d737881ee29dacc44bde6bf7277e4491, type: 3}
   - {fileID: 3678699042631848217, guid: 33d6ec2cf70243a41bc3fc46a4e72529, type: 3}
   - {fileID: 3678699042631848217, guid: 50a87849af967ae4b8d495a9d7417bc4, type: 3}
-  - {fileID: 3678699042631848217, guid: 5b18152df67d72a4094fa79b5d43f108, type: 3}
-  - {fileID: 3678699042631848217, guid: a013badf01c8d5346be1f19b3704baf3, type: 3}
-  - {fileID: 3678699042631848217, guid: 5e6ba8da64bf07b4bb4c741a33782ef0, type: 3}
   - {fileID: 3678699042631848217, guid: 564eefb57bf8c04419620fade7cea038, type: 3}
   - {fileID: 3678699042631848217, guid: de6720e54567b3e418a415edfbfaf0f1, type: 3}
+  - {fileID: 289781361294771909, guid: 95f9af8e539420649b7909ec97401e5e, type: 3}
+  - {fileID: 3678699042631848217, guid: 9febac8d042f3bc49b2d2504b4ddf553, type: 3}
+  - {fileID: 8783232709718090536, guid: d25c09698b876ce47af4b5f4726a3da7, type: 3}
+  - {fileID: 8783232709718090536, guid: c9aa0a60ee1fc7d4687c2750783d5c90, type: 3}
   - {fileID: 289781361294771909, guid: 3a923a8917fd2534d9b516a3e32c3933, type: 3}
   - {fileID: 289781361294771909, guid: 556d166b0f30d6a47b4b7c73309763a2, type: 3}
   - {fileID: 289781361294771909, guid: 32a3b1e072ecd124090f04e0e71539e2, type: 3}
@@ -252,11 +258,7 @@ MonoBehaviour:
   - {fileID: 3678699042631848217, guid: 0b8c12ecc76355a4a907d52adf44d194, type: 3}
   - {fileID: 3678699042631848217, guid: 95efbbfca7437a644ab2698cba31ba29, type: 3}
   - {fileID: 3678699042631848217, guid: 3a5045f5648223446903759a32392d39, type: 3}
-  - {fileID: 289781361294771909, guid: 95f9af8e539420649b7909ec97401e5e, type: 3}
-  - {fileID: 3678699042631848217, guid: 8af647b970594c443bb56a461fe36a80, type: 3}
-  - {fileID: 3678699042631848217, guid: 1bee7e964921e8b40bb58a5d90337e31, type: 3}
-  - {fileID: 8783232709718090536, guid: c9aa0a60ee1fc7d4687c2750783d5c90, type: 3}
-  - {fileID: 8783232709718090536, guid: d25c09698b876ce47af4b5f4726a3da7, type: 3}
+  - {fileID: 3678699042631848217, guid: aafadb268246bef4a89d66dfb929f05c, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
