@@ -78,7 +78,7 @@ MonoBehaviour:
   - StartFrame: 60
     EndFrame: 100
     StartValue: {x: 0, y: 12}
-    EndValue: {x: 0, y: 12}
+    EndValue: {x: 0, y: 10}
   SpecialMovementList:
   - StartFrame: 0
     EndFrame: 12
@@ -144,6 +144,7 @@ MonoBehaviour:
     Direction: {x: 0, y: 0, z: 0}
   ActionSpawnBulletList: []
   ActionSpawnVfxList: []
+  ActionIndicators: []
   Conditions: []
   Resources: []
   canLookInAction: 0

@@ -76,25 +76,26 @@ MonoBehaviour:
     m_RotationOrder: 4
   MovementList:
   - StartFrame: 0
-    EndFrame: 22
+    EndFrame: 30
     StartValue: {x: 0, y: -2}
     EndValue: {x: 0, y: 0}
-  - StartFrame: 22
-    EndFrame: 30
+  - StartFrame: 30
+    EndFrame: 38
     StartValue: {x: 0, y: 20}
     EndValue: {x: 0, y: 15}
-  SpecialMovementList:
-  - StartFrame: 0
-    EndFrame: 10
-    MoveType: 1
-    CanRotate: 0
-    Value: 12
+  SpecialMovementList: []
   Transition: []
   HitboxList:
-  - StartFrame: 29
-    EndFrame: 32
-    Offset: {x: 0, y: 1}
-    Radius: 1.5
+  - StartFrame: 30
+    EndFrame: 40
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  - StartFrame: 30
+    EndFrame: 40
+    Offset: {x: 0, y: 0.5}
+    Radius: 1
     HitId: 0
     HitGroup: 0
   HitIdList:
@@ -112,6 +113,23 @@ MonoBehaviour:
     Direction: {x: 0, y: 0, z: 0}
   ActionSpawnBulletList: []
   ActionSpawnVfxList: []
+  ActionIndicators:
+  - StartFrame: 0
+    EndFrame: 30
+    Type: 0
+    ShowMaxOnly: 0
+    StartPos: {x: 0, y: -1}
+    EndPos: {x: 0, y: 4.8}
+    Width: 1
+    Radius: 0
+  - StartFrame: 30
+    EndFrame: 60
+    Type: 0
+    ShowMaxOnly: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 5.8}
+    Width: 1
+    Radius: 0
   Conditions: []
   Resources: []
   canLookInAction: 0

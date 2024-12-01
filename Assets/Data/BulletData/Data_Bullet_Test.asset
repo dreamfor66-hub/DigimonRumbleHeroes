@@ -27,4 +27,103 @@ MonoBehaviour:
     Offset: {x: 0, y: 0}
     Angle: 0
   BulletSpawnVfxList: []
-  BulletIndicators: []
+  BulletIndicators:
+  - StartFrame: 0
+    EndFrame: 2
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0.2
+    Radius: 0.5
+  - StartFrame: 2
+    EndFrame: 5
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0.2
+    Radius: 0.7
+  - StartFrame: 5
+    EndFrame: 7
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 0.9
+  - StartFrame: 7
+    EndFrame: 10
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.1
+  - StartFrame: 10
+    EndFrame: 12
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 1
+    Radius: 1.25
+  - StartFrame: 12
+    EndFrame: 15
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 1
+    Radius: 1.5
+  - StartFrame: 15
+    EndFrame: 17
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.6
+  - StartFrame: 17
+    EndFrame: 20
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.7
+  - StartFrame: 20
+    EndFrame: 22
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.8
+  - StartFrame: 22
+    EndFrame: 25
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 1.9
+  - StartFrame: 25
+    EndFrame: 30
+    Type: 1
+    ShowMaxOnly: 0
+    FollowTransform: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 2

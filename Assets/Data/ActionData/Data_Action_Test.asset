@@ -114,12 +114,12 @@ MonoBehaviour:
   HitboxList: []
   HitIdList: []
   ActionSpawnBulletList:
-  - SpawnFrame: 28
+  - SpawnFrame: 0
     BulletPrefab: {fileID: 5111934926271759165, guid: d737881ee29dacc44bde6bf7277e4491,
       type: 3}
     Offset: {x: 0, y: 0}
     Anchor: 0
-    Pivot: 1
+    Pivot: 0
     Angle: 0
   ActionSpawnVfxList: []
   ActionIndicators: []

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Flymon_Special02_Explosion
   m_EditorClassIdentifier: 
-  LifeTime: 1
+  LifeTime: 3
   DespawnBy: 8
   BulletRadius: 0.05
   ReflectOnWall: 0
@@ -28,9 +28,9 @@ MonoBehaviour:
   HitIdList:
   - HitId: 0
     HitDamage: 0.3
-    HitStopFrame: 2
+    HitStopFrame: 5
     HitStunFrame: 30
-    KnockbackPower: 1
+    KnockbackPower: 7
     HitType: 1
     HitApplyOwnerResource: 0
     ResourceKey: 1

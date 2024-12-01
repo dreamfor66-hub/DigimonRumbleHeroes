@@ -415,10 +415,9 @@ public class BulletBehaviour : NetworkBehaviour
             return null;
         }
 
-        // Indicator 생성 및 초기화
-        GameObject indicatorObject = Instantiate(prefab, transform.position, Quaternion.identity);
+        // 인디케이터 생성
+        GameObject indicatorObject = Instantiate(prefab);
         var indicatorComponent = indicatorObject.GetComponent<IndicatorComponent>();
-
         if (indicatorComponent == null)
         {
             Debug.LogError("Indicator prefab does not have an IndicatorComponent.");
@@ -426,49 +425,49 @@ public class BulletBehaviour : NetworkBehaviour
             return null;
         }
 
+        // FollowTransform 여부에 따라 부모 설정
+        if (indicator.FollowTransform)
+        {
+            indicatorObject.transform.SetParent(transform, false); // 캐릭터의 자식으로 설정
+        }
+
+        // StartPos와 EndPos 계산
+        Vector3 startPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
+        Vector3 endPosition = transform.position + transform.forward * indicator.EndPos.y + transform.right * indicator.EndPos.x;
+
+        // 방향과 길이 계산
+        Vector3 lineDirection = (endPosition - startPosition).normalized;
+        float totalLength = Vector3.Distance(startPosition, endPosition);
+
         switch (indicator.Type)
         {
             case IndicatorType.Line:
+                // Base 설정
+                indicatorComponent.BaseTransform.position = startPosition;
+                indicatorComponent.BaseTransform.rotation = Quaternion.LookRotation(lineDirection);
+                indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Width * 2, 1f, totalLength);
+
+                // Fill 초기화
+                if (indicatorComponent.FillTransform != null)
                 {
-                    Vector3 startWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
-                    Vector3 endWorldPosition = transform.position + transform.forward * indicator.EndPos.y + transform.right * indicator.EndPos.x;
-
-                    Vector3 lineDirection = (endWorldPosition - startWorldPosition).normalized;
-                    float totalLength = Vector3.Distance(startWorldPosition, endWorldPosition);
-
-                    // Base 설정
-                    indicatorComponent.BaseTransform.position = startWorldPosition;
-                    indicatorComponent.BaseTransform.rotation = Quaternion.LookRotation(lineDirection);
-                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Width * 2, 1f, totalLength);
-
-                    // Fill 초기화
-                    if (indicatorComponent.FillTransform != null)
-                    {
-                        indicatorComponent.FillTransform.position = startWorldPosition;
-                        indicatorComponent.FillTransform.rotation = Quaternion.LookRotation(lineDirection);
-                        indicatorComponent.FillTransform.localScale = new Vector3(indicator.Width * 2, 1f, 0f); // 초기 Fill 길이 0
-                    }
-
-                    break;
+                    indicatorComponent.FillTransform.position = startPosition;
+                    indicatorComponent.FillTransform.rotation = Quaternion.LookRotation(lineDirection);
+                    indicatorComponent.FillTransform.localScale = new Vector3(indicator.Width * 2, 1f, 0f); // 초기 Fill 길이 0
                 }
+                break;
 
             case IndicatorType.Circle:
+                // Base 설정
+                indicatorComponent.BaseTransform.position = startPosition;
+                indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Radius * 2, 1f, indicator.Radius * 2);
+
+                // Fill 초기화
+                if (indicatorComponent.FillTransform != null)
                 {
-                    Vector3 centerWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
-
-                    // Base 설정
-                    indicatorComponent.BaseTransform.position = centerWorldPosition;
-                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Radius * 2, 1f, indicator.Radius * 2);
-
-                    // Fill 초기화
-                    if (indicatorComponent.FillTransform != null)
-                    {
-                        indicatorComponent.FillTransform.position = centerWorldPosition;
-                        indicatorComponent.FillTransform.localScale = new Vector3(0f, 1f, 0f); // 초기 Fill 크기 0
-                    }
-
-                    break;
+                    indicatorComponent.FillTransform.position = startPosition;
+                    indicatorComponent.FillTransform.localScale = new Vector3(0f, 1f, 0f); // 초기 Fill 크기 0
                 }
+                break;
         }
 
         return indicatorObject;

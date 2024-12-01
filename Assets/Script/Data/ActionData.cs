@@ -217,6 +217,7 @@ public class IndicatorData
     public int EndFrame;
     public IndicatorType Type;
     public bool ShowMaxOnly;
+    public bool FollowTransform;
     public Vector2 StartPos;
     [ShowIf("@Type == IndicatorType.Line")]
     public Vector2 EndPos;
