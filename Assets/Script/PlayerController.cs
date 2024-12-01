@@ -391,6 +391,7 @@ public class PlayerController : CharacterBehaviour
 
     protected override void EndAction()
     {
+        base.EndAction();
         if (Input.GetMouseButton(0))
         {
             isTouching = true;
@@ -401,7 +402,6 @@ public class PlayerController : CharacterBehaviour
         {
             animator.SetLayerWeight(1, 0);
         }
-        base.EndAction();
     }
 
 

@@ -88,7 +88,7 @@ MonoBehaviour:
   Transition: []
   HitboxList:
   - StartFrame: 40
-    EndFrame: 60
+    EndFrame: 55
     Offset: {x: 0, y: 0}
     Radius: 4.5
     HitId: 0
@@ -106,7 +106,77 @@ MonoBehaviour:
     Attacker: {fileID: 0}
     Victim: {fileID: 0}
     Direction: {x: 0, y: 0, z: 0}
-  ActionSpawnBulletList: []
+  ActionSpawnBulletList:
+  - SpawnFrame: 50
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: -0.1, y: -4.1}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 51
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: 2.9, y: -2.4}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 53
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: -2.7, y: 1.6}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 53
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: -4.9, y: -0.4}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 55
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: 0.1, y: 0.05}
+    Anchor: 1
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 55
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: -4.4, y: 0.6}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 58
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: -2.1, y: -1}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 59
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: 3.7, y: 2.8}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 60
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: 3.3, y: -2.8}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
+  - SpawnFrame: 60
+    BulletPrefab: {fileID: 5111934926271759165, guid: 8af647b970594c443bb56a461fe36a80,
+      type: 3}
+    Offset: {x: 1.9, y: 2.3}
+    Anchor: 0
+    Pivot: 0
+    Angle: 0
   ActionSpawnVfxList:
   - SpawnFrame: 0
     VfxPrefab: {fileID: -5731697141335408088, guid: aafadb268246bef4a89d66dfb929f05c,

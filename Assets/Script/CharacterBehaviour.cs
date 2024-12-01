@@ -95,6 +95,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     private HashSet<ActionSpawnVfxData> spawnedVfxData = new HashSet<ActionSpawnVfxData>();
     private HashSet<ActionSpawnBulletData> spawnedBulletData = new HashSet<ActionSpawnBulletData>();
     private HashSet<int> addedResourceFrames = new HashSet<int>();
+    private HashSet<IndicatorData> activeIndicators = new HashSet<IndicatorData>();
+    private Dictionary<IndicatorData, GameObject> activeIndicatorObjects = new Dictionary<IndicatorData, GameObject>();
 
 
     // hpBar UI
@@ -435,11 +437,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                         }
                     }
                 }
-
-                if (currentFrame >= currentActionData.ActionFrame)
-                {
-                    EndAction();
-                }
             }
             // TransformMove
             foreach (var movement in currentActionData.MovementList)
@@ -455,6 +452,42 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                         Vector3 finalMoveVector = HandleCollisionAndSliding(moveVector.normalized, moveVector.magnitude);
 
                         CmdSyncMovement(finalMoveVector);
+                    }
+                }
+            }
+
+            foreach (var indicator in currentActionData.ActionIndicators)
+            {
+                if (currentFrame >= indicator.StartFrame && currentFrame <= indicator.EndFrame)
+                {
+                    if (!activeIndicators.Contains(indicator))
+                    {
+                        // 인디케이터 생성
+                        var newIndicator = CreateIndicator(indicator);
+                        activeIndicators.Add(indicator);
+                        activeIndicatorObjects[indicator] = newIndicator;
+                    }
+
+                    // 인디케이터 스케일 업데이트
+                    if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+                    {
+                        float progress = Mathf.Clamp01((currentFrame - indicator.StartFrame) / (float)(indicator.EndFrame - indicator.StartFrame));
+                        if (indicator.ShowMaxOnly)
+                            progress = 1;
+                        UpdateIndicatorScale(indicatorObject, indicator, progress);
+                    }
+                }
+                else
+                {
+                    // 활성화 기간이 지난 경우 제거
+                    if (activeIndicators.Contains(indicator))
+                    {
+                        if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+                        {
+                            Destroy(indicatorObject);
+                            activeIndicatorObjects.Remove(indicator);
+                        }
+                        activeIndicators.Remove(indicator);
                     }
                 }
             }
@@ -543,20 +576,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                     // BulletData로부터 SerializedBulletData 생성
                     var bulletData = spawnData.BulletPrefab.bulletData;
                     SerializedBulletData serializedData = new SerializedBulletData(
-                        bulletData.LiftTime,
+                        bulletData.LifeTime,
                         bulletData.Speed,
                         bulletData.HitboxList,
                         bulletData.HitIdList
                     );
-
-                    // 서버/클라이언트 구분하여 소환 로직 호출
-                    //if (isServer)
-                    //{
-                    //    //ActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
-                    //    //RpcActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
-                    //}
-                    //else
-                        CmdActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
+                    CmdActionSpawnBullet(spawnPosition, spawnDirection, serializedData, spawnData.BulletPrefab.name);
 
 
                     spawnedBulletData.Add(spawnData); // 중복 방지
@@ -583,6 +608,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
            
             if (currentFrame >= currentActionData.ActionFrame)
             {
+                ChangeStatePrev(CharacterState.Idle);
                 EndAction();
             }
         }
@@ -751,8 +777,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
     protected virtual void EndAction()
     {
+        currentFrame = 0f;
+        currentActionData = null;
+
         hitTargets.Clear();
-        ChangeStatePrev(CharacterState.Idle);
+        RemoveIndicators();
         if (AnimatorHasLayer(animator, 1))
             animator.SetLayerWeight(1, 0);
         foreach (var vfx in activeManualVfxList)
@@ -761,7 +790,6 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         }
         activeManualVfxList.Clear();
     }
-
 
     private void ApplySpecialMovement(SpecialMovementData specialMovementData)
     {
@@ -945,6 +973,118 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         return (inputDirection.x * cameraRight + inputDirection.z * cameraForward) * speedMultiplier;
     }
 
+    private GameObject CreateIndicator(IndicatorData indicator)
+    {
+        GameObject prefab = ResourceHolder.Instance.GetIndicatorPrefab(indicator.Type);
+        if (prefab == null)
+        {
+            Debug.LogError($"Indicator prefab not found for type: {indicator.Type}");
+            return null;
+        }
+
+        // Indicator 생성 및 초기화
+        GameObject indicatorObject = Instantiate(prefab, transform.position, Quaternion.identity);
+        var indicatorComponent = indicatorObject.GetComponent<IndicatorComponent>();
+
+        if (indicatorComponent == null)
+        {
+            Debug.LogError("Indicator prefab does not have an IndicatorComponent.");
+            Destroy(indicatorObject);
+            return null;
+        }
+
+        switch (indicator.Type)
+        {
+            case IndicatorType.Line:
+                {
+                    Vector3 startWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
+                    Vector3 endWorldPosition = transform.position + transform.forward * indicator.EndPos.y + transform.right * indicator.EndPos.x;
+
+                    Vector3 lineDirection = (endWorldPosition - startWorldPosition).normalized;
+                    float totalLength = Vector3.Distance(startWorldPosition, endWorldPosition);
+
+                    // Base 설정
+                    indicatorComponent.BaseTransform.position = startWorldPosition;
+                    indicatorComponent.BaseTransform.rotation = Quaternion.LookRotation(lineDirection);
+                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Width*2, 1f, totalLength);
+
+                    // Fill 초기화
+                    if (indicatorComponent.FillTransform != null)
+                    {
+                        indicatorComponent.FillTransform.position = startWorldPosition;
+                        indicatorComponent.FillTransform.rotation = Quaternion.LookRotation(lineDirection);
+                        indicatorComponent.FillTransform.localScale = new Vector3(indicator.Width*2, 1f, 0f); // 초기 Fill 길이 0
+                    }
+
+                    break;
+                }
+
+            case IndicatorType.Circle:
+                {
+                    Vector3 centerWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
+
+                    // Base 설정
+                    indicatorComponent.BaseTransform.position = centerWorldPosition;
+                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Radius * 2, 1f, indicator.Radius * 2);
+
+                    // Fill 초기화
+                    if (indicatorComponent.FillTransform != null)
+                    {
+                        indicatorComponent.FillTransform.position = centerWorldPosition;
+                        indicatorComponent.FillTransform.localScale = new Vector3(0f, 1f, 0f); // 초기 Fill 크기 0
+                    }
+
+                    break;
+                }
+        }
+
+        return indicatorObject;
+    }
+
+    private void UpdateIndicatorScale(GameObject indicatorObject, IndicatorData indicator, float progress)
+    {
+        var indicatorComponent = indicatorObject.GetComponent<IndicatorComponent>();
+        if (indicatorComponent == null)
+        {
+            Debug.LogError("IndicatorObject does not have an IndicatorComponent.");
+            return;
+        }
+
+        if (indicatorComponent.FillTransform == null)
+        {
+            Debug.LogError("Indicator null");
+            return;
+        }
+
+        Vector3 currentScale = indicatorComponent.FillTransform.localScale;
+        switch (indicator.Type)
+        {
+            case IndicatorType.Line:
+                indicatorComponent.FillTransform.localScale = new Vector3(currentScale.x, currentScale.y, indicatorComponent.BaseTransform.localScale.z * progress);
+                break;
+
+            case IndicatorType.Circle:
+                indicatorComponent.FillTransform.localScale = new Vector3(
+                indicatorComponent.BaseTransform.localScale.x * progress,
+                currentScale.y,
+                indicatorComponent.BaseTransform.localScale.z * progress);
+                break;
+        }
+    }
+
+    private void RemoveIndicators()
+    {
+        foreach (var indicator in new List<IndicatorData>(activeIndicators))
+        {
+            if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+            {
+                Destroy(indicatorObject);
+                activeIndicatorObjects.Remove(indicator);
+            }
+            activeIndicators.Remove(indicator);
+        }
+    }
+
     private void ActionSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
     {
         GameObject bulletPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == prefabName);
@@ -978,7 +1118,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         //RpcActionSpawnBullet(position, direction, serializedData, prefabName);
     }
 
-
+    //미사용
     [ClientRpc]
     private void RpcActionSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
     {
@@ -1201,6 +1341,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
+        CmdPlayAnimation("Knockback", 0f);
     }
 
     [Command]
@@ -1232,6 +1373,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         knockBackTimer = 0f;
 
         animator.Play("Knockback", 0, 0f);
+        CmdPlayAnimation("Knockback", 0f);
     }
 
     [Command]
@@ -1267,12 +1409,12 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (knockBackTimer <= initialBurstDuration)
         {
             float t = knockBackTimer / initialBurstDuration;
-            speedModifier = Mathf.Lerp(1f, 0.3f, t);
+            speedModifier = Mathf.Lerp(1f, 0.7f, t);
         }
         else if (knockBackTimer <= initialBurstDuration + flightDuration)
         {
             float t = (knockBackTimer - initialBurstDuration) / flightDuration;
-            speedModifier = Mathf.Lerp(0.3f, 0.15f, t);
+            speedModifier = Mathf.Lerp(0.7f, 0.15f, t);
         }
         else
         {
@@ -1318,17 +1460,17 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         if (knockBackTimer <= initialBurstDuration)
         {
             float t = knockBackTimer / initialBurstDuration;
-            speedModifier = Mathf.Lerp(1f, 0.5f, t);
+            speedModifier = Mathf.Lerp(1f, 0.7f, t);
         }
         else if (knockBackTimer <= initialBurstDuration + flightDuration)
         {
             float t = (knockBackTimer - initialBurstDuration) / flightDuration;
-            speedModifier = Mathf.Lerp(0.5f, 0.3f, t);
+            speedModifier = Mathf.Lerp(0.7f, 0.15f, t);
         }
         else
         {
             float t = (knockBackTimer - initialBurstDuration - flightDuration) / decelerationDuration;
-            speedModifier = Mathf.Lerp(0.3f, 0f, t);
+            speedModifier = Mathf.Lerp(0.15f, 0f, t);
         }
         currentknockBackSpeed = initialKnockBackSpeed * speedModifier;
         Vector3 knockBackMovement = knockBackDirection * currentknockBackSpeed * Time.deltaTime;
@@ -1365,7 +1507,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
                 KnockbackPower = currentknockBackSpeed * ResourceHolder.Instance.gameVariables.collideReduceMultiplier, // 속도 감소
                 HitType = HitType.Strong, // 속도 감소
                 HitDamage = 0f, // 벽 충돌은 대미지 없음
-                HitStopFrame = knockbackPowerForWallCollide,
+                HitStopFrame = (knockbackPowerForWallCollide/100+1) * ResourceHolder.Instance.gameVariables.hitstopWhenCollide,
             };
 
             if (isServer)

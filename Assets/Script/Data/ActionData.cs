@@ -57,6 +57,10 @@ public class ActionData : ScriptableObject
     [PropertyOrder(2)]
     [TableList(AlwaysExpanded = true)]
     public List<ActionSpawnVfxData> ActionSpawnVfxList = new List<ActionSpawnVfxData>();
+    
+    [Title("Indicator")]
+    [PropertyOrder(2)]
+    public List<IndicatorData> ActionIndicators = new List<IndicatorData>();
 
     [Title("Condition")]
     [Tooltip("액션 진입 조건. And 연산")]
@@ -203,6 +207,29 @@ public class TransitionData
     public TransitionType Type;
     public InputMessage InputType = InputMessage.A;
     public ActionKey NextAction = ActionKey.Basic01;
+}
+
+
+[System.Serializable]
+public class IndicatorData
+{
+    public int StartFrame;
+    public int EndFrame;
+    public IndicatorType Type;
+    public bool ShowMaxOnly;
+    public Vector2 StartPos;
+    [ShowIf("@Type == IndicatorType.Line")]
+    public Vector2 EndPos;
+    [ShowIf("@Type == IndicatorType.Line")]
+    public float Width;
+    [ShowIf("@Type == IndicatorType.Circle")]
+    public float Radius;
+}
+
+public enum IndicatorType
+{
+    Line,
+    Circle,
 }
 
 

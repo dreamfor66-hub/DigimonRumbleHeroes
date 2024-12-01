@@ -151,6 +151,8 @@ public class EnemyController : CharacterBehaviour
         speedMultiplier = 0;
         currentSpeed = characterData.moveSpeed * speedMultiplier;
         animator.Play("Idle");
+        float normalizedSpeed = 0; // 항상 1로 유지
+        animator.SetFloat("speed", normalizedSpeed);
         LookAtPlayer();
     }
 

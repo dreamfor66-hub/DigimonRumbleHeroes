@@ -107,7 +107,7 @@ public class BuffManager : SingletonBehaviour<BuffManager>
         BulletData newBulletData = bulletPrefab.bulletData;
 
         SerializedBulletData serializedData = new SerializedBulletData(
-            newBulletData.LiftTime,
+            newBulletData.LifeTime,
             newBulletData.Speed,
             newBulletData.HitboxList,
             newBulletData.HitIdList

@@ -21,6 +21,6 @@ MonoBehaviour:
   maxDistance: 100
   knockBackPowerReference: 6.5
   collideReduceMultiplier: 0.75
-  hitstopWhenCollide: 5.5
+  hitstopWhenCollide: 10
   collideAvoidTime: 0.05
   maxCollisionAngle: 180

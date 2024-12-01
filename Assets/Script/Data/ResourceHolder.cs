@@ -21,4 +21,21 @@ public class ResourceHolder : ScriptableObject
         }
     }
     public GameVariables gameVariables;
+
+    public GameObject IndicatorLinePrefab;
+    public GameObject IndicatorCirclePrefab;
+
+    public GameObject GetIndicatorPrefab(IndicatorType type)
+    {
+        switch (type)
+        {
+            case IndicatorType.Line:
+                return IndicatorLinePrefab;
+            case IndicatorType.Circle:
+                return IndicatorCirclePrefab;
+            default:
+                Debug.LogError($"Invalid IndicatorType: {type}");
+                return null;
+        }
+    }
 }

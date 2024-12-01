@@ -1,6 +1,7 @@
 using Mirror;
 using Sirenix.OdinInspector;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BulletBehaviour : NetworkBehaviour
@@ -21,6 +22,8 @@ public class BulletBehaviour : NetworkBehaviour
     private List<HitboxData> hitboxList = new List<HitboxData>();
     private List<HitData> hitIdList = new List<HitData>();
     private SerializedBulletData serializedBulletData;
+    private readonly HashSet<IndicatorData> activeIndicators = new();
+    private readonly Dictionary<IndicatorData, GameObject> activeIndicatorObjects = new();
 
     public bool IsValidTarget(CharacterBehaviour target)
     {
@@ -84,6 +87,7 @@ public class BulletBehaviour : NetworkBehaviour
             return;
         }
 
+        HandleBulletIndicators();
         CheckCollisionWithMap();
         BulletMove();
         CheckLifetime();
@@ -127,7 +131,24 @@ public class BulletBehaviour : NetworkBehaviour
         {
             if (spawnData.SpawnTrigger.HasFlag(trigger))
             {
-                SpawnBullet(spawnData);
+                var bulletData = spawnData.BulletPrefab.bulletData;
+                SerializedBulletData serializedData = new SerializedBulletData(
+                    bulletData.LifeTime,
+                    bulletData.Speed,
+                    bulletData.HitboxList,
+                    bulletData.HitIdList
+                );
+
+                var spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
+                var spawnRotation = Quaternion.Euler(0, spawnData.Angle, 0) * transform.forward;
+
+                if (isServer)
+                {
+                    SpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
+                    RpcSpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
+                }
+                else
+                    CmdSpawnBullet(spawnPosition, spawnRotation, serializedData, spawnData.BulletPrefab.name);
             }
         }
 
@@ -136,7 +157,15 @@ public class BulletBehaviour : NetworkBehaviour
         {
             if (vfxData.SpawnTrigger.HasFlag(trigger))
             {
-                SpawnVfx(vfxData);
+                var spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
+                var spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0) * transform.forward;
+                if (isServer)
+                {
+                    SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                    RpcSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                }
+                else
+                    CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
             }
         }
     }
@@ -146,40 +175,82 @@ public class BulletBehaviour : NetworkBehaviour
     {
         // Despawn 트리거 발생
         TriggerBullet(BulletTrigger.Despawn);
-
+        RemoveIndicators();
         // 실제 GameObject 소멸
         Destroy(gameObject);
     }
 
-    private void SpawnBullet(BulletSpawnBulletData spawnData)
+    public void SpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
     {
-        Vector3 spawnPosition = transform.position + transform.forward * spawnData.Offset.y + transform.right * spawnData.Offset.x;
-        Quaternion spawnRotation = Quaternion.Euler(0, spawnData.Angle, 0) * transform.rotation;
+        GameObject bulletPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == prefabName);
+        if (bulletPrefab == null)
+        {
+            Debug.LogError($"Prefab '{prefabName}' not found in RegisteredSpawnablePrefabs.");
+            return;
+        }
 
-        // spawnData에서 새로 생성할 Bullet의 데이터 가져오기
-        BulletData newBulletData = spawnData.BulletPrefab.bulletData;
-
-        SerializedBulletData serializedData = new SerializedBulletData(
-            newBulletData.LiftTime,
-            newBulletData.Speed,
-            newBulletData.HitboxList,
-            newBulletData.HitIdList
-        );
-
-        BulletBehaviour bullet = Instantiate(spawnData.BulletPrefab, spawnPosition, spawnRotation);
+        // 서버에서 Bullet 생성
+        GameObject bulletObject = Instantiate(bulletPrefab, position, Quaternion.LookRotation(this.direction));
         //BuffManager.Instance.TriggerBuffEffect(BuffTriggerType.OwnerSpawnBullet, clonedData);
-        bullet.Initialize(owner, spawnRotation * Vector3.forward, serializedData);
+
+        NetworkServer.Spawn(bulletObject);
+        BulletBehaviour bullet = bulletObject.GetComponent<BulletBehaviour>();
+        // Bullet 초기화
+        if (bullet != null)
+        {
+            if (isServer)
+            {
+                bullet.Initialize(owner, direction, serializedData);
+                bullet.RpcInitialize(owner.GetComponent<NetworkIdentity>(), this.direction, serializedData);
+            }
+            else
+                bullet.CmdInitialize(owner.GetComponent<NetworkIdentity>(), this.direction, serializedData);
+        }
+    }
+
+    [Command]
+    public void CmdSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
+    {
+        SpawnBullet(position, direction, serializedData, prefabName);
+        RpcSpawnBullet(position, direction, serializedData, prefabName);
+    }
+
+    [ClientRpc]
+    public void RpcSpawnBullet(Vector3 position, Vector3 direction, SerializedBulletData serializedData, string prefabName)
+    {
+        if (!isServer)
+        SpawnBullet(position, direction, serializedData, prefabName);
     }
 
 
-
-    private void SpawnVfx(BulletSpawnVfxData vfxData)
+    public void SpawnVfx(Vector3 position, Vector3 direction, string prefabName)
     {
-        Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
-        Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0) * transform.rotation;
+        GameObject vfxPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == prefabName);
+        if (vfxPrefab == null)
+        {
+            Debug.LogError($"Prefab '{prefabName}' not found in RegisteredSpawnablePrefabs.");
+            return;
+        }
 
-        VfxObject vfx = Instantiate(vfxData.VfxPrefab, spawnPosition, spawnRotation);
-        vfx.SetTransform(transform, spawnPosition, spawnRotation, Vector3.one);
+        GameObject vfxObject = Instantiate(vfxPrefab, position, Quaternion.Euler(direction));
+
+        NetworkServer.Spawn(vfxObject);
+        VfxObject vfx = vfxObject.GetComponent<VfxObject>();
+        vfx.SetTransform(transform, position, Quaternion.Euler(direction), Vector3.one);
+    }
+
+    [Command]
+    public void CmdSpawnVfx(Vector3 position, Vector3 direction, string prefabName)
+    {
+        SpawnVfx(position, direction, prefabName);
+        RpcSpawnVfx(position, direction, prefabName);
+    }
+
+    [ClientRpc]
+    public void RpcSpawnVfx(Vector3 position, Vector3 direction, string prefabName)
+    {
+        if (!isServer)
+            SpawnVfx(position, direction, prefabName);
     }
 
     private void HitCast()
@@ -209,6 +280,7 @@ public class BulletBehaviour : NetworkBehaviour
                         hit.Direction.y = 0;
                         hit.HitDamage *= owner.characterData.baseATK;
                         HandleHit(hit);
+                        RpcHandleHit(hit);
 
                         if (!hitTargets.ContainsKey(target))
                             hitTargets[target] = new List<int>();
@@ -225,9 +297,6 @@ public class BulletBehaviour : NetworkBehaviour
     }
     private void HandleHit(HitData hit)
     {
-        if (hit == null) return;
-        if (hit.Victim == null) return;
-
         if (isServer)
         {
             owner.OnHit(hit);
@@ -240,6 +309,15 @@ public class BulletBehaviour : NetworkBehaviour
             hit.Victim.RpcApplyHitStop(hit.HitStopFrame);
 
             ApplyHitStop(hit.HitStopFrame);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcHandleHit(HitData hit)
+    {
+        if (!isServer && !isLocalPlayer && hit.Victim != null)
+        {
+            HandleHit(hit);
         }
     }
 
@@ -273,5 +351,162 @@ public class BulletBehaviour : NetworkBehaviour
         // 충돌 시 반사 동작
         transform.forward = Vector3.Reflect(direction, collisionNormal); // 충돌 방향에 따른 반사
         direction = transform.forward; // 새 방향으로 설정
+    }
+
+    /// <summary>
+    /// Bullet의 Indicator를 생성합니다.
+    /// </summary>
+    private void HandleBulletIndicators()
+    {
+        foreach (var indicator in bulletData.BulletIndicators)
+        {
+            if (currentFrame >= indicator.StartFrame && currentFrame <= indicator.EndFrame)
+            {
+                if (!activeIndicators.Contains(indicator))
+                {
+                    // StartFrame에 도달하면 Indicator 생성
+                    GameObject createdIndicator = CreateIndicator(indicator);
+                    if (createdIndicator != null)
+                    {
+                        activeIndicators.Add(indicator);
+                        activeIndicatorObjects[indicator] = createdIndicator;
+                    }
+                }
+
+                // Indicator 업데이트
+                if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+                {
+                    float progress = Mathf.Clamp01((currentFrame - indicator.StartFrame) / (float)(indicator.EndFrame - indicator.StartFrame));
+                    if (indicator.ShowMaxOnly)
+                        progress = 1;
+                    UpdateIndicatorScale(indicatorObject, indicator, progress);
+                }
+            }
+            else if (currentFrame > indicator.EndFrame)
+            {
+                // EndFrame 초과 시 Indicator 제거
+                if (activeIndicators.Contains(indicator))
+                {
+                    if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+                    {
+                        Destroy(indicatorObject);
+                        activeIndicatorObjects.Remove(indicator);
+                    }
+                    activeIndicators.Remove(indicator);
+                }
+            }
+        }
+    }
+
+    private GameObject CreateIndicator(IndicatorData indicator)
+    {
+        GameObject prefab = ResourceHolder.Instance.GetIndicatorPrefab(indicator.Type);
+        if (prefab == null)
+        {
+            Debug.LogError($"Indicator prefab not found for type: {indicator.Type}");
+            return null;
+        }
+
+        // Indicator 생성 및 초기화
+        GameObject indicatorObject = Instantiate(prefab, transform.position, Quaternion.identity);
+        var indicatorComponent = indicatorObject.GetComponent<IndicatorComponent>();
+
+        if (indicatorComponent == null)
+        {
+            Debug.LogError("Indicator prefab does not have an IndicatorComponent.");
+            Destroy(indicatorObject);
+            return null;
+        }
+
+        switch (indicator.Type)
+        {
+            case IndicatorType.Line:
+                {
+                    Vector3 startWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
+                    Vector3 endWorldPosition = transform.position + transform.forward * indicator.EndPos.y + transform.right * indicator.EndPos.x;
+
+                    Vector3 lineDirection = (endWorldPosition - startWorldPosition).normalized;
+                    float totalLength = Vector3.Distance(startWorldPosition, endWorldPosition);
+
+                    // Base 설정
+                    indicatorComponent.BaseTransform.position = startWorldPosition;
+                    indicatorComponent.BaseTransform.rotation = Quaternion.LookRotation(lineDirection);
+                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Width * 2, 1f, totalLength);
+
+                    // Fill 초기화
+                    if (indicatorComponent.FillTransform != null)
+                    {
+                        indicatorComponent.FillTransform.position = startWorldPosition;
+                        indicatorComponent.FillTransform.rotation = Quaternion.LookRotation(lineDirection);
+                        indicatorComponent.FillTransform.localScale = new Vector3(indicator.Width * 2, 1f, 0f); // 초기 Fill 길이 0
+                    }
+
+                    break;
+                }
+
+            case IndicatorType.Circle:
+                {
+                    Vector3 centerWorldPosition = transform.position + transform.forward * indicator.StartPos.y + transform.right * indicator.StartPos.x;
+
+                    // Base 설정
+                    indicatorComponent.BaseTransform.position = centerWorldPosition;
+                    indicatorComponent.BaseTransform.localScale = new Vector3(indicator.Radius * 2, 1f, indicator.Radius * 2);
+
+                    // Fill 초기화
+                    if (indicatorComponent.FillTransform != null)
+                    {
+                        indicatorComponent.FillTransform.position = centerWorldPosition;
+                        indicatorComponent.FillTransform.localScale = new Vector3(0f, 1f, 0f); // 초기 Fill 크기 0
+                    }
+
+                    break;
+                }
+        }
+
+        return indicatorObject;
+    }
+
+    private void UpdateIndicatorScale(GameObject indicatorObject, IndicatorData indicator, float progress)
+    {
+        var indicatorComponent = indicatorObject.GetComponent<IndicatorComponent>();
+        if (indicatorComponent == null)
+        {
+            Debug.LogError("IndicatorObject does not have an IndicatorComponent.");
+            return;
+        }
+
+        if (indicatorComponent.FillTransform == null)
+        {
+            Debug.LogError("FillTransform is missing in the IndicatorComponent.");
+            return;
+        }
+
+        Vector3 currentScale = indicatorComponent.FillTransform.localScale;
+        switch (indicator.Type)
+        {
+            case IndicatorType.Line:
+                indicatorComponent.FillTransform.localScale = new Vector3(currentScale.x, currentScale.y, indicatorComponent.BaseTransform.localScale.z * progress);
+                break;
+
+            case IndicatorType.Circle:
+                indicatorComponent.FillTransform.localScale = new Vector3(
+                    indicatorComponent.BaseTransform.localScale.x * progress,
+                    currentScale.y,
+                    indicatorComponent.BaseTransform.localScale.z * progress);
+                break;
+        }
+    }
+
+    private void RemoveIndicators()
+    {
+        foreach (var indicator in new List<IndicatorData>(activeIndicators))
+        {
+            if (activeIndicatorObjects.TryGetValue(indicator, out var indicatorObject))
+            {
+                Destroy(indicatorObject);
+                activeIndicatorObjects.Remove(indicator);
+            }
+            activeIndicators.Remove(indicator);
+        }
     }
 }

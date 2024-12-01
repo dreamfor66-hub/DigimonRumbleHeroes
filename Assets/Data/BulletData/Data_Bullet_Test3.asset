@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
+  m_Name: Data_Bullet_Test3
+  m_EditorClassIdentifier: 
+  LifeTime: 1
+  DespawnBy: 8
+  BulletRadius: 0.1
+  ReflectOnWall: 0
+  MoveType: 0
+  Speed: 0
+  HitboxList:
+  - StartFrame: 0
+    EndFrame: 10
+    Offset: {x: 0, y: 0}
+    Radius: 2
+    HitId: 0
+    HitGroup: 0
+  HitIdList:
+  - HitId: 0
+    HitDamage: 1
+    HitStopFrame: 10
+    HitStunFrame: 10
+    KnockbackPower: 30
+    HitType: 2
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
+  BulletSpawnBulletList: []
+  BulletSpawnVfxList: []
+  BulletIndicators:
+  - StartFrame: 0
+    EndFrame: 10
+    Type: 1
+    ShowMaxOnly: 1
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 0}
+    Width: 0
+    Radius: 2

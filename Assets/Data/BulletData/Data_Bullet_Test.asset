@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Test
   m_EditorClassIdentifier: 
-  LiftTime: 1
+  LifeTime: 0.5
   DespawnBy: 8
   BulletRadius: 0.1
   ReflectOnWall: 0
   MoveType: 0
-  Speed: 0
+  Speed: 10
   HitboxList: []
   HitIdList: []
-  BulletSpawnBulletList: []
+  BulletSpawnBulletList:
+  - SpawnTrigger: 4
+    BulletPrefab: {fileID: 5111934926271759165, guid: 33d6ec2cf70243a41bc3fc46a4e72529,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Angle: 0
   BulletSpawnVfxList: []
+  BulletIndicators: []

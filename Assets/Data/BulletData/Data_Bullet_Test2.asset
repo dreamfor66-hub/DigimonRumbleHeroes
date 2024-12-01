@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
+  m_Name: Data_Bullet_Test2
+  m_EditorClassIdentifier: 
+  LifeTime: 1
+  DespawnBy: 8
+  BulletRadius: 0.1
+  ReflectOnWall: 0
+  MoveType: 0
+  Speed: 0
+  HitboxList: []
+  HitIdList: []
+  BulletSpawnBulletList:
+  - SpawnTrigger: 4
+    BulletPrefab: {fileID: 5111934926271759165, guid: 50a87849af967ae4b8d495a9d7417bc4,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Angle: 0
+  BulletSpawnVfxList: []
+  BulletIndicators:
+  - StartFrame: 0
+    EndFrame: 60
+    Type: 1
+    ShowMaxOnly: 0
+    StartPos: {x: 0, y: 0}
+    EndPos: {x: 0, y: 2}
+    Width: 1
+    Radius: 2

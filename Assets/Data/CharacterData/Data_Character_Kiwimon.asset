@@ -19,7 +19,7 @@ MonoBehaviour:
   characterItemTrait3: 101
   baseHP: 500
   baseATK: 100
-  moveSpeed: 2
+  moveSpeed: 4
   defaultBasicAttackCycle: 1.5
   colliderRadius: 0.45
   mass: 10

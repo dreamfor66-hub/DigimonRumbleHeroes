@@ -11,7 +11,7 @@ using System;
 public class BulletData : ScriptableObject
 {
     [PropertyOrder(0)]
-    public float LiftTime = 0.5f;
+    public float LifeTime = 0.5f;
     [PropertyOrder(0)]
     public BulletTrigger DespawnBy = BulletTrigger.LifeTime;
     [PropertyOrder(0)]
@@ -43,6 +43,10 @@ public class BulletData : ScriptableObject
     [PropertyOrder(3)]
     [TableList(AlwaysExpanded = true)]
     public List<BulletSpawnVfxData> BulletSpawnVfxList = new List<BulletSpawnVfxData>();
+
+    [Title("Indicator")]
+    [PropertyOrder(4)]
+    public List<IndicatorData> BulletIndicators = new List<IndicatorData>();
 
     public BulletData Clone()
     {

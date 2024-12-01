@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Kiwimon_Basic01
+  m_EditorClassIdentifier: 
+  ActionFrame: 120
+  AnimationKey: Basic01
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.25
+      outSlope: 0.40408733
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 13.388574
+      value: 5.410153
+      inSlope: 0.40408733
+      outSlope: 0.14968522
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 45.46193
+      value: 10.211061
+      inSlope: 0.14968522
+      outSlope: 0.9851253
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 50.21053
+      value: 14.889027
+      inSlope: 0.9851253
+      outSlope: 0.43145436
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 120
+      value: 45
+      inSlope: 0.43145436
+      outSlope: 0.25
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList: []
+  SpecialMovementList: []
+  Transition: []
+  HitboxList:
+  - StartFrame: 52
+    EndFrame: 64
+    Offset: {x: 0, y: 0}
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  - StartFrame: 52
+    EndFrame: 64
+    Offset: {x: 0, y: 1}
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  - StartFrame: 52
+    EndFrame: 64
+    Offset: {x: 0, y: 2}
+    Radius: 1
+    HitId: 0
+    HitGroup: 0
+  HitIdList:
+  - HitId: 0
+    HitDamage: 0
+    HitStopFrame: 7
+    HitStunFrame: 0
+    KnockbackPower: 10
+    HitType: 1
+    HitApplyOwnerResource: 0
+    ResourceKey: 0
+    Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
+  ActionSpawnBulletList: []
+  ActionSpawnVfxList: []
+  ActionIndicators:
+  - StartFrame: 0
+    EndFrame: 60
+    Type: 0
+    ShowMaxOnly: 0
+    StartPos: {x: 0, y: -1}
+    EndPos: {x: 0, y: 3}
+    Width: 1
+    Radius: 0
+  Conditions: []
+  Resources: []
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 0
+    entityName: 
+    characterName: 
