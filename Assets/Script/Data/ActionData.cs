@@ -306,21 +306,6 @@ public class ActionSpawnVfxData
     public bool HasSpawned = false; // 발사 여부를 추적하는 변수
 }
 
-[System.Serializable]
-public class SerializedVfxData
-{
-    public Vector2 Offset;
-    public float Angle;
-    public string VfxPrefabName;
-
-    public SerializedVfxData(Vector2 offset, float angle, string vfxPrefabName)
-    {
-        Offset = offset;
-        Angle = angle;
-        VfxPrefabName = vfxPrefabName;
-    }
-}
-
 public enum SpawnAnchor
 {
     ThisCharacter = 0,

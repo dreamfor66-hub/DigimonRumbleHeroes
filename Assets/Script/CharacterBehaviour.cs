@@ -593,21 +593,16 @@ public abstract class CharacterBehaviour : NetworkBehaviour
             {
                 if (currentFrame >= vfxData.SpawnFrame && !spawnedVfxData.Contains(vfxData))
                 {
-                    SerializedVfxData serializedVfxData = new SerializedVfxData(
-                        vfxData.Offset,
-                        vfxData.Angle,
-                        vfxData.VfxPrefab.name
-                    );
-                    Vector3 spawnPosition = transform.position + transform.forward * serializedVfxData.Offset.y + transform.right * serializedVfxData.Offset.x;
-                    Quaternion spawnRotation = Quaternion.Euler(0, serializedVfxData.Angle, 0);
+                    Vector3 spawnPosition = transform.position + transform.forward * vfxData.Offset.y + transform.right * vfxData.Offset.x;
+                    Quaternion spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0);
 
                     if (isServer)
                     {
-                        SpawnVfx(spawnPosition, spawnRotation, serializedVfxData.VfxPrefabName);
+                        SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
                     }
                     else
                     {
-                        CmdSpawnVfx(spawnPosition, spawnRotation, serializedVfxData.VfxPrefabName);
+                        CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
                     }
                     spawnedVfxData.Add(vfxData); // 중복 소환 방지용 추가
                 }
