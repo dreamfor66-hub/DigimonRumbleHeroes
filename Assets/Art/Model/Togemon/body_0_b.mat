@@ -32,7 +32,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 56025dafee637914a9a55a2a3e3a51e7, type: 3}
+        m_Texture: {fileID: 2800000, guid: ac685d43068742b47ac562db98cba048, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCapTex:
-        m_Texture: {fileID: 2800000, guid: 49d304a6e805ed141a2eb4fc1f32852f, type: 3}
+        m_Texture: {fileID: 2800000, guid: caa2a13af266c2f48a47aea5f3630de1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -92,7 +92,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 2ce01c5a62e6e7349b188a45b50437c6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -122,7 +122,7 @@ Material:
     - _OutlineLightingType: 0
     - _OutlineLightingTypeURP: 0
     - _OutlineMaxWidth: 1
-    - _OutlineMinWidth: 1.97
+    - _OutlineMinWidth: 1
     - _OutlinePixelSizeType: 1
     - _OutlineTextureLOD: 8
     - _OutlineTextureType: 0
@@ -132,7 +132,7 @@ Material:
     - _RampBandsSmoothing: 0.1
     - _RampOffset: 0
     - _RampScale: 1
-    - _RampSmoothing: 0.05
+    - _RampSmoothing: 0.008
     - _RampThreshold: 0.8
     - _RampType: 0
     - _ReceiveShadowsOff: 1
@@ -148,7 +148,7 @@ Material:
     - _SpecularMapType: 0
     - _SpecularRoughness: 0.198
     - _SpecularToonSize: 0.031
-    - _SpecularToonSmoothness: 0.981
+    - _SpecularToonSmoothness: 0
     - _SpecularType: 1
     - _SrcBlend: 1
     - _UVSec: 0
