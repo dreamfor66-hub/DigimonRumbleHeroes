@@ -92,16 +92,20 @@ public class VfxObject : NetworkBehaviour
             }
         }
 
-    public void SetTransform(Transform target, Vector3 offset, Quaternion rotation, Vector3 localScale)
+    public void SetTarget(Transform target)
     {
         followTm = target;
-        //localPosition = offset;
-        //localRotation = rotation;
+    }
+
+    public void SetTransform(Vector3 offset, Quaternion rotation, Vector3 localScale)
+    {
+        localPosition = offset;
+        localRotation = rotation;
+        transform.localScale = localScale;
 
         // 초기 위치와 회전 설정
         FollowTransform();
 
-        transform.localScale = localScale;
     }
 
     public void SetTime(float time)
@@ -124,23 +128,46 @@ public class VfxObject : NetworkBehaviour
 
             if (FollowType == VfxFollowType.Position)
             {
-                var position = followTm.rotation * localPosition + followTm.position;
+            var position = followTm.position + localPosition ;
                 transform.position = position;
             }
             else if (FollowType == VfxFollowType.Rotation)
             {
-                var rotation = followTm.rotation * localRotation;
+                var rotation = followTm.rotation /** localRotation*/;
                 transform.rotation = rotation;
             }
             else if (FollowType == VfxFollowType.PositionAndRotation)
             {
-                var position = followTm.TransformPoint(localPosition);
-                var rotation = followTm.rotation * localRotation;
+                var position = followTm.position + localPosition;
+                var rotation = followTm.rotation /** localRotation*/;
                 transform.SetPositionAndRotation(position, rotation);
             }
         }
     public void OnSpawn(float spawnFrame)
     {
+        if (StartPivot == VfxFollowType.None)
+            return;
+        if (followTm == null)
+            return;
+
+        if (StartPivot == VfxFollowType.Position)
+        {
+            var position = followTm.position + localPosition;
+            transform.position = position;
+        }
+        else if (StartPivot == VfxFollowType.Rotation)
+        {
+            var rotation = followTm.rotation /** localRotation*/;
+            transform.rotation = rotation;
+        }
+        else if (StartPivot == VfxFollowType.PositionAndRotation)
+        {
+            var position = followTm.position + localPosition;
+            var rotation = followTm.rotation /** localRotation*/;
+            transform.SetPositionAndRotation(position, rotation);
+        }
+
+
         this.spawnFrame = spawnFrame;
         elapsedTime = 0f;
         particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -259,6 +259,7 @@ MonoBehaviour:
   - {fileID: 3678699042631848217, guid: 95efbbfca7437a644ab2698cba31ba29, type: 3}
   - {fileID: 3678699042631848217, guid: 3a5045f5648223446903759a32392d39, type: 3}
   - {fileID: 3678699042631848217, guid: aafadb268246bef4a89d66dfb929f05c, type: 3}
+  - {fileID: 3678699042631848217, guid: 80c83364092cee34d97ee1686dcc649e, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -276,59 +277,12 @@ MonoBehaviour:
   timeInterpolationGui: 0
   showRoomGUI: 1
   minPlayers: 1
-  roomPlayerPrefab: {fileID: 7775866477397053862, guid: 629f344d38667da4db2a1f8c15e3f921,
+  roomPlayerPrefab: {fileID: 7775866477397053862, guid: 3a923a8917fd2534d9b516a3e32c3933,
     type: 3}
   RoomScene: Assets/Scenes/RoomScene.unity
   GameplayScene: Assets/Scenes/GamePlayScene.unity
   _allPlayersReady: 0
   clientIndex: 0
---- !u!1 &1176710743
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1176710745}
-  - component: {fileID: 1176710744}
-  m_Layer: 0
-  m_Name: Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1176710744
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1176710743}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce1476e3cf143b24f9e4101306d86017, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Party: []
-  PlayerStartPoint: {x: 0, y: 0}
-  MapSize: {x: 0, y: 0}
---- !u!4 &1176710745
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1176710743}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1881740959
 GameObject:
   m_ObjectHideFlags: 0
@@ -522,4 +476,3 @@ SceneRoots:
   - {fileID: 1881740962}
   - {fileID: 1883060503}
   - {fileID: 81771288}
-  - {fileID: 1176710745}

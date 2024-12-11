@@ -162,11 +162,11 @@ public class BulletBehaviour : NetworkBehaviour
                 var spawnRotation = Quaternion.Euler(0, vfxData.Angle, 0) * transform.forward;
                 if (isServer)
                 {
-                    SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                    SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name, vfxData.Offset, Quaternion.Euler(0, vfxData.Angle, 0));
                     //RpcSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
                 }
                 else
-                    CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                    CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name, vfxData.Offset, Quaternion.Euler(0,vfxData.Angle,0));
             }
         }
     }
@@ -231,7 +231,7 @@ public class BulletBehaviour : NetworkBehaviour
     }
 
 
-    public void SpawnVfx(Vector3 position, Vector3 direction, string prefabName)
+    public void SpawnVfx(Vector3 position, Vector3 direction, string prefabName, Vector3 posOffset, Quaternion rotOffset)
     {
         GameObject vfxPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == prefabName);
         if (vfxPrefab == null)
@@ -246,21 +246,23 @@ public class BulletBehaviour : NetworkBehaviour
             NetworkServer.Spawn(vfxObject);
         }
         VfxObject vfx = vfxObject.GetComponent<VfxObject>();
-        vfx.SetTransform(transform, position, Quaternion.Euler(direction), Vector3.one);
+        vfx.SetTransform(posOffset, rotOffset, Vector3.one);
+        vfx.SetTarget(transform);
+        vfx.OnSpawn(currentFrame);
     }
 
     [Command]
-    public void CmdSpawnVfx(Vector3 position, Vector3 direction, string prefabName)
+    public void CmdSpawnVfx(Vector3 position, Vector3 direction, string prefabName, Vector3 posOffset, Quaternion rotOffset)
     {
-        SpawnVfx(position, direction, prefabName);
-        RpcSpawnVfx(position, direction, prefabName);
+        SpawnVfx(position, direction, prefabName, posOffset, rotOffset);
+        RpcSpawnVfx(position, direction, prefabName, posOffset, rotOffset);
     }
 
     [ClientRpc]
-    public void RpcSpawnVfx(Vector3 position, Vector3 direction, string prefabName)
+    public void RpcSpawnVfx(Vector3 position, Vector3 direction, string prefabName, Vector3 posOffset, Quaternion rotOffset)
     {
         if (!isServer)
-            SpawnVfx(position, direction, prefabName);
+            SpawnVfx(position, direction, prefabName, posOffset, rotOffset);
     }
 
     private void HitCast()

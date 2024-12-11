@@ -597,11 +597,11 @@ public abstract class CharacterBehaviour : NetworkBehaviour
 
                     if (isServer)
                     {
-                        SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                        SpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name, vfxData.Offset, Quaternion.Euler(0,vfxData.Angle,0));
                     }
                     else
                     {
-                        CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name);
+                        CmdSpawnVfx(spawnPosition, spawnRotation, vfxData.VfxPrefab.name, vfxData.Offset, Quaternion.Euler(0,vfxData.Angle,0));
                     }
                     spawnedVfxData.Add(vfxData); // 중복 소환 방지용 추가
                 }
@@ -2305,7 +2305,7 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
     // Action에서 무언가를 소환하는 메서드
-    private void SpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
+    private void SpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName, Vector3 posOffset, Quaternion rotOffset)
     {
         GameObject vfxPrefab = NetworkManager.singleton.spawnPrefabs.Find(prefab => prefab.name == vfxPrefabName);
         if (vfxPrefab == null)
@@ -2326,7 +2326,8 @@ public abstract class CharacterBehaviour : NetworkBehaviour
         {
             NetworkServer.Spawn(vfx.gameObject);
         }
-        vfx.SetTransform(transform, spawnPosition, spawnRotation, Vector3.one);
+        vfx.SetTransform( posOffset, rotOffset, Vector3.one);
+        vfx.SetTarget(transform);
         vfx.OnSpawn(currentFrame);
 
         if (vfx.PlayType == VfxPlayType.Manual)
@@ -2336,18 +2337,18 @@ public abstract class CharacterBehaviour : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
+    private void CmdSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName, Vector3 posOffset, Quaternion rotOffset)
     {
-        SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
-        RpcSpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
+        SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName, posOffset, rotOffset);
+        RpcSpawnVfx(spawnPosition, spawnRotation, vfxPrefabName, posOffset, rotOffset);
     }
 
     [ClientRpc]
-    private void RpcSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName)
+    private void RpcSpawnVfx(Vector3 spawnPosition, Quaternion spawnRotation, string vfxPrefabName, Vector3 posOffset, Quaternion rotOffset)
     {
         if (!isServer)
         {
-            SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName);
+            SpawnVfx(spawnPosition, spawnRotation, vfxPrefabName, posOffset, rotOffset);
         }
     }
 

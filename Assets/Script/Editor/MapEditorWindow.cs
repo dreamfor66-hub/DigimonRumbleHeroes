@@ -261,9 +261,7 @@ public class MapEditorWindow : OdinEditorWindow
         if (state == PlayModeStateChange.EnteredEditMode)
         {
             if (currentMap == null)
-            {
-                MapSetting();
-            }
+                return;
             if (wasEditingBeforePlay)
             {
                 ToggleEditing();

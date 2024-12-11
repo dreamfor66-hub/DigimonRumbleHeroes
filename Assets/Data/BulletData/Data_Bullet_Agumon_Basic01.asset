@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91610f603de36c14495ae76037a6e2a1, type: 3}
   m_Name: Data_Bullet_Agumon_Basic01
   m_EditorClassIdentifier: 
-  LiftTime: 0.7
+  LifeTime: 0.5
   DespawnBy: 26
   BulletRadius: 0.2
   ReflectOnWall: 0
@@ -41,6 +41,11 @@ MonoBehaviour:
   BulletSpawnBulletList: []
   BulletSpawnVfxList:
   - SpawnTrigger: 1
+    VfxPrefab: {fileID: -1134785986197523482, guid: 80c83364092cee34d97ee1686dcc649e,
+      type: 3}
+    Offset: {x: 0, y: 0}
+    Angle: 0
+  - SpawnTrigger: 1
     VfxPrefab: {fileID: -1134785986197523482, guid: a9b82af3e92016b4dbbfb75c2d86ff6c,
       type: 3}
     Offset: {x: 0, y: 0}
@@ -50,3 +55,4 @@ MonoBehaviour:
       type: 3}
     Offset: {x: 0, y: 0}
     Angle: 0
+  BulletIndicators: []
