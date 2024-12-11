@@ -110,6 +110,11 @@ MonoBehaviour:
     CanRotate: 0
     Value: 0.5
   - StartFrame: 55
+    EndFrame: 80
+    MoveType: 0
+    CanRotate: 0
+    Value: 0.65
+  - StartFrame: 80
     EndFrame: 100
     MoveType: 0
     CanRotate: 0

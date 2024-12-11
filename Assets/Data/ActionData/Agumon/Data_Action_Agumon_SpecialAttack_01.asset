@@ -44,6 +44,7 @@ MonoBehaviour:
     StartValue: {x: 0, y: 10}
     EndValue: {x: 0, y: 0}
   SpecialMovementList: []
+  Transition: []
   HitboxList:
   - StartFrame: 0
     EndFrame: 0
@@ -57,20 +58,22 @@ MonoBehaviour:
     HitStopFrame: 0
     HitStunFrame: 0
     KnockbackPower: 0
-    hitType: 0
+    HitType: 0
     HitApplyOwnerResource: 0
     ResourceKey: 0
     Value: 0
+    Attacker: {fileID: 0}
+    Victim: {fileID: 0}
+    Direction: {x: 0, y: 0, z: 0}
   ActionSpawnBulletList: []
   ActionSpawnVfxList: []
-  Conditions:
-  - Type: 0
-    ResourceKey: 1
-    Count: 10
+  ActionIndicators: []
+  Conditions: []
   Resources:
   - Frame: 0
     ResourceKey: 1
     Count: -10
+  canLookInAction: 0
   AutoCorrection:
     correctionType: 0
     entityName: 
