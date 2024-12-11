@@ -2628,9 +2628,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce1476e3cf143b24f9e4101306d86017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Party: []
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   PlayerStartPoint: {x: 7, y: 3}
   MapSize: {x: 15, y: 17}
+  playerPrefab: {fileID: 0}
 --- !u!4 &197656127
 Transform:
   m_ObjectHideFlags: 0
@@ -12655,7 +12658,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   followSpeed: 5
-  offset: {x: 8, y: 15.81, z: -12.32}
+  offset: {x: 10, y: 20, z: -15}
 --- !u!1 &967268769
 GameObject:
   m_ObjectHideFlags: 0

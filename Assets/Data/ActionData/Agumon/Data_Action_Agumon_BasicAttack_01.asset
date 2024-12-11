@@ -30,25 +30,25 @@ MonoBehaviour:
       time: 1.9183898
       value: 5.0891128
       inSlope: 2.6528044
-      outSlope: 0.3525625
+      outSlope: 1.1356345
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 5.367961
-      value: 6.305302
-      inSlope: 0.3525625
-      outSlope: 2.8234222
+      value: 9.006565
+      inSlope: 1.1356345
+      outSlope: 2.466869
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 10.103001
-      value: 19.674318
-      inSlope: 2.8234222
-      outSlope: 0.9248685
+      value: 20.687288
+      inSlope: 2.466869
+      outSlope: 0.5715805
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
@@ -56,7 +56,7 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 12.970264
       value: 22.32616
-      inSlope: 0.9248685
+      inSlope: 0.5715805
       outSlope: 1.416049
       tangentMode: 69
       weightedMode: 0
@@ -126,6 +126,7 @@ MonoBehaviour:
     Pivot: 1
     Angle: 0
   ActionSpawnVfxList: []
+  ActionIndicators: []
   Conditions: []
   Resources: []
   canLookInAction: 0
