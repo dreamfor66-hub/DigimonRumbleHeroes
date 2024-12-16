@@ -57,7 +57,6 @@ public class PlayerController : CharacterBehaviour
     protected override void Update()
     {
         base.Update();
-
         if (NetworkClient.localPlayer == null || !isLocalPlayer) return;
 
         HandleTargeting();

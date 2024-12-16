@@ -30,8 +30,8 @@ MonoBehaviour:
     HitDamage: 0.5
     HitStopFrame: 3
     HitStunFrame: 30
-    KnockbackPower: 20
-    HitType: 2
+    KnockbackPower: 3
+    HitType: 1
     HitApplyOwnerResource: 0
     ResourceKey: 0
     Value: 0

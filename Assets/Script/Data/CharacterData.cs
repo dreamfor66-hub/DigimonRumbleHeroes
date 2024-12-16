@@ -7,7 +7,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Data_Character_New", menuName = "Data/CharacterData", order = 1)]
 public class CharacterData : ScriptableObject
 {
-    [Title("이름")] 
+    [Title("이름")]
     [HideLabel]
     public string characterName;
 
@@ -28,8 +28,8 @@ public class CharacterData : ScriptableObject
 
 
     [Title("BaseStat")]
-    public float baseHP = 10f;
-    public float baseATK = 5;
+    public float baseHP = 500f;
+    public float baseATK = 100;
     public float moveSpeed = 5;
     public float defaultBasicAttackCycle = 1.5f;
 
@@ -39,7 +39,7 @@ public class CharacterData : ScriptableObject
     public float drag = 10f;
     public float attackRange = 1.5f;
     [TableList]
-    public List<HurtBox> Hurtboxes;
+    public List<HurtBox> Hurtboxes = new List<HurtBox>() { new HurtBox { Offset = new Vector2(0, 0), Radius = 0.5f } };
     
     [Title("RigController")]
     public Vector3 rigOffset = new Vector3(0,0.5f,0);

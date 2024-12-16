@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97112a55b50fdcf429bbae3f85ebf98e, type: 3}
+  m_Name: Data_Action_Vegimon_Basic01
+  m_EditorClassIdentifier: 
+  ActionFrame: 0
+  AnimationKey: 
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovementList: []
+  SpecialMovementList: []
+  Transition: []
+  HitboxList: []
+  HitIdList: []
+  ActionSpawnBulletList: []
+  ActionSpawnVfxList: []
+  ActionIndicators: []
+  Conditions: []
+  Resources: []
+  canLookInAction: 0
+  AutoCorrection:
+    correctionType: 0
+    entityName: 
+    characterName: 
